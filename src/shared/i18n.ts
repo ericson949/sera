@@ -18,7 +18,7 @@ const dictionaries: Record<AppLanguage, AppDictionary> = {
       badge: "AI meal planning",
       page1Title: "Dinner planning that feels calm, not clinical.",
       page1Body:
-        "Dinnero turns your budget, shop, tastes, and kitchen basics into a weekly dinner plan you can actually cook.",
+        "Sera turns your budget, shop, tastes, and kitchen basics into a weekly dinner plan you can actually cook.",
       page1MetricA: "7 dinners",
       page1MetricB: "1 list",
       page1MetricC: "Less waste",
@@ -59,7 +59,7 @@ const dictionaries: Record<AppLanguage, AppDictionary> = {
       badge: "Planification IA",
       page1Title: "Planifier ses diners sans transformer la cuisine en tableur.",
       page1Body:
-        "Dinnero transforme ton budget, ton magasin, tes envies et ce que tu as deja en cuisine en menu de diners realiste.",
+        "Sera transforme ton budget, ton magasin, tes envies et ce que tu as deja en cuisine en menu de diners realiste.",
       page1MetricA: "7 diners",
       page1MetricB: "1 liste",
       page1MetricC: "Moins de gaspillage",
@@ -100,7 +100,7 @@ const dictionaries: Record<AppLanguage, AppDictionary> = {
       badge: "Meal planning AI",
       page1Title: "Pianifica le cene senza trasformare la cucina in un foglio di calcolo.",
       page1Body:
-        "Dinnero trasforma budget, supermercato, gusti e dispensa in un menu settimanale realistico.",
+        "Sera trasforma budget, supermercato, gusti e dispensa in un menu settimanale realistico.",
       page1MetricA: "7 cene",
       page1MetricB: "1 lista",
       page1MetricC: "Meno sprechi",

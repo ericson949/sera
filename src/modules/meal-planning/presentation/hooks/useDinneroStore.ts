@@ -151,7 +151,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
       if (!userObj) {
         userObj = {
           id: uId,
-          email: "ciao@dinnero.it",
+          email: "ciao@sera.menu",
           subscriptionStatus: "free",
           createdAt: new Date(),
         };
@@ -378,7 +378,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
     try {
       const uId = get().userId;
       const userObj = get().user;
-      const email = userObj?.email || "user@dinnero.it";
+      const email = userObj?.email || "user@sera.menu";
       const result = await createCheckoutUseCase.execute(uId, email, origin);
       return result.url;
     } catch (err: any) {

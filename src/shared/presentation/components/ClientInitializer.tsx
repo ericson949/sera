@@ -29,7 +29,7 @@ export default function ClientInitializer() {
           }
 
           worker.postMessage({
-            type: "DINNERO_OFFLINE_STATE",
+            type: "SERA_OFFLINE_STATE",
             activePlan: plan,
             shoppingItems: plan.shoppingList,
           });
@@ -43,7 +43,7 @@ export default function ClientInitializer() {
         });
       })
       .catch((error) => {
-        console.warn("Dinnero service worker registration failed", error);
+        console.warn("Sera service worker registration failed", error);
       });
 
     return () => {

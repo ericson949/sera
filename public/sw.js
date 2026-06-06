@@ -1,4 +1,4 @@
-const VERSION = "dinnero-v1";
+const VERSION = "sera-v1";
 const APP_CACHE = `${VERSION}-app`;
 const STATE_CACHE = `${VERSION}-state`;
 const APP_SHELL = ["/", "/dashboard", "/results", "/shopping-list", "/pricing", "/icon.svg"];
@@ -22,7 +22,7 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("message", (event) => {
-  if (event.data?.type !== "DINNERO_OFFLINE_STATE") {
+  if (event.data?.type !== "SERA_OFFLINE_STATE") {
     return;
   }
 

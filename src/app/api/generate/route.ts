@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
     // ACTION 1: SWAP SINGLE MEAL
     if (action === "swap") {
-      const prompt = `You are Dinnero, an AI meal planning assistant for Italian grocery shoppers.
+      const prompt = `You are Sera, a premium Italian lifestyle dinner planning assistant for grocery shoppers.
 Create a realistic swapped dinner recipe.
 
 User context:
@@ -104,7 +104,7 @@ Expected JSON format:
     
     // ACTION 2: GENERATE FULL WEEKLY PLAN
     else {
-      const prompt = `You are Dinnero, an AI meal planning assistant for Italian grocery shoppers.
+      const prompt = `You are Sera, a premium Italian lifestyle dinner planning assistant for grocery shoppers.
 Create a realistic 7-day dinner meal plan.
 
 User context:
