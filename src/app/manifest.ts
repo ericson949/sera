@@ -14,7 +14,7 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["food", "shopping", "productivity"],
     icons: [
       {
-        src: "/icon.svg",
+        src: "/sera-mark.svg",
         sizes: "any",
         type: "image/svg+xml",
         purpose: "maskable",

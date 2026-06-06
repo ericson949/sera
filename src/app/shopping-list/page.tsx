@@ -5,8 +5,18 @@ import Link from "next/link";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import { ShoppingCategory } from "@/modules/meal-planning/domain/value-objects/ShoppingCategory";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
-import { ShoppingBag, Check, Clipboard, Trash2, ArrowRight, Apple, Beef, GlassWater, Package, Snowflake, Flame, ClipboardCheck, type LucideIcon } from "lucide-react";
-import { cn } from "@/shared/utils/cn";
+import { SERA_MARKET_SECTION_LABELS } from "@/shared/seraVisuals";
+import { ArrowRight, Check, Clipboard, ClipboardCheck, ShoppingBag, Trash2 } from "lucide-react";
+
+const categories: ShoppingCategory[] = [
+  "Vegetables",
+  "Meat & Fish",
+  "Dairy",
+  "Pantry",
+  "Frozen",
+  "Spices",
+  "Other",
+];
 
 export default function ShoppingListPage() {
   const { activePlan, toggleShoppingItem } = useDinneroStore();
@@ -14,257 +24,148 @@ export default function ShoppingListPage() {
 
   if (!activePlan) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center bg-background">
-        <ShoppingBag className="w-12 h-12 text-muted mb-4" />
-        <h2 className="text-xl font-bold">Nessuna lista della spesa</h2>
-        <p className="text-sm text-muted mt-2 mb-6">
-          Genera un menu settimanale per ottenere la tua lista ingredienti ottimizzata.
+      <div className="flex min-h-[calc(100svh-5rem)] flex-col justify-center bg-background px-6 text-center">
+        <ShoppingBag className="mx-auto h-10 w-10 text-muted" />
+        <h1 className="mt-5 font-serif text-[40px] leading-[43px] text-foreground">No market list yet.</h1>
+        <p className="mx-auto mt-4 max-w-[300px] text-sm leading-6 text-muted">
+          Create a weekly plan and Sera will arrange your ingredients by market section.
         </p>
         <Link
           href="/onboarding"
-          className="py-3 px-6 bg-primary text-white font-bold rounded-xl shadow-md flex items-center gap-1.5 hover:bg-primary-hover transition-colors tap-highlight"
+          className="mt-7 inline-flex h-14 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-white shadow-md"
         >
-          <span>Crea lista della spesa</span>
-          <ArrowRight className="w-4 h-4" />
+          Compose the week
+          <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
     );
   }
 
   const items = activePlan.shoppingList;
+  const checkedCount = items.filter((item) => item.checked).length;
+  const totalCount = items.length;
 
-  // Group items by category
-  const categories: ShoppingCategory[] = [
-    "Vegetables",
-    "Meat & Fish",
-    "Dairy",
-    "Pantry",
-    "Frozen",
-    "Spices",
-    "Other"
-  ];
-
-  const categoryIcons: Record<ShoppingCategory, LucideIcon> = {
-    Vegetables: Apple,
-    "Meat & Fish": Beef,
-    Dairy: GlassWater,
-    Pantry: Package,
-    Frozen: Snowflake,
-    Spices: Flame,
-    Other: ShoppingBag,
-  };
-
-  const categoryLabels: Record<ShoppingCategory, string> = {
-    Vegetables: "Verdure e Frutta",
-    "Meat & Fish": "Carne e Pesce",
-    Dairy: "Latticini e Uova",
-    Pantry: "Dispensa",
-    Frozen: "Surgelati",
-    Spices: "Erbe e Spezie",
-    Other: "Altro",
-  };
-
-  // Toggles checked state of an item
-  const handleToggle = (itemId: string) => {
-    toggleShoppingItem(itemId);
-  };
-
-  // Clear checked items (uncheck all)
-  const handleClearPurchased = () => {
-    items.forEach((item) => {
-      if (item.checked) {
-        toggleShoppingItem(item.id);
-      }
-    });
-  };
-
-  // Check all items
-  const handleMarkAllPurchased = () => {
-    items.forEach((item) => {
-      if (!item.checked) {
-        toggleShoppingItem(item.id);
-      }
-    });
-  };
-
-  // Export list to clipboard formatted nicely
   const handleExportList = () => {
-    let text = `🛒 *Lista della Spesa Dinnero - ${activePlan.shop}*\n\n`;
+    let text = `Sera market list - ${activePlan.shop}\n\n`;
 
-    categories.forEach((cat) => {
-      const catItems = items.filter((i) => i.category === cat);
-      if (catItems.length === 0) return;
+    categories.forEach((category) => {
+      const categoryItems = items.filter((item) => item.category === category);
+      if (categoryItems.length === 0) return;
 
-      text += `*${categoryLabels[cat].toUpperCase()}*\n`;
-      catItems.forEach((item) => {
-        const check = item.checked ? "✅" : "⬜";
-        text += `${check} ${item.name} (${item.quantity}) — ${formatMoney(item.estimatedPrice)} [${item.usedInMeals.join(", ")}]\n`;
+      const labels = SERA_MARKET_SECTION_LABELS[category];
+      text += `${labels.title} / ${labels.subtitle}\n`;
+      categoryItems.forEach((item) => {
+        const check = item.checked ? "[x]" : "[ ]";
+        text += `${check} ${item.name} (${item.quantity}) - ${formatMoney(item.estimatedPrice)}\n`;
       });
       text += "\n";
     });
 
-    text += `💰 *Totale stimato: ${formatMoney(activePlan.estimatedTotal)}*`;
-
+    text += `Estimated total: ${formatMoney(activePlan.estimatedTotal)}`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
 
-  // Count active / checked
-  const checkedCount = items.filter((i) => i.checked).length;
-  const totalCount = items.length;
+  const handleClearPurchased = () => {
+    items.forEach((item) => {
+      if (item.checked) toggleShoppingItem(item.id);
+    });
+  };
+
+  const handleMarkAllPurchased = () => {
+    items.forEach((item) => {
+      if (!item.checked) toggleShoppingItem(item.id);
+    });
+  };
 
   return (
-    <div className="flex-1 flex flex-col bg-background p-6 space-y-6">
-      
-      {/* Header */}
-      <div className="flex justify-between items-start">
-        <div>
-          <span className="text-xs font-bold text-secondary uppercase tracking-widest block mb-1">
-            Lista Spesa Ottimizzata
-          </span>
-          <h1 className="text-2xl font-black text-foreground tracking-tight leading-none">
-            Spesa della Settimana
-          </h1>
-          <p className="text-xs text-muted mt-1.5">
-            Negozio: <span className="font-bold text-foreground">{activePlan.shop}</span> • {checkedCount}/{totalCount} acquistati
-          </p>
+    <div className="flex h-[calc(100svh-5rem)] flex-col bg-background">
+      <header className="shrink-0 px-5 pb-4 pt-5">
+        <p className="editorial-kicker">Sera market guide</p>
+        <div className="mt-2 flex items-end justify-between gap-4">
+          <div>
+            <h1 className="font-serif text-[40px] leading-[42px] tracking-tight text-foreground">
+              One trip.
+              <br />
+              Everything needed.
+            </h1>
+            <p className="mt-2 text-sm text-muted">{activePlan.shop} · {checkedCount}/{totalCount} gathered</p>
+          </div>
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-surface-container-low">
+            <span className="font-serif text-xl text-secondary">
+              {totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0}%
+            </span>
+          </div>
         </div>
+      </header>
 
-        {/* Checked status percentage circular bar */}
-        <div className="w-12 h-12 rounded-full border border-border flex items-center justify-center relative bg-stone-50 select-none shrink-0">
-          <span className="text-xs font-extrabold text-secondary">
-            {totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0}%
-          </span>
-        </div>
-      </div>
-
-      {/* Quick Actions Panel */}
-      <div className="flex gap-2">
+      <div className="flex shrink-0 gap-2 px-5 pb-4">
         <button
           onClick={handleExportList}
-          className={cn(
-            "flex-1 py-3 border rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1.5 tap-highlight",
-            copied
-              ? "bg-secondary/15 border-secondary/35 text-secondary"
-              : "bg-card border-border/80 text-foreground hover:bg-stone-50"
-          )}
+          className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-foreground text-sm font-semibold text-background"
         >
-          {copied ? (
-            <>
-              <ClipboardCheck className="w-4 h-4" />
-              <span>Copiata su WhatsApp!</span>
-            </>
-          ) : (
-            <>
-              <Clipboard className="w-4 h-4 text-muted" />
-              <span>Esporta lista</span>
-            </>
-          )}
+          {copied ? <ClipboardCheck className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+          {copied ? "Copied" : "Export"}
         </button>
-
         <button
           onClick={checkedCount > 0 ? handleClearPurchased : handleMarkAllPurchased}
-          className="py-3 px-4 border border-border/80 bg-card hover:bg-stone-50 rounded-xl font-bold text-xs text-stone-600 transition-colors flex items-center gap-1.5 shrink-0 tap-highlight"
+          className="flex h-12 items-center justify-center gap-2 rounded-full bg-card px-5 text-sm font-semibold text-foreground shadow-sm"
         >
-          {checkedCount > 0 ? (
-            <>
-              <Trash2 className="w-4 h-4 text-rose-500" />
-              <span>Svuota spuntati</span>
-            </>
-          ) : (
-            <>
-              <Check className="w-4 h-4 text-secondary" />
-              <span>Spunta tutti</span>
-            </>
-          )}
+          {checkedCount > 0 ? <Trash2 className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+          {checkedCount > 0 ? "Clear" : "All"}
         </button>
       </div>
 
-      {/* Categories Accordion/Groupings */}
-      <div className="space-y-6 flex-1">
-        {categories.map((category) => {
-          const categoryItems = items.filter((i) => i.category === category);
-          if (categoryItems.length === 0) return null;
+      <section className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 no-scrollbar">
+        <div className="space-y-8">
+          {categories.map((category) => {
+            const categoryItems = items.filter((item) => item.category === category);
+            if (categoryItems.length === 0) return null;
 
-          const Icon = categoryIcons[category];
+            const labels = SERA_MARKET_SECTION_LABELS[category];
 
-          return (
-            <div key={category} className="space-y-2.5 animate-fade-in-up">
-              {/* Category Header */}
-              <div className="flex items-center gap-2 text-stone-500 border-b border-border/40 pb-1.5 select-none">
-                <Icon className="w-4 h-4 text-secondary" />
-                <h3 className="text-xs font-bold uppercase tracking-wider">
-                  {categoryLabels[category]}
-                </h3>
-                <span className="text-[10px] bg-stone-100 text-stone-600 px-1.5 py-0.2 rounded-full font-bold">
-                  {categoryItems.length}
-                </span>
-              </div>
-
-              {/* Items in Category */}
-              <div className="space-y-2">
-                {categoryItems.map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => handleToggle(item.id)}
-                    className={cn(
-                      "w-full bg-card border rounded-2xl p-4 flex items-center justify-between shadow-sm cursor-pointer select-none transition-all tap-highlight",
-                      item.checked
-                        ? "border-secondary/15 opacity-60 bg-stone-50/50"
-                        : "border-border/80"
-                    )}
-                  >
-                    <div className="flex gap-3 items-center flex-1">
-                      {/* Checkbox button */}
-                      <div className="shrink-0">
-                        {item.checked ? (
-                          <div className="w-5 h-5 rounded-md bg-secondary text-white flex items-center justify-center">
-                            <Check className="w-3.5 h-3.5" />
-                          </div>
-                        ) : (
-                          <div className="w-5 h-5 rounded-md border-2 border-border bg-transparent" />
-                        )}
-                      </div>
-
-                      {/* Content */}
-                      <div className="space-y-0.5">
-                        <span className={cn(
-                          "text-sm font-bold text-foreground leading-none",
-                          item.checked && "line-through text-muted"
-                        )}>
-                          {item.name}
-                        </span>
-                        
-                        {/* Days used badge */}
-                        <div className="flex flex-wrap gap-1 pt-0.5">
-                          {item.usedInMeals.map((day) => (
-                            <span key={day} className="text-[9px] font-medium text-stone-400 bg-stone-100 px-1.5 py-0.2 rounded">
-                              {day.substr(0, 3)}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Price & Qty */}
-                    <div className="text-right shrink-0">
-                      <span className="text-xs font-bold block text-foreground">
-                        {item.quantity}
-                      </span>
-                      <span className="text-[10px] text-muted font-bold block mt-0.5">
-                        {formatMoney(item.estimatedPrice)}
-                      </span>
-                    </div>
-
+            return (
+              <section key={category} className="border-t border-warm-stone/70 pt-4">
+                <div className="mb-3 flex items-end justify-between">
+                  <div>
+                    <h2 className="font-serif text-[28px] leading-[30px] text-foreground">{labels.title}</h2>
+                    <p className="editorial-kicker mt-1">{labels.subtitle}</p>
                   </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                  <span className="text-xs font-semibold text-muted">{categoryItems.length} items</span>
+                </div>
 
+                <div className="divide-y divide-warm-stone/50">
+                  {categoryItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => toggleShoppingItem(item.id)}
+                      className="flex w-full items-center justify-between gap-4 py-3 text-left tap-highlight"
+                    >
+                      <span className="flex min-w-0 items-center gap-3">
+                        <span
+                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                            item.checked ? "border-secondary bg-secondary text-white" : "border-warm-stone"
+                          }`}
+                        >
+                          {item.checked && <Check className="h-3.5 w-3.5" />}
+                        </span>
+                        <span>
+                          <span className={`block text-[15px] font-medium text-foreground ${item.checked ? "line-through opacity-50" : ""}`}>
+                            {item.name}
+                          </span>
+                          <span className="mt-0.5 block text-xs text-muted">{item.quantity}</span>
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-sm text-muted">{formatMoney(item.estimatedPrice)}</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 }

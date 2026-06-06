@@ -1,8 +1,10 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useDinneroStore } from "../hooks/useDinneroStore";
 import { formatMoney } from "../../domain/value-objects/Money";
-import { X, Clock, Flame, RefreshCw, ChefHat, CheckSquare, Info, Loader2 } from "lucide-react";
+import { SERA_IMAGES } from "@/shared/seraVisuals";
+import { Check, Loader2, RefreshCw, X } from "lucide-react";
 
 export default function MealDetailModal() {
   const { selectedMeal, selectMeal, swapMeal, isSwapping } = useDinneroStore();
@@ -10,161 +12,109 @@ export default function MealDetailModal() {
   if (!selectedMeal) return null;
 
   const handleSwap = async () => {
-    try {
-      await swapMeal(selectedMeal.day);
-    } catch {
-      // handled by store error
-    }
+    await swapMeal(selectedMeal.day);
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center animate-fade-in">
-      {/* Click outside backdrop */}
-      <div className="absolute inset-0" onClick={() => selectMeal(null)} />
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#1E1E1E]/55">
+      <button className="absolute inset-0 cursor-default" onClick={() => selectMeal(null)} aria-label="Close meal" />
 
-      {/* Slide-up Drawer Container */}
-      <div className="relative w-full max-w-[480px] bg-card rounded-t-[32px] border-t border-border shadow-2xl z-10 max-h-[88vh] flex flex-col animate-slide-left overflow-hidden">
-        
-        {/* Drag handle / Accent line */}
-        <div className="w-12 h-1 bg-stone-300 rounded-full mx-auto my-3 shrink-0" />
-
-        {/* Modal Header */}
-        <div className="px-6 pb-4 border-b border-border/80 flex justify-between items-start gap-4">
-          <div>
-            <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-secondary bg-secondary/10 px-2 py-0.5 rounded-full mb-1">
-              {selectedMeal.day}
-            </span>
-            <h3 className="text-xl font-extrabold text-foreground leading-tight">
-              {selectedMeal.title}
-            </h3>
+      <article className="relative z-10 flex max-h-[92svh] w-full max-w-[480px] flex-col overflow-hidden rounded-t-[2.25rem] bg-background shadow-lg">
+        <div
+          className="editorial-photo h-52 shrink-0 px-5 py-4"
+          style={{ "--editorial-image": `url(${SERA_IMAGES.table})` } as CSSProperties}
+        >
+          <div className="flex h-full flex-col justify-between text-white">
+            <div className="flex justify-end">
+              <button
+                onClick={() => selectMeal(null)}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-foreground"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em]">{selectedMeal.day}</p>
+              <h2 className="mt-1 font-serif text-[34px] leading-[36px]">{selectedMeal.title}</h2>
+            </div>
           </div>
-          <button
-            onClick={() => selectMeal(null)}
-            className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center hover:bg-stone-200 transition-colors tap-highlight"
-          >
-            <X className="w-4 h-4 text-stone-500" />
-          </button>
         </div>
 
-        {/* Modal Scrollable Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6 no-scrollbar pb-24">
-          
-          {/* Cover gradient card (acts as image placeholder) */}
-          <div className="w-full h-32 rounded-2xl bg-gradient-to-tr from-primary to-orange-400 p-6 flex flex-col justify-end text-white shadow-sm">
-            <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full w-max">
-              Dinnero AI Selection
-            </span>
-            <span className="text-lg font-black mt-1 line-clamp-1">{selectedMeal.title}</span>
-          </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 no-scrollbar">
+          <p className="text-base leading-7 text-muted">{selectedMeal.description}</p>
 
-          {/* Description */}
-          <p className="text-sm text-foreground/80 leading-relaxed italic">
-            "{selectedMeal.description}"
-          </p>
-
-          {/* Core Stats Row */}
-          <div className="grid grid-cols-3 gap-2.5">
-            <div className="bg-stone-50 border border-border/50 rounded-xl p-3 text-center">
-              <Clock className="w-4 h-4 text-primary mx-auto mb-1" />
-              <span className="text-[10px] font-semibold text-muted block">PREPARAZIONE</span>
-              <span className="text-sm font-bold text-foreground">{selectedMeal.prepTimeMinutes} min</span>
+          <div className="mt-5 grid grid-cols-3 border-y border-warm-stone/70 py-4 text-center">
+            <div>
+              <p className="editorial-kicker">Time</p>
+              <p className="mt-1 text-sm font-semibold">{selectedMeal.prepTimeMinutes} min</p>
             </div>
-            <div className="bg-stone-50 border border-border/50 rounded-xl p-3 text-center">
-              <Flame className="w-4 h-4 text-primary mx-auto mb-1" />
-              <span className="text-[10px] font-semibold text-muted block">CALORIE</span>
-              <span className="text-sm font-bold text-foreground">{selectedMeal.calories} kcal</span>
+            <div>
+              <p className="editorial-kicker">Energy</p>
+              <p className="mt-1 text-sm font-semibold">{selectedMeal.calories} kcal</p>
             </div>
-            <div className="bg-stone-50 border border-border/50 rounded-xl p-3 text-center">
-              <span className="text-xs font-bold text-secondary block mb-1">€</span>
-              <span className="text-[10px] font-semibold text-muted block">COSTO STIMATO</span>
-              <span className="text-sm font-bold text-secondary">{formatMoney(selectedMeal.estimatedCost)}</span>
+            <div>
+              <p className="editorial-kicker">Cost</p>
+              <p className="mt-1 text-sm font-semibold">{formatMoney(selectedMeal.estimatedCost)}</p>
             </div>
           </div>
 
-          {/* Why We Picked This */}
-          <div className="space-y-2.5">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5">
-              <Info className="w-4 h-4 text-secondary" /> Perché l'IA l'ha scelto
-            </h4>
-            <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-4 space-y-2">
-              {selectedMeal.whyThisMeal.map((reason, idx) => (
-                <div key={idx} className="flex gap-2 items-start text-xs text-foreground/90 font-medium">
-                  <span className="text-secondary font-bold">•</span>
+          <section className="mt-6">
+            <h3 className="font-serif text-[28px] leading-[30px] text-foreground">Why it belongs here</h3>
+            <div className="mt-3 space-y-2">
+              {selectedMeal.whyThisMeal.map((reason) => (
+                <div key={reason} className="flex gap-3 text-sm leading-6 text-muted">
+                  <Check className="mt-1 h-4 w-4 shrink-0 text-secondary" />
                   <span>{reason}</span>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
 
-          {/* Ingredients list */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5">
-              <CheckSquare className="w-4 h-4 text-stone-500" /> Ingredienti per porzione
-            </h4>
-            <div className="divide-y divide-border/60 bg-stone-50/50 border border-border/60 rounded-2xl px-4 py-2">
-              {selectedMeal.ingredients.map((ing, idx) => (
-                <div key={idx} className="flex justify-between items-center py-2.5 text-xs">
-                  <span className="font-semibold text-foreground">{ing.name}</span>
-                  <div className="flex gap-2 text-stone-500 font-medium">
-                    <span>{ing.quantity}</span>
-                    <span className="text-stone-300 font-light">|</span>
-                    <span className="text-secondary font-bold">{formatMoney(ing.estimatedPrice)}</span>
-                  </div>
+          <section className="mt-7">
+            <h3 className="font-serif text-[28px] leading-[30px] text-foreground">Ingredients</h3>
+            <div className="mt-3 divide-y divide-warm-stone/50">
+              {selectedMeal.ingredients.map((ingredient) => (
+                <div key={`${ingredient.name}-${ingredient.quantity}`} className="flex justify-between gap-4 py-3 text-sm">
+                  <span className="font-medium text-foreground">{ingredient.name}</span>
+                  <span className="text-right text-muted">
+                    {ingredient.quantity} · {formatMoney(ingredient.estimatedPrice)}
+                  </span>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
 
-          {/* Recipe Steps */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5">
-              <ChefHat className="w-4 h-4 text-stone-500" /> Preparazione passo dopo passo
-            </h4>
-            <div className="space-y-4 pl-1">
-              {selectedMeal.recipeSteps.map((step, idx) => (
-                <div key={idx} className="flex gap-4 items-start">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary shrink-0 mt-0.5">
-                    {idx + 1}
-                  </div>
-                  <p className="text-xs leading-relaxed text-foreground/80 font-medium">
-                    {step}
-                  </p>
+          <section className="mt-7 pb-24">
+            <h3 className="font-serif text-[28px] leading-[30px] text-foreground">Method</h3>
+            <div className="mt-4 space-y-4">
+              {selectedMeal.recipeSteps.map((step, index) => (
+                <div key={step} className="grid grid-cols-[2rem_1fr] gap-3">
+                  <span className="font-serif text-xl text-primary">{index + 1}</span>
+                  <p className="text-sm leading-6 text-muted">{step}</p>
                 </div>
               ))}
             </div>
-          </div>
-
+          </section>
         </div>
 
-        {/* Swaps & Action Panel Sticky footer */}
-        <div className="absolute bottom-0 left-0 right-0 bg-card border-t border-border/80 p-4 px-6 flex gap-3 z-20">
+        <div className="absolute bottom-0 left-0 right-0 flex gap-3 border-t border-warm-stone/60 bg-background/95 px-5 py-4">
           <button
             onClick={() => selectMeal(null)}
-            className="flex-1 py-3.5 bg-stone-100 hover:bg-stone-200 text-foreground font-bold text-sm rounded-xl transition-colors tap-highlight"
+            className="h-12 flex-1 rounded-full bg-surface-container-low text-sm font-semibold text-foreground"
           >
-            Chiudi
+            Close
           </button>
-          
           <button
             onClick={handleSwap}
             disabled={isSwapping}
-            className="flex-1 py-3.5 bg-secondary hover:bg-secondary-hover disabled:bg-stone-200 disabled:text-stone-400 text-white font-bold text-sm rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1.5 tap-highlight"
+            className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-secondary text-sm font-semibold text-white disabled:opacity-60"
           >
-            {isSwapping ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Aggiorno...</span>
-              </>
-            ) : (
-              <>
-                <RefreshCw className="w-4 h-4" />
-                <span>Cambia pasto</span>
-              </>
-            )}
+            {isSwapping ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            Swap
           </button>
         </div>
-
-      </div>
+      </article>
     </div>
   );
 }

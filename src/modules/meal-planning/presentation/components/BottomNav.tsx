@@ -15,17 +15,17 @@ export default function BottomNav() {
 
   const navItems = [
     {
-      label: "Home",
+      label: "Casa",
       href: "/dashboard",
       icon: Home,
     },
     {
-      label: "Plan",
+      label: "Journal",
       href: "/results",
       icon: Calendar,
     },
     {
-      label: "Spesa",
+      label: "Market",
       href: "/shopping-list",
       icon: ShoppingBag,
     },
@@ -38,7 +38,7 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-card border-t border-border/80 px-6 py-2.5 flex justify-between items-center z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
+    <nav className="fixed bottom-0 left-1/2 z-40 flex w-full max-w-[480px] -translate-x-1/2 items-center justify-between border-t border-warm-stone/60 bg-background/95 px-6 py-2.5 shadow-[0_-10px_30px_rgba(70,81,62,0.08)]">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = pathname === item.href;
@@ -51,22 +51,22 @@ export default function BottomNav() {
           >
             <Icon
               className={cn(
-                "w-5 h-5 transition-all",
+                "h-5 w-5 stroke-[1.6] transition-all",
                 isActive
                   ? item.highlight
-                    ? "text-primary scale-110"
-                    : "text-secondary scale-110"
+                    ? "scale-110 text-primary"
+                    : "scale-110 text-secondary"
                   : "text-muted hover:text-foreground",
-                item.highlight && !isActive && "text-amber-500 animate-pulse"
+                item.highlight && !isActive && "text-tertiary"
               )}
             />
             <span
               className={cn(
-                "text-[10px] font-semibold mt-1 transition-colors",
+                "mt-1 text-[10px] font-medium transition-colors",
                 isActive
                   ? item.highlight
-                    ? "text-primary font-bold"
-                    : "text-secondary font-bold"
+                    ? "font-semibold text-primary"
+                    : "font-semibold text-secondary"
                   : "text-muted"
               )}
             >
@@ -75,7 +75,7 @@ export default function BottomNav() {
             {isActive && (
               <span
                 className={cn(
-                  "absolute bottom-0 w-4 h-0.5 rounded-full",
+                  "absolute bottom-0 h-0.5 w-4 rounded-full",
                   item.highlight ? "bg-primary" : "bg-secondary"
                 )}
               />

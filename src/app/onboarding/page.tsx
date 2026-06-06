@@ -277,7 +277,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-5 bg-background animate-fade-in">
+    <div className={`${onboardingStep === 1 ? "h-svh overflow-hidden" : "min-h-svh"} flex flex-col justify-between bg-background p-5 animate-fade-in`}>
       
       {/* Upper Navigation Bar */}
       {onboardingStep > 1 && onboardingStep < 10 && (
@@ -299,11 +299,11 @@ export default function OnboardingPage() {
       {renderProgress()}
 
       {/* Main Container Content */}
-      <div className="flex-1 flex flex-col justify-center my-auto">
+      <div className="flex min-h-0 flex-1 flex-col justify-center">
         
         {/* STEP 1: WELCOME SCREEN */}
         {onboardingStep === 1 && (
-          <div className="flex min-h-[calc(100svh-150px)] flex-col justify-between gap-8 overflow-hidden pb-[env(safe-area-inset-bottom)]">
+          <div className="flex min-h-0 flex-1 flex-col justify-between gap-3 overflow-hidden pb-[env(safe-area-inset-bottom)]">
             <AnimatePresence mode="wait">
               {welcomePage === 0 && (
                 <motion.div
@@ -313,14 +313,14 @@ export default function OnboardingPage() {
                   animate="center"
                   exit="exit"
                   transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex flex-1 flex-col justify-between gap-8"
+                  className="flex h-full flex-col justify-between gap-3"
                 >
-                  <div className="pt-8 text-center">
+                  <div className="pt-2 text-center">
                     <motion.div
                       initial={{ opacity: 0, scale: 0.86 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                      className="mx-auto flex h-24 w-24 items-center justify-center rounded-[2rem] bg-primary text-4xl font-black text-white shadow-lg"
+                      className="mx-auto flex h-16 w-16 items-center justify-center rounded-[1.4rem] bg-primary text-3xl font-black text-white shadow-lg"
                     >
                       S
                     </motion.div>
@@ -328,7 +328,7 @@ export default function OnboardingPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.12, duration: 0.45 }}
-                      className="mt-4 text-3xl font-black tracking-tight text-foreground"
+                      className="mt-2 font-serif text-3xl font-semibold tracking-tight text-foreground"
                     >
                       Sera
                     </motion.p>
@@ -336,7 +336,7 @@ export default function OnboardingPage() {
                       initial={{ opacity: 0, y: 18 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.18, duration: 0.5 }}
-                      className="mt-8 rounded-[2rem] bg-card px-6 py-7 shadow-md"
+                      className="mt-3 rounded-[1.6rem] bg-card px-5 py-4 shadow-md"
                     >
                       <p className="text-xs font-black uppercase tracking-[0.18em] text-muted">Monthly savings</p>
                       <motion.div
@@ -344,18 +344,18 @@ export default function OnboardingPage() {
                         initial={{ opacity: 0, y: 18, filter: "blur(8px)" }}
                         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                         transition={{ duration: 0.35 }}
-                        className="mt-2 text-6xl font-black tracking-tight text-foreground"
+                        className="mt-1 font-serif text-5xl font-semibold tracking-tight text-foreground"
                       >
                         €{savingsValue}
                       </motion.div>
                     </motion.div>
                   </div>
 
-                  <div className="space-y-4 text-center">
-                    <h1 className="text-[36px] font-bold leading-[42px] tracking-tight text-foreground">
+                  <div className="space-y-2 text-center">
+                    <h1 className="font-serif text-[31px] font-semibold leading-[34px] tracking-tight text-foreground">
                       {copy.welcome.savingsTitle}
                     </h1>
-                    <p className="mx-auto max-w-[320px] text-lg leading-7 text-muted">
+                    <p className="mx-auto max-w-[320px] text-sm leading-5 text-muted">
                       {copy.welcome.savingsSubtitle}
                     </p>
                   </div>
@@ -363,7 +363,7 @@ export default function OnboardingPage() {
                   <div className="space-y-2">
                     <button
                       onClick={() => setCountryPickerOpen((open) => !open)}
-                      className="flex w-full items-center justify-between rounded-full bg-card px-5 py-4 text-left shadow-sm tap-highlight"
+                      className="flex w-full items-center justify-between rounded-full bg-card px-5 py-3 text-left shadow-sm tap-highlight"
                     >
                       <span className="text-base font-black text-foreground">
                         {selectedCountry.flag} {selectedCountry.label}
@@ -385,7 +385,7 @@ export default function OnboardingPage() {
                             <button
                               key={country.value}
                               onClick={() => handleCountrySelect(country.value, country.defaultShop)}
-                              className={`rounded-2xl px-4 py-3 text-left text-sm font-black shadow-sm tap-highlight ${
+                              className={`rounded-2xl px-4 py-2.5 text-left text-sm font-black shadow-sm tap-highlight ${
                                 appCountry === country.value
                                   ? "bg-secondary text-white"
                                   : "bg-card text-foreground"
@@ -412,20 +412,20 @@ export default function OnboardingPage() {
                   animate="center"
                   exit="exit"
                   transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex flex-1 flex-col justify-center gap-8"
+                  className="flex h-full flex-col justify-center gap-5"
                 >
                   <motion.div
                     variants={staggerContainer}
                     initial="enter"
                     animate="center"
-                    className="space-y-2 rounded-[2rem] bg-card p-4 shadow-md"
+                    className="space-y-1.5 rounded-[1.6rem] bg-card p-3 shadow-md"
                   >
                     {WEEK_DAYS.map((day, index) => (
                       <motion.div
                         key={day}
                         variants={itemVariants}
                         transition={{ duration: 0.38, delay: index * 0.08 }}
-                        className="flex items-center gap-3 rounded-[1.25rem] bg-surface-container-low px-4 py-3"
+                        className="flex items-center gap-3 rounded-[1.1rem] bg-surface-container-low px-3 py-2.5"
                       >
                         <span className="w-9 text-xs font-black uppercase text-muted">{day}</span>
                         <AnimatePresence>
@@ -443,11 +443,11 @@ export default function OnboardingPage() {
                     ))}
                   </motion.div>
 
-                  <div className="space-y-4 text-center">
-                    <h1 className="text-[36px] font-bold leading-[42px] tracking-tight text-foreground">
+                  <div className="space-y-2 text-center">
+                    <h1 className="font-serif text-[31px] font-semibold leading-[34px] tracking-tight text-foreground">
                       {copy.welcome.plannerTitle}
                     </h1>
-                    <p className="mx-auto max-w-[320px] text-lg leading-7 text-muted">
+                    <p className="mx-auto max-w-[320px] text-sm leading-5 text-muted">
                       {copy.welcome.plannerSubtitle}
                     </p>
                   </div>
@@ -462,13 +462,13 @@ export default function OnboardingPage() {
                   animate="center"
                   exit="exit"
                   transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex flex-1 flex-col justify-center gap-8"
+                  className="flex h-full flex-col justify-center gap-5"
                 >
                   <motion.div
                     variants={staggerContainer}
                     initial="enter"
                     animate="center"
-                    className="rounded-[2rem] bg-card p-5 shadow-md"
+                    className="rounded-[1.6rem] bg-card p-4 shadow-md"
                   >
                     <div className="mb-4 flex items-center justify-between">
                       <span className="text-sm font-black text-foreground">Sera list</span>
@@ -482,7 +482,7 @@ export default function OnboardingPage() {
                           key={item}
                           variants={itemVariants}
                           transition={{ duration: 0.38, delay: index * 0.16 }}
-                          className="flex items-center gap-3 rounded-[1.25rem] bg-surface-container-low px-4 py-3 text-base font-black text-foreground"
+                          className="flex items-center gap-3 rounded-[1.1rem] bg-surface-container-low px-4 py-2.5 text-base font-semibold text-foreground"
                         >
                           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-white">
                             <Check className="h-4 w-4" />
@@ -493,11 +493,11 @@ export default function OnboardingPage() {
                     </div>
                   </motion.div>
 
-                  <div className="space-y-4 text-center">
-                    <h1 className="text-[36px] font-bold leading-[42px] tracking-tight text-foreground">
+                  <div className="space-y-2 text-center">
+                    <h1 className="font-serif text-[31px] font-semibold leading-[34px] tracking-tight text-foreground">
                       {copy.welcome.listTitle}
                     </h1>
-                    <p className="mx-auto max-w-[320px] text-lg leading-7 text-muted">
+                    <p className="mx-auto max-w-[320px] text-sm leading-5 text-muted">
                       {copy.welcome.listSubtitle}
                     </p>
                   </div>
@@ -807,7 +807,7 @@ export default function OnboardingPage() {
 
       {/* Lower Navigation Controls */}
       {onboardingStep < 10 && (
-        <div className="mt-8 select-none">
+        <div className={`${onboardingStep === 1 ? "mt-3" : "mt-8"} select-none`}>
           {onboardingStep === 1 ? (
             <div className="flex gap-3">
               {welcomePage > 0 && (
