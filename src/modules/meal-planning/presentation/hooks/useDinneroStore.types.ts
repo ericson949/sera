@@ -1,0 +1,56 @@
+import { GroceryShop } from "../../domain/value-objects/GroceryShop";
+import { MealGoal } from "../../domain/value-objects/MealGoal";
+import { FoodVibe } from "../../domain/value-objects/FoodVibe";
+import { DietaryNeed } from "../../domain/value-objects/DietaryNeed";
+import { CookingTime } from "../../domain/value-objects/CookingTime";
+import { WeekDay } from "../../domain/value-objects/WeekDay";
+import { MealPlan } from "../../domain/entities/MealPlan";
+import { Meal } from "../../domain/entities/Meal";
+import { User } from "@/modules/users/domain/entities/User";
+import { UserPreferences } from "@/modules/users/domain/entities/UserPreferences";
+import { DashboardDTO } from "../../application/use-cases/GetDashboardUseCase";
+
+export type AppLanguage = "en" | "fr" | "it";
+export type AppCountry = "UK" | "France" | "Italy" | "US";
+
+export interface DinneroState {
+  user: User | null;
+  userId: string;
+  preferences: UserPreferences | null;
+  appLanguage: AppLanguage;
+  appCountry: AppCountry;
+  onboardingStep: number;
+  onboardingShop: GroceryShop;
+  onboardingBudgetMin: number;
+  onboardingBudgetMax: number;
+  onboardingPeople: number;
+  onboardingGoal: MealGoal;
+  onboardingVibes: FoodVibe[];
+  onboardingDietaryNeeds: DietaryNeed[];
+  onboardingCookingTime: CookingTime;
+  onboardingKitchenItems: string[];
+  activePlan: MealPlan | null;
+  selectedMeal: Meal | null;
+  dashboard: DashboardDTO | null;
+  isGenerating: boolean;
+  isSwapping: boolean;
+  error: string | null;
+  showPaywall: boolean;
+  initStore: () => Promise<void>;
+  setOnboardingField: (key: string, value: any) => void;
+  nextStep: () => void;
+  prevStep: () => void;
+  resetOnboarding: () => void;
+  generatePlan: () => Promise<void>;
+  regeneratePlan: () => Promise<void>;
+  swapMeal: (day: WeekDay) => Promise<void>;
+  toggleShoppingItem: (itemId: string) => Promise<void>;
+  saveCurrentPlan: () => Promise<void>;
+  loadDashboard: () => Promise<void>;
+  simulateProUpgrade: () => Promise<void>;
+  simulateProDowngrade: () => Promise<void>;
+  triggerUpgradeCheckout: (origin: string) => Promise<string | null>;
+  closePaywall: () => void;
+  openPaywall: () => void;
+  selectMeal: (meal: Meal | null) => void;
+}

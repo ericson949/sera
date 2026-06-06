@@ -1,119 +1,25 @@
 import { create } from "zustand";
-import { GroceryShop } from "../../domain/value-objects/GroceryShop";
-import { MealGoal } from "../../domain/value-objects/MealGoal";
-import { FoodVibe } from "../../domain/value-objects/FoodVibe";
-import { DietaryNeed } from "../../domain/value-objects/DietaryNeed";
-import { CookingTime } from "../../domain/value-objects/CookingTime";
 import { WeekDay } from "../../domain/value-objects/WeekDay";
-import { MealPlan } from "../../domain/entities/MealPlan";
-import { Meal } from "../../domain/entities/Meal";
-import { User } from "@/modules/users/domain/entities/User";
 import { UserPreferences } from "@/modules/users/domain/entities/UserPreferences";
+import { DinneroState, AppCountry, AppLanguage } from "./useDinneroStore.types";
+import { DEFAULT_USER_ID, getSavedLocale, LOCALE_STORAGE_KEY, USAGE_STORAGE_KEY } from "./seraStoreConfig";
+import { seraUseCases } from "./seraUseCases";
 
-// Infrastructure instantiations
-import { LocalUserRepository } from "@/modules/users/infrastructure/persistence/LocalUserRepository";
-import { LocalUserPreferencesRepository } from "@/modules/users/infrastructure/persistence/LocalUserPreferencesRepository";
-import { LocalMealPlanRepository } from "@/modules/meal-planning/infrastructure/persistence/LocalMealPlanRepository";
-import { OpenAIMealPlanAIService } from "@/modules/meal-planning/infrastructure/ai/OpenAIMealPlanAIService";
-import { MockSubscriptionService } from "@/modules/subscriptions/infrastructure/payments/MockSubscriptionService";
+export type { AppCountry, AppLanguage };
 
-// Use cases
-import { StartOnboardingUseCase } from "@/modules/users/application/use-cases/StartOnboardingUseCase";
-import { SaveUserPreferencesUseCase } from "@/modules/users/application/use-cases/SaveUserPreferencesUseCase";
-import { GenerateMealPlanUseCase } from "../../application/use-cases/GenerateMealPlanUseCase";
-import { RegenerateMealPlanUseCase } from "../../application/use-cases/RegenerateMealPlanUseCase";
-import { SwapMealUseCase } from "../../application/use-cases/SwapMealUseCase";
-import { GetCurrentMealPlanUseCase } from "../../application/use-cases/GetCurrentMealPlanUseCase";
-import { ToggleShoppingItemUseCase } from "../../application/use-cases/ToggleShoppingItemUseCase";
-import { SaveMealPlanUseCase } from "../../application/use-cases/SaveMealPlanUseCase";
-import { GetDashboardUseCase, DashboardDTO } from "../../application/use-cases/GetDashboardUseCase";
-import { CreateCheckoutSessionUseCase } from "@/modules/subscriptions/application/use-cases/CreateCheckoutSessionUseCase";
-
-const userRepo = new LocalUserRepository();
-const prefsRepo = new LocalUserPreferencesRepository();
-const mealPlanRepo = new LocalMealPlanRepository();
-const aiService = new OpenAIMealPlanAIService();
-const subService = new MockSubscriptionService(userRepo);
-
-const startOnboardingUseCase = new StartOnboardingUseCase(prefsRepo);
-const savePrefsUseCase = new SaveUserPreferencesUseCase(prefsRepo);
-const generatePlanUseCase = new GenerateMealPlanUseCase(mealPlanRepo, prefsRepo, aiService, subService);
-const regeneratePlanUseCase = new RegenerateMealPlanUseCase(mealPlanRepo, prefsRepo, aiService, subService);
-const swapMealUseCase = new SwapMealUseCase(mealPlanRepo, prefsRepo, aiService, subService);
-const getCurrentPlanUseCase = new GetCurrentMealPlanUseCase(mealPlanRepo);
-const toggleShoppingItemUseCase = new ToggleShoppingItemUseCase(mealPlanRepo);
-const saveMealPlanUseCase = new SaveMealPlanUseCase(mealPlanRepo, subService);
-const getDashboardUseCase = new GetDashboardUseCase(mealPlanRepo, prefsRepo);
-const createCheckoutUseCase = new CreateCheckoutSessionUseCase(subService);
-
-const DEFAULT_USER_ID = "guest_italy_user";
-const LOCALE_STORAGE_KEY = "dinnero_locale";
-
-export type AppLanguage = "en" | "fr" | "it";
-export type AppCountry = "UK" | "France" | "Italy" | "US";
-
-const getSavedLocale = (): Partial<Pick<DinneroState, "appLanguage" | "appCountry">> | null => {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  try {
-    return JSON.parse(localStorage.getItem(LOCALE_STORAGE_KEY) || "null");
-  } catch {
-    return null;
-  }
-};
-
-interface DinneroState {
-  // Authentication & Profile
-  user: User | null;
-  userId: string;
-  preferences: UserPreferences | null;
-  appLanguage: AppLanguage;
-  appCountry: AppCountry;
-
-  // Onboarding Form Wizard State
-  onboardingStep: number;
-  onboardingShop: GroceryShop;
-  onboardingBudgetMin: number;
-  onboardingBudgetMax: number;
-  onboardingPeople: number;
-  onboardingGoal: MealGoal;
-  onboardingVibes: FoodVibe[];
-  onboardingDietaryNeeds: DietaryNeed[];
-  onboardingCookingTime: CookingTime;
-  onboardingKitchenItems: string[];
-
-  // Active Plan & UI States
-  activePlan: MealPlan | null;
-  selectedMeal: Meal | null;
-  dashboard: DashboardDTO | null;
-  isGenerating: boolean;
-  isSwapping: boolean;
-  error: string | null;
-
-  // Paywall UI Trigger
-  showPaywall: boolean;
-
-  // Actions
-  initStore: () => Promise<void>;
-  setOnboardingField: (key: string, value: any) => void;
-  nextStep: () => void;
-  prevStep: () => void;
-  resetOnboarding: () => void;
-  generatePlan: () => Promise<void>;
-  regeneratePlan: () => Promise<void>;
-  swapMeal: (day: WeekDay) => Promise<void>;
-  toggleShoppingItem: (itemId: string) => Promise<void>;
-  saveCurrentPlan: () => Promise<void>;
-  loadDashboard: () => Promise<void>;
-  simulateProUpgrade: () => Promise<void>;
-  simulateProDowngrade: () => Promise<void>;
-  triggerUpgradeCheckout: (origin: string) => Promise<string | null>;
-  closePaywall: () => void;
-  openPaywall: () => void;
-  selectMeal: (meal: Meal | null) => void;
-}
+const {
+  userRepo,
+  startOnboardingUseCase,
+  savePrefsUseCase,
+  generatePlanUseCase,
+  regeneratePlanUseCase,
+  swapMealUseCase,
+  getCurrentPlanUseCase,
+  toggleShoppingItemUseCase,
+  saveMealPlanUseCase,
+  getDashboardUseCase,
+  createCheckoutUseCase,
+} = seraUseCases;
 
 export const useDinneroStore = create<DinneroState>((set, get) => ({
   user: null,
@@ -366,7 +272,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
         await userRepo.save(userObj);
         set({ user: userObj });
         // Reset local counters for demo testing
-        localStorage.removeItem("dinnero_usage_counters");
+        localStorage.removeItem(USAGE_STORAGE_KEY);
         await get().loadDashboard();
       }
     } catch (err: any) {
