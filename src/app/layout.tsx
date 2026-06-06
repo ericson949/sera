@@ -8,6 +8,14 @@ export const metadata: Metadata = {
   title: "Sera - AI Dinner Planner",
   description: "Plan a full week of dinners and smart shopping lists in less than one minute.",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/pwa-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/pwa-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/sera-mark.svg", type: "image/svg+xml" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

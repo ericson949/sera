@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { AppCountry } from "../hooks/useDinneroStore";
 import { getCountryConfig, SERA_COUNTRIES } from "../hooks/useSeraLocaleDetection";
 import { Dictionary } from "@/shared/i18n";
+import { usePwaInstallPrompt } from "@/shared/presentation/hooks/usePwaInstallPrompt";
 
 const SAVINGS_STEPS = [0, 12, 28, 41, 57];
 const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -35,6 +36,7 @@ export default function SeraPreOnboarding({ appCountry, copy, setOnboardingField
   const [savingsValue, setSavingsValue] = useState(0);
   const [countryPickerOpen, setCountryPickerOpen] = useState(false);
   const selectedCountry = getCountryConfig(appCountry);
+  const { canPromptInstall, promptInstall } = usePwaInstallPrompt();
 
   useEffect(() => {
     if (welcomePage !== 0) return;
@@ -51,12 +53,17 @@ export default function SeraPreOnboarding({ appCountry, copy, setOnboardingField
     setCountryPickerOpen(false);
   };
 
-  const next = () => {
+  const next = async () => {
     if (welcomePage < 2) {
       setCountryPickerOpen(false);
       setWelcomePage((page) => page + 1);
       return;
     }
+
+    if (canPromptInstall) {
+      await promptInstall();
+    }
+
     onStart();
   };
 
@@ -153,7 +160,7 @@ export default function SeraPreOnboarding({ appCountry, copy, setOnboardingField
           </button>
         )}
         <button onClick={next} className="flex h-14 flex-1 items-center justify-center gap-2 rounded-full bg-primary text-base font-semibold text-white shadow-md tap-highlight">
-          <span>{welcomePage === 2 ? copy.welcome.startPlanning : copy.common.continue}</span>
+          <span>{welcomePage === 2 && canPromptInstall ? "Install & start" : welcomePage === 2 ? copy.welcome.startPlanning : copy.common.continue}</span>
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>

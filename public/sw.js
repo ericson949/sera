@@ -1,7 +1,16 @@
-const VERSION = "sera-v1";
+const VERSION = "sera-v2";
 const APP_CACHE = `${VERSION}-app`;
 const STATE_CACHE = `${VERSION}-state`;
-const APP_SHELL = ["/", "/dashboard", "/results", "/shopping-list", "/pricing", "/icon.svg"];
+const APP_SHELL = [
+  "/",
+  "/dashboard",
+  "/results",
+  "/shopping-list",
+  "/pricing",
+  "/pwa-192.png",
+  "/pwa-512.png",
+  "/apple-touch-icon.png",
+];
 const OFFLINE_STATE_URL = "/offline-state.json";
 
 self.addEventListener("install", (event) => {
