@@ -7,6 +7,7 @@ import { AppCountry } from "../hooks/useDinneroStore";
 import { getCountryConfig, SERA_COUNTRIES } from "../hooks/useSeraLocaleDetection";
 import { Dictionary } from "@/shared/i18n";
 import { usePwaInstallPrompt } from "@/shared/presentation/hooks/usePwaInstallPrompt";
+import IosInstallBanner from "@/shared/presentation/components/IosInstallBanner";
 
 const SAVINGS_STEPS = [0, 12, 28, 41, 57];
 const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -154,6 +155,11 @@ export default function SeraPreOnboarding({ appCountry, copy, setOnboardingField
       </div>
 
       <div className="mt-3 flex gap-3 select-none">
+        {welcomePage === 2 && (
+          <div className="absolute inset-x-5 bottom-[5.6rem] z-10">
+            <IosInstallBanner copy={copy} />
+          </div>
+        )}
         {welcomePage > 0 && (
           <button onClick={() => setWelcomePage((page) => Math.max(0, page - 1))} className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-sm tap-highlight" aria-label={copy.common.back}>
             <ChevronLeft className="h-5 w-5" />

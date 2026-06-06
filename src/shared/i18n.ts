@@ -3,6 +3,7 @@ import { AppLanguage } from "@/modules/meal-planning/presentation/hooks/useDinne
 type AppDictionary = {
   common: Record<"back" | "continue" | "start" | "selected", string>;
   welcome: Record<string, string>;
+  pwaInstall: Record<"title" | "stepShare" | "stepThen" | "stepHome" | "dismiss", string>;
 };
 
 const dictionaries: Record<AppLanguage, AppDictionary> = {
@@ -46,6 +47,13 @@ const dictionaries: Record<AppLanguage, AppDictionary> = {
       timeBadge: "Takes less than 1 minute",
       startPlanning: "Start Planning",
     },
+    pwaInstall: {
+      title: "Install Sera on your iPhone",
+      stepShare: "Tap Share",
+      stepThen: "then",
+      stepHome: "Add to Home Screen",
+      dismiss: "Dismiss install guide",
+    },
   },
   fr: {
     common: {
@@ -87,6 +95,13 @@ const dictionaries: Record<AppLanguage, AppDictionary> = {
       timeBadge: "Prend moins d'une minute",
       startPlanning: "Commencer",
     },
+    pwaInstall: {
+      title: "Installe Sera sur ton iPhone",
+      stepShare: "Touche Partager",
+      stepThen: "puis",
+      stepHome: "Ajouter a l'ecran d'accueil",
+      dismiss: "Fermer le guide d'installation",
+    },
   },
   it: {
     common: {
@@ -127,6 +142,13 @@ const dictionaries: Record<AppLanguage, AppDictionary> = {
       listSubtitle: "Liste intelligenti generate automaticamente.",
       timeBadge: "Richiede meno di 1 minuto",
       startPlanning: "Inizia",
+    },
+    pwaInstall: {
+      title: "Installa Sera sul tuo iPhone",
+      stepShare: "Tocca Condividi",
+      stepThen: "poi",
+      stepHome: "Aggiungi alla schermata Home",
+      dismiss: "Chiudi la guida di installazione",
     },
   },
 };
