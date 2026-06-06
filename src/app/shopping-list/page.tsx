@@ -3,40 +3,29 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, ArrowRight, Check, Clipboard, ClipboardCheck, ShoppingBag, Trash2 } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import { ShoppingCategory } from "@/modules/meal-planning/domain/value-objects/ShoppingCategory";
 import { createMoney, formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { SERA_MARKET_SECTION_LABELS } from "@/shared/seraVisuals";
-import { ArrowLeft, ArrowRight, Check, Clipboard, ClipboardCheck, ShoppingBag, Trash2 } from "lucide-react";
+import { getProductCopy } from "@/shared/seraProductCopy";
 
-const categories: ShoppingCategory[] = [
-  "Vegetables",
-  "Meat & Fish",
-  "Dairy",
-  "Pantry",
-  "Frozen",
-  "Spices",
-  "Other",
-];
+const categories: ShoppingCategory[] = ["Vegetables", "Meat & Fish", "Dairy", "Pantry", "Frozen", "Spices", "Other"];
 
 export default function ShoppingListPage() {
   const router = useRouter();
-  const { activePlan, toggleShoppingItem } = useDinneroStore();
+  const { activePlan, toggleShoppingItem, appLanguage } = useDinneroStore();
   const [exportStatus, setExportStatus] = useState<"idle" | "done" | "error">("idle");
+  const copy = getProductCopy(appLanguage).shopping;
 
   if (!activePlan) {
     return (
       <div className="flex min-h-[calc(100svh-5rem)] flex-col justify-center bg-background px-6 text-center">
         <ShoppingBag className="mx-auto h-10 w-10 text-muted" />
-        <h1 className="mt-5 font-serif text-[40px] leading-[43px] text-foreground">No market list yet.</h1>
-        <p className="mx-auto mt-4 max-w-[300px] text-sm leading-6 text-muted">
-          Create a weekly plan and Sera will arrange your ingredients by market section.
-        </p>
-        <Link
-          href="/onboarding"
-          className="mt-7 inline-flex h-14 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-white shadow-md"
-        >
-          Compose the week
+        <h1 className="mt-5 font-serif text-[40px] leading-[43px] text-foreground">{copy.emptyTitle}</h1>
+        <p className="mx-auto mt-4 max-w-[300px] text-sm leading-6 text-muted">{copy.emptyBody}</p>
+        <Link href="/onboarding" className="mt-7 inline-flex h-14 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-white shadow-md">
+          {copy.compose}
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
@@ -50,33 +39,21 @@ export default function ShoppingListPage() {
   const listTotal = items.reduce((sum, item) => sum + item.estimatedPrice.amount, 0);
   const remainingTotal = Math.max(0, listTotal - checkedTotal);
 
-  const handleBack = () => {
-    if (window.history.length > 1) {
-      router.back();
-      return;
-    }
-
-    router.push("/results");
-  };
+  const handleBack = () => (window.history.length > 1 ? router.back() : router.push("/results"));
 
   const buildExportText = () => {
-    let text = `Sera market list - ${activePlan.shop}\n\n`;
-
+    let text = `${copy.exportTitle} - ${activePlan.shop}\n\n`;
     categories.forEach((category) => {
       const categoryItems = items.filter((item) => item.category === category);
       if (categoryItems.length === 0) return;
-
       const labels = SERA_MARKET_SECTION_LABELS[category];
       text += `${labels.title} / ${labels.subtitle}\n`;
       categoryItems.forEach((item) => {
-        const check = item.checked ? "[x]" : "[ ]";
-        text += `${check} ${item.name} (${item.quantity}) - ${formatMoney(item.estimatedPrice)}\n`;
+        text += `${item.checked ? "[x]" : "[ ]"} ${item.name} (${item.quantity}) - ${formatMoney(item.estimatedPrice)}\n`;
       });
       text += "\n";
     });
-
-    text += `Estimated total: ${formatMoney(activePlan.estimatedTotal)}`;
-    return text;
+    return `${text}${copy.estimatedTotal}: ${formatMoney(activePlan.estimatedTotal)}`;
   };
 
   const downloadTextFile = (text: string) => {
@@ -91,20 +68,13 @@ export default function ShoppingListPage() {
 
   const handleExportList = async () => {
     const text = buildExportText();
-
     try {
-      if (navigator.share) {
-        await navigator.share({ title: "Sera market list", text });
-      } else if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text);
-      } else {
-        downloadTextFile(text);
-      }
-
+      if (navigator.share) await navigator.share({ title: copy.exportTitle, text });
+      else if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(text);
+      else downloadTextFile(text);
       setExportStatus("done");
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
-
       try {
         downloadTextFile(text);
         setExportStatus("done");
@@ -112,78 +82,44 @@ export default function ShoppingListPage() {
         setExportStatus("error");
       }
     }
-
     setTimeout(() => setExportStatus("idle"), 2500);
   };
 
-  const handleClearPurchased = () => {
-    items.forEach((item) => {
-      if (item.checked) toggleShoppingItem(item.id);
-    });
-  };
-
-  const handleMarkAllPurchased = () => {
-    items.forEach((item) => {
-      if (!item.checked) toggleShoppingItem(item.id);
-    });
-  };
+  const handleClearPurchased = () => items.forEach((item) => item.checked && toggleShoppingItem(item.id));
+  const handleMarkAllPurchased = () => items.forEach((item) => !item.checked && toggleShoppingItem(item.id));
 
   return (
     <div className="flex h-[calc(100svh-5rem)] flex-col bg-background">
       <header className="shrink-0 px-5 pb-4 pt-5">
-        <button
-          onClick={handleBack}
-          className="mb-4 flex h-10 items-center gap-2 rounded-full bg-card px-4 text-sm font-semibold text-foreground shadow-sm"
-        >
+        <button onClick={handleBack} className="mb-4 flex h-10 items-center gap-2 rounded-full bg-card px-4 text-sm font-semibold text-foreground shadow-sm">
           <ArrowLeft className="h-4 w-4" />
-          Back
+          {getProductCopy(appLanguage).common.back}
         </button>
-        <p className="editorial-kicker">Sera market guide</p>
+        <p className="editorial-kicker">{copy.guide}</p>
         <div className="mt-2 flex items-end justify-between gap-4">
           <div>
-            <h1 className="font-serif text-[40px] leading-[42px] tracking-tight text-foreground">
-              One trip.
-              <br />
-              Everything needed.
-            </h1>
-            <p className="mt-2 text-sm text-muted">{activePlan.shop} · {checkedCount}/{totalCount} gathered</p>
+            <h1 className="font-serif text-[40px] leading-[42px] tracking-tight text-foreground">{copy.titleA}<br />{copy.titleB}</h1>
+            <p className="mt-2 text-sm text-muted">{activePlan.shop} - {checkedCount}/{totalCount} {copy.gathered}</p>
           </div>
           <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-surface-container-low">
-            <span className="font-serif text-xl text-secondary">
-              {totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0}%
-            </span>
+            <span className="font-serif text-xl text-secondary">{totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0}%</span>
           </div>
         </div>
         <div className="mt-4 grid grid-cols-3 gap-2">
-          <div className="rounded-[1.1rem] bg-surface-container-low px-3 py-2.5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Collected</p>
-            <p className="mt-1 font-serif text-xl leading-none text-foreground">{formatMoney(createMoney(checkedTotal))}</p>
-          </div>
-          <div className="rounded-[1.1rem] bg-card px-3 py-2.5 shadow-sm">
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Remaining</p>
-            <p className="mt-1 font-serif text-xl leading-none text-secondary">{formatMoney(createMoney(remainingTotal))}</p>
-          </div>
-          <div className="rounded-[1.1rem] bg-secondary px-3 py-2.5 text-white">
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">Total</p>
-            <p className="mt-1 font-serif text-xl leading-none">{formatMoney(createMoney(listTotal))}</p>
-          </div>
+          <TotalCell label={copy.collected} value={formatMoney(createMoney(checkedTotal))} />
+          <TotalCell label={copy.remaining} value={formatMoney(createMoney(remainingTotal))} accent />
+          <TotalCell label={copy.total} value={formatMoney(createMoney(listTotal))} dark />
         </div>
       </header>
 
       <div className="flex shrink-0 gap-2 px-5 pb-4">
-        <button
-          onClick={handleExportList}
-          className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-foreground text-sm font-semibold text-background"
-        >
+        <button onClick={handleExportList} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-foreground text-sm font-semibold text-background">
           {exportStatus === "done" ? <ClipboardCheck className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
-          {exportStatus === "done" ? "Exported" : exportStatus === "error" ? "Try again" : "Export"}
+          {exportStatus === "done" ? copy.exported : exportStatus === "error" ? copy.tryAgain : copy.export}
         </button>
-        <button
-          onClick={checkedCount > 0 ? handleClearPurchased : handleMarkAllPurchased}
-          className="flex h-12 items-center justify-center gap-2 rounded-full bg-card px-5 text-sm font-semibold text-foreground shadow-sm"
-        >
+        <button onClick={checkedCount > 0 ? handleClearPurchased : handleMarkAllPurchased} className="flex h-12 items-center justify-center gap-2 rounded-full bg-card px-5 text-sm font-semibold text-foreground shadow-sm">
           {checkedCount > 0 ? <Trash2 className="h-4 w-4" /> : <Check className="h-4 w-4" />}
-          {checkedCount > 0 ? "Clear" : "All"}
+          {checkedCount > 0 ? copy.clear : copy.all}
         </button>
       </div>
 
@@ -192,9 +128,7 @@ export default function ShoppingListPage() {
           {categories.map((category) => {
             const categoryItems = items.filter((item) => item.category === category);
             if (categoryItems.length === 0) return null;
-
             const labels = SERA_MARKET_SECTION_LABELS[category];
-
             return (
               <section key={category} className="border-t border-warm-stone/70 pt-4">
                 <div className="mb-3 flex items-end justify-between">
@@ -202,28 +136,17 @@ export default function ShoppingListPage() {
                     <h2 className="font-serif text-[28px] leading-[30px] text-foreground">{labels.title}</h2>
                     <p className="editorial-kicker mt-1">{labels.subtitle}</p>
                   </div>
-                  <span className="text-xs font-semibold text-muted">{categoryItems.length} items</span>
+                  <span className="text-xs font-semibold text-muted">{categoryItems.length} {copy.items}</span>
                 </div>
-
                 <div className="divide-y divide-warm-stone/50">
                   {categoryItems.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => toggleShoppingItem(item.id)}
-                      className="flex w-full items-center justify-between gap-4 py-3 text-left tap-highlight"
-                    >
+                    <button key={item.id} onClick={() => toggleShoppingItem(item.id)} className="flex w-full items-center justify-between gap-4 py-3 text-left tap-highlight">
                       <span className="flex min-w-0 items-center gap-3">
-                        <span
-                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
-                            item.checked ? "border-secondary bg-secondary text-white" : "border-warm-stone"
-                          }`}
-                        >
+                        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${item.checked ? "border-secondary bg-secondary text-white" : "border-warm-stone"}`}>
                           {item.checked && <Check className="h-3.5 w-3.5" />}
                         </span>
                         <span>
-                          <span className={`block text-[15px] font-medium text-foreground ${item.checked ? "line-through opacity-50" : ""}`}>
-                            {item.name}
-                          </span>
+                          <span className={`block text-[15px] font-medium text-foreground ${item.checked ? "line-through opacity-50" : ""}`}>{item.name}</span>
                           <span className="mt-0.5 block text-xs text-muted">{item.quantity}</span>
                         </span>
                       </span>
@@ -236,6 +159,15 @@ export default function ShoppingListPage() {
           })}
         </div>
       </section>
+    </div>
+  );
+}
+
+function TotalCell({ label, value, accent, dark }: { label: string; value: string; accent?: boolean; dark?: boolean }) {
+  return (
+    <div className={`rounded-[1.1rem] px-3 py-2.5 ${dark ? "bg-secondary text-white" : accent ? "bg-card shadow-sm" : "bg-surface-container-low"}`}>
+      <p className={`text-[10px] font-bold uppercase tracking-[0.14em] ${dark ? "text-white/70" : "text-muted"}`}>{label}</p>
+      <p className={`mt-1 font-serif text-xl leading-none ${dark ? "" : accent ? "text-secondary" : "text-foreground"}`}>{value}</p>
     </div>
   );
 }
