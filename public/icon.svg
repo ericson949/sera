@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Dinnero">
+  <rect width="512" height="512" rx="112" fill="#FFFDF7"/>
+  <circle cx="256" cy="256" r="176" fill="#E85D04"/>
+  <path fill="#FFFDF7" d="M163 152h42v208h-42zM205 152c80 0 144 46 144 104s-64 104-144 104v-45c52 0 94-26 94-59s-42-59-94-59z"/>
+  <path fill="#2D6A4F" d="M333 146c29 20 48 53 48 90 0 71-70 128-156 128h-20v-49h20c58 0 105-35 105-79 0-20-10-38-26-52z"/>
+</svg>
