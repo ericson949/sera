@@ -6,10 +6,12 @@ import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useD
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { SERA_IMAGES } from "@/shared/seraVisuals";
 import SeraNotificationCard from "@/shared/presentation/components/SeraNotificationCard";
+import { getProductCopy } from "@/shared/seraProductCopy";
 import { ArrowRight, Calendar, Crown, ShoppingBag } from "lucide-react";
 
 export default function DashboardPage() {
   const { user, activePlan, dashboard, simulateProUpgrade, simulateProDowngrade } = useDinneroStore();
+  const copy = getProductCopy(useDinneroStore((state) => state.appLanguage)).dashboard;
   const isPro = user?.subscriptionStatus === "pro";
   const savedCount = dashboard?.savedPlans.length ?? 0;
 
@@ -35,14 +37,14 @@ export default function DashboardPage() {
             className="flex items-center gap-1 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-foreground"
           >
             <Crown className="h-3.5 w-3.5 stroke-[1.6]" />
-            {isPro ? "Pro" : "Free"}
+            {isPro ? copy.statusPro : copy.statusFree}
           </button>
         </div>
 
         <div className="text-white">
-          <p className="text-xs uppercase tracking-[0.18em] text-white/80">Italian dinner journal</p>
+          <p className="text-xs uppercase tracking-[0.18em] text-white/80">{copy.kicker}</p>
           <h1 className="mt-2 font-serif text-[44px] leading-[45px] tracking-tight">
-            A quieter way to plan the week.
+            {copy.title}
           </h1>
         </div>
       </section>
@@ -50,40 +52,40 @@ export default function DashboardPage() {
       <section className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-5 no-scrollbar">
         <div className="grid grid-cols-2 gap-3">
           <Link href="/onboarding" className="rounded-[1.6rem] bg-primary p-5 text-white shadow-md">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">Compose</p>
-            <h2 className="mt-8 font-serif text-[28px] leading-[30px]">New week</h2>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">{copy.compose}</p>
+            <h2 className="mt-8 font-serif text-[28px] leading-[30px]">{copy.newWeek}</h2>
             <ArrowRight className="mt-4 h-5 w-5 stroke-[1.5]" />
           </Link>
 
           <Link href="/results" className="rounded-[1.6rem] bg-card p-5 shadow-sm">
             <Calendar className="h-5 w-5 stroke-[1.5] text-secondary" />
-            <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">Current journal</p>
+            <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{copy.current}</p>
             <h2 className="mt-1 font-serif text-[26px] leading-[28px] text-foreground">
-              {activePlan ? activePlan.shop : "No plan"}
+              {activePlan ? activePlan.shop : copy.noPlan}
             </h2>
           </Link>
         </div>
 
         <div className="mt-5 rounded-[1.8rem] bg-surface-container-low p-5">
-          <p className="editorial-kicker">This week</p>
+          <p className="editorial-kicker">{copy.week}</p>
           {activePlan ? (
             <div className="mt-4 grid grid-cols-3 gap-3 text-center">
               <div>
                 <p className="font-serif text-2xl text-foreground">{activePlan.days.length}</p>
-                <p className="mt-1 text-[11px] text-muted">dinners</p>
+                <p className="mt-1 text-[11px] text-muted">{copy.dinners}</p>
               </div>
               <div>
                 <p className="font-serif text-2xl text-foreground">{formatMoney(activePlan.estimatedTotal)}</p>
-                <p className="mt-1 text-[11px] text-muted">market</p>
+                <p className="mt-1 text-[11px] text-muted">{copy.market}</p>
               </div>
               <div>
                 <p className="font-serif text-2xl text-foreground">{savedCount}</p>
-                <p className="mt-1 text-[11px] text-muted">saved</p>
+                <p className="mt-1 text-[11px] text-muted">{copy.saved}</p>
               </div>
             </div>
           ) : (
             <p className="mt-3 text-sm leading-6 text-muted">
-              Start with a few preferences. Sera will turn them into a full dinner week.
+              {copy.empty}
             </p>
           )}
         </div>
@@ -93,8 +95,8 @@ export default function DashboardPage() {
           className="mt-4 flex items-center justify-between rounded-[1.8rem] border border-warm-stone/70 p-5"
         >
           <span>
-            <span className="editorial-kicker">Market</span>
-            <span className="mt-1 block font-serif text-[28px] leading-[30px] text-foreground">Shopping guide</span>
+            <span className="editorial-kicker">{copy.marketKicker}</span>
+            <span className="mt-1 block font-serif text-[28px] leading-[30px] text-foreground">{copy.shoppingGuide}</span>
           </span>
           <ShoppingBag className="h-5 w-5 stroke-[1.5] text-secondary" />
         </Link>

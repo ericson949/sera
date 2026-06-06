@@ -4,9 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Calendar, ShoppingBag, Crown } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
+import { useDinneroStore } from "../hooks/useDinneroStore";
+import { getProductCopy } from "@/shared/seraProductCopy";
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const copy = getProductCopy(useDinneroStore((state) => state.appLanguage));
 
   // Hide nav on onboarding pages
   if (pathname === "/onboarding" || pathname === "/" || pathname?.includes("/onboarding")) {
@@ -15,22 +18,22 @@ export default function BottomNav() {
 
   const navItems = [
     {
-      label: "Casa",
+      label: copy.nav[0],
       href: "/dashboard",
       icon: Home,
     },
     {
-      label: "Journal",
+      label: copy.nav[1],
       href: "/results",
       icon: Calendar,
     },
     {
-      label: "Market",
+      label: copy.nav[2],
       href: "/shopping-list",
       icon: ShoppingBag,
     },
     {
-      label: "Pro",
+      label: copy.nav[3],
       href: "/pricing",
       icon: Crown,
       highlight: true,
