@@ -4,18 +4,18 @@ import ClientInitializer from "@/shared/presentation/components/ClientInitialize
 import BottomNav from "@/modules/meal-planning/presentation/components/BottomNav";
 
 export const metadata: Metadata = {
-  title: "Dinnero — AI Meal Planner Italy",
-  description: "Stop wasting money on groceries. Get a full week of dinners under your budget in 60 seconds.",
+  title: "Sera - AI Dinner Planner",
+  description: "Plan a full week of dinners and smart shopping lists in less than one minute.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Dinnero",
+    title: "Sera",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#E85D04",
+  themeColor: "#9f3d00",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -28,12 +28,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="it" className="h-full bg-[#f3f1ea]">
+    <html lang="en" className="h-full bg-[#f3f1ea]">
       <body className="h-full font-sans antialiased text-foreground">
         <ClientInitializer />
-        {/* Centered mobile viewport frame */}
-        <div className="w-full max-w-[480px] mx-auto min-h-screen bg-background shadow-[0_0_40px_rgba(0,0,0,0.05)] border-x border-border/80 flex flex-col relative">
-          <main className="flex-1 flex flex-col pb-20">{children}</main>
+        <div className="relative mx-auto flex min-h-screen w-full max-w-[480px] flex-col border-x border-border/80 bg-background shadow-[0_0_40px_rgba(0,0,0,0.05)]">
+          <main className="flex flex-1 flex-col pb-20">{children}</main>
           <BottomNav />
         </div>
       </body>

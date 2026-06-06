@@ -47,12 +47,30 @@ const getDashboardUseCase = new GetDashboardUseCase(mealPlanRepo, prefsRepo);
 const createCheckoutUseCase = new CreateCheckoutSessionUseCase(subService);
 
 const DEFAULT_USER_ID = "guest_italy_user";
+const LOCALE_STORAGE_KEY = "dinnero_locale";
+
+export type AppLanguage = "en" | "fr" | "it";
+export type AppCountry = "UK" | "France" | "Italy" | "US";
+
+const getSavedLocale = (): Partial<Pick<DinneroState, "appLanguage" | "appCountry">> | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    return JSON.parse(localStorage.getItem(LOCALE_STORAGE_KEY) || "null");
+  } catch {
+    return null;
+  }
+};
 
 interface DinneroState {
   // Authentication & Profile
   user: User | null;
   userId: string;
   preferences: UserPreferences | null;
+  appLanguage: AppLanguage;
+  appCountry: AppCountry;
 
   // Onboarding Form Wizard State
   onboardingStep: number;
@@ -101,6 +119,8 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
   user: null,
   userId: DEFAULT_USER_ID,
   preferences: null,
+  appLanguage: "it",
+  appCountry: "Italy",
 
   onboardingStep: 1,
   onboardingShop: "Lidl",
@@ -124,6 +144,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
   initStore: async () => {
     try {
       const uId = get().userId;
+      const savedLocale = getSavedLocale();
       
       // Ensure user entity exists
       let userObj = await userRepo.findById(uId);
@@ -147,6 +168,8 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
         user: userObj,
         preferences: prefs,
         activePlan: currentPlan,
+        appLanguage: savedLocale?.appLanguage || get().appLanguage,
+        appCountry: savedLocale?.appCountry || get().appCountry,
         onboardingShop: prefs.shop,
         onboardingBudgetMin: prefs.weeklyBudget.min,
         onboardingBudgetMax: prefs.weeklyBudget.max,
@@ -165,6 +188,14 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
   },
 
   setOnboardingField: (key, value) => {
+    if (typeof window !== "undefined" && (key === "appLanguage" || key === "appCountry")) {
+      const nextLocale = {
+        appLanguage: key === "appLanguage" ? value : get().appLanguage,
+        appCountry: key === "appCountry" ? value : get().appCountry,
+      };
+      localStorage.setItem(LOCALE_STORAGE_KEY, JSON.stringify(nextLocale));
+    }
+
     set({ [key]: value } as any);
   },
 
@@ -177,9 +208,13 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
   },
 
   resetOnboarding: () => {
+    const { appLanguage, appCountry, onboardingShop } = get();
+
     set({
       onboardingStep: 1,
-      onboardingShop: "Lidl",
+      appLanguage,
+      appCountry,
+      onboardingShop,
       onboardingBudgetMin: 35,
       onboardingBudgetMax: 50,
       onboardingPeople: 2,

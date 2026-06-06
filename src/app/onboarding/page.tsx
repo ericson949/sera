@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
+import { AnimatePresence, motion } from "framer-motion";
+import { AppCountry, AppLanguage, useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
+import { getCopy } from "@/shared/i18n";
 import BudgetSlider from "@/modules/meal-planning/presentation/components/BudgetSlider";
 import { ChevronLeft, ChevronRight, Check, Loader2, CookingPot, ShoppingCart, User, Target, Compass, Heart, Clock, Layers } from "lucide-react";
 import { GROCERY_SHOPS } from "@/modules/meal-planning/domain/value-objects/GroceryShop";
@@ -17,12 +19,80 @@ const KITCHEN_ITEMS = [
   "Frozen vegetables", "Spices", "Milk", "Yogurt", "Bread", "Oats"
 ];
 
+const SERA_COUNTRIES: { value: AppCountry; label: string; flag: string; defaultShop: string; language: AppLanguage }[] = [
+  { value: "UK", label: "UK", flag: "🇬🇧", defaultShop: "Aldi", language: "en" },
+  { value: "France", label: "France", flag: "🇫🇷", defaultShop: "Carrefour", language: "fr" },
+  { value: "Italy", label: "Italy", flag: "🇮🇹", defaultShop: "Lidl", language: "it" },
+  { value: "US", label: "US", flag: "🇺🇸", defaultShop: "Aldi", language: "en" },
+];
+
+const SAVINGS_STEPS = [0, 12, 28, 41, 57];
+const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const WEEKLY_MEALS = [
+  "Pasta al pomodoro",
+  "Chicken risotto",
+  "Lentil soup",
+  "Veggie frittata",
+  "Pesto pasta",
+  "Tuna salad",
+  "Chickpea stew",
+];
+const SHOPPING_ITEMS = ["Pasta", "Tomatoes", "Eggs", "Olive oil", "Rice", "Chicken"];
+
+const screenVariants = {
+  enter: { opacity: 0, y: 24, scale: 0.98 },
+  center: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -18, scale: 0.98 },
+};
+
+const staggerContainer = {
+  center: {
+    transition: {
+      staggerChildren: 0.09,
+    },
+  },
+};
+
+const itemVariants = {
+  enter: { opacity: 0, y: 14 },
+  center: { opacity: 1, y: 0 },
+};
+
+const detectCountry = (): AppCountry => {
+  if (typeof navigator === "undefined") return "Italy";
+
+  const locale = navigator.language.toLowerCase();
+  if (locale.includes("fr")) return "France";
+  if (locale.includes("it")) return "Italy";
+  if (locale.includes("gb") || locale.includes("en-gb")) return "UK";
+  if (locale.includes("us") || locale.includes("en-us")) return "US";
+  return "Italy";
+};
+
+const getCountryConfig = (country: AppCountry) =>
+  SERA_COUNTRIES.find((item) => item.value === country) ?? SERA_COUNTRIES[2];
+
+const COUNTRIES: { value: AppCountry; label: string; flag: string; defaultShop: string }[] = [
+  { value: "UK", label: "UK", flag: "GB", defaultShop: "Aldi" },
+  { value: "France", label: "France", flag: "FR", defaultShop: "Carrefour" },
+  { value: "Italy", label: "Italy", flag: "IT", defaultShop: "Lidl" },
+  { value: "US", label: "US", flag: "US", defaultShop: "Aldi" },
+];
+
+const LANGUAGES: { value: AppLanguage; label: string }[] = [
+  { value: "en", label: "English" },
+  { value: "fr", label: "Français" },
+  { value: "it", label: "Italiano" },
+];
+
 export default function OnboardingPage() {
   const router = useRouter();
   
   // Zustand store bindings
   const {
     onboardingStep,
+    appLanguage,
+    appCountry,
     onboardingShop,
     onboardingBudgetMin,
     onboardingBudgetMax,
@@ -40,6 +110,12 @@ export default function OnboardingPage() {
     resetOnboarding
   } = useDinneroStore();
 
+  const copy = getCopy(appLanguage);
+  const [welcomePage, setWelcomePage] = useState(0);
+  const [savingsValue, setSavingsValue] = useState(0);
+  const [countryPickerOpen, setCountryPickerOpen] = useState(false);
+  const selectedCountry = getCountryConfig(appCountry);
+
   // Local state for loading animation
   const [loadingStepIdx, setLoadingStepIdx] = useState(0);
   const loadingPhrases = [
@@ -49,6 +125,27 @@ export default function OnboardingPage() {
     "Compilazione della lista della spesa per categoria...",
     "Ottimizzazione ingredienti per ridurre lo spreco..."
   ];
+
+  useEffect(() => {
+    const detected = detectCountry();
+    const config = getCountryConfig(detected);
+    setOnboardingField("appCountry", config.value);
+    setOnboardingField("appLanguage", config.language);
+    setOnboardingField("onboardingShop", config.defaultShop);
+  }, [setOnboardingField]);
+
+  useEffect(() => {
+    if (welcomePage !== 0) return;
+
+    setSavingsValue(0);
+    const timers = SAVINGS_STEPS.map((value, index) =>
+      setTimeout(() => setSavingsValue(value), index * 520)
+    );
+
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+    };
+  }, [welcomePage]);
 
   // Increment loading phrases index
   useEffect(() => {
@@ -89,6 +186,28 @@ export default function OnboardingPage() {
   const handleStart = () => {
     resetOnboarding();
     nextStep();
+  };
+
+  const handleWelcomePrimary = () => {
+    if (welcomePage < 2) {
+      setCountryPickerOpen(false);
+      setWelcomePage((page) => page + 1);
+      return;
+    }
+
+    handleStart();
+  };
+
+  const handleWelcomeBack = () => {
+    setWelcomePage((page) => Math.max(0, page - 1));
+  };
+
+  const handleCountrySelect = (country: AppCountry, defaultShop: string) => {
+    const config = getCountryConfig(country);
+    setOnboardingField("appCountry", country);
+    setOnboardingField("appLanguage", config.language);
+    setOnboardingField("onboardingShop", defaultShop);
+    setCountryPickerOpen(false);
   };
 
   const handleNext = () => {
@@ -158,7 +277,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 bg-background animate-fade-in">
+    <div className="flex-1 flex flex-col justify-between p-5 bg-background animate-fade-in">
       
       {/* Upper Navigation Bar */}
       {onboardingStep > 1 && onboardingStep < 10 && (
@@ -184,47 +303,215 @@ export default function OnboardingPage() {
         
         {/* STEP 1: WELCOME SCREEN */}
         {onboardingStep === 1 && (
-          <div className="text-center flex flex-col items-center gap-6 animate-scale-in">
-            <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-2">
-              <CookingPot className="w-10 h-10 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-                Dinnero
-              </h1>
-              <p className="text-sm font-semibold text-secondary uppercase tracking-widest mt-1">
-                La tua cena in 60 secondi
-              </p>
-            </div>
-            <div className="space-y-3 px-2">
-              <p className="text-2xl font-bold text-foreground leading-tight">
-                Pianifica le tue cene settimanali in un attimo.
-              </p>
-              <p className="text-sm text-muted">
-                Scegli il tuo supermercato preferito, imposta il budget e lascia che l'intelligenza artificiale crei menu e lista della spesa ottimizzati.
-              </p>
-            </div>
-            
-            {/* Value Props Card */}
-            <div className="w-full bg-card border border-border rounded-2xl p-4 text-left space-y-3 mt-4">
-              <div className="flex gap-3 items-start">
-                <div className="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center text-secondary mt-0.5">
-                  <Check className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold">Spendi meno, mangia meglio</h4>
-                  <p className="text-xs text-muted">Mantieni il budget sotto controllo con ricette calibrate sui prezzi.</p>
-                </div>
-              </div>
-              <div className="flex gap-3 items-start">
-                <div className="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center text-secondary mt-0.5">
-                  <Check className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold">Zero sprechi alimentari</h4>
-                  <p className="text-xs text-muted">L'IA riutilizza gli ingredienti in comune tra i vari giorni.</p>
-                </div>
-              </div>
+          <div className="flex min-h-[calc(100svh-150px)] flex-col justify-between gap-8 overflow-hidden pb-[env(safe-area-inset-bottom)]">
+            <AnimatePresence mode="wait">
+              {welcomePage === 0 && (
+                <motion.div
+                  key="savings"
+                  variants={screenVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex flex-1 flex-col justify-between gap-8"
+                >
+                  <div className="pt-8 text-center">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.86 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                      className="mx-auto flex h-24 w-24 items-center justify-center rounded-[2rem] bg-primary text-4xl font-black text-white shadow-lg"
+                    >
+                      S
+                    </motion.div>
+                    <motion.p
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.12, duration: 0.45 }}
+                      className="mt-4 text-3xl font-black tracking-tight text-foreground"
+                    >
+                      Sera
+                    </motion.p>
+                    <motion.div
+                      initial={{ opacity: 0, y: 18 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.18, duration: 0.5 }}
+                      className="mt-8 rounded-[2rem] bg-card px-6 py-7 shadow-md"
+                    >
+                      <p className="text-xs font-black uppercase tracking-[0.18em] text-muted">Monthly savings</p>
+                      <motion.div
+                        key={savingsValue}
+                        initial={{ opacity: 0, y: 18, filter: "blur(8px)" }}
+                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                        transition={{ duration: 0.35 }}
+                        className="mt-2 text-6xl font-black tracking-tight text-foreground"
+                      >
+                        €{savingsValue}
+                      </motion.div>
+                    </motion.div>
+                  </div>
+
+                  <div className="space-y-4 text-center">
+                    <h1 className="text-[36px] font-bold leading-[42px] tracking-tight text-foreground">
+                      {copy.welcome.savingsTitle}
+                    </h1>
+                    <p className="mx-auto max-w-[320px] text-lg leading-7 text-muted">
+                      {copy.welcome.savingsSubtitle}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => setCountryPickerOpen((open) => !open)}
+                      className="flex w-full items-center justify-between rounded-full bg-card px-5 py-4 text-left shadow-sm tap-highlight"
+                    >
+                      <span className="text-base font-black text-foreground">
+                        {selectedCountry.flag} {selectedCountry.label}
+                      </span>
+                      <span className="text-xs font-bold text-muted">
+                        {countryPickerOpen ? "Close" : "Change"}
+                      </span>
+                    </button>
+                    <AnimatePresence>
+                      {countryPickerOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, height: 0 }}
+                          animate={{ opacity: 1, y: 0, height: "auto" }}
+                          exit={{ opacity: 0, y: 10, height: 0 }}
+                          transition={{ duration: 0.28 }}
+                          className="grid grid-cols-2 gap-2 overflow-hidden"
+                        >
+                          {SERA_COUNTRIES.map((country) => (
+                            <button
+                              key={country.value}
+                              onClick={() => handleCountrySelect(country.value, country.defaultShop)}
+                              className={`rounded-2xl px-4 py-3 text-left text-sm font-black shadow-sm tap-highlight ${
+                                appCountry === country.value
+                                  ? "bg-secondary text-white"
+                                  : "bg-card text-foreground"
+                              }`}
+                            >
+                              {country.flag} {country.label}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    <p className="text-center text-xs font-semibold text-muted">
+                      {copy.welcome.wrongCountry}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {welcomePage === 1 && (
+                <motion.div
+                  key="planner"
+                  variants={screenVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex flex-1 flex-col justify-center gap-8"
+                >
+                  <motion.div
+                    variants={staggerContainer}
+                    initial="enter"
+                    animate="center"
+                    className="space-y-2 rounded-[2rem] bg-card p-4 shadow-md"
+                  >
+                    {WEEK_DAYS.map((day, index) => (
+                      <motion.div
+                        key={day}
+                        variants={itemVariants}
+                        transition={{ duration: 0.38, delay: index * 0.08 }}
+                        className="flex items-center gap-3 rounded-[1.25rem] bg-surface-container-low px-4 py-3"
+                      >
+                        <span className="w-9 text-xs font-black uppercase text-muted">{day}</span>
+                        <AnimatePresence>
+                          <motion.span
+                            initial={{ opacity: 0, x: -12 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.55 + index * 0.2, duration: 0.35 }}
+                            className="flex items-center gap-2 text-sm font-black text-foreground"
+                          >
+                            <Check className="h-4 w-4 text-secondary" />
+                            {WEEKLY_MEALS[index]}
+                          </motion.span>
+                        </AnimatePresence>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+
+                  <div className="space-y-4 text-center">
+                    <h1 className="text-[36px] font-bold leading-[42px] tracking-tight text-foreground">
+                      {copy.welcome.plannerTitle}
+                    </h1>
+                    <p className="mx-auto max-w-[320px] text-lg leading-7 text-muted">
+                      {copy.welcome.plannerSubtitle}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {welcomePage === 2 && (
+                <motion.div
+                  key="shopping"
+                  variants={screenVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex flex-1 flex-col justify-center gap-8"
+                >
+                  <motion.div
+                    variants={staggerContainer}
+                    initial="enter"
+                    animate="center"
+                    className="rounded-[2rem] bg-card p-5 shadow-md"
+                  >
+                    <div className="mb-4 flex items-center justify-between">
+                      <span className="text-sm font-black text-foreground">Sera list</span>
+                      <span className="rounded-full bg-secondary/10 px-3 py-1 text-xs font-black text-secondary">
+                        ⏱ {copy.welcome.timeBadge}
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      {SHOPPING_ITEMS.map((item, index) => (
+                        <motion.div
+                          key={item}
+                          variants={itemVariants}
+                          transition={{ duration: 0.38, delay: index * 0.16 }}
+                          className="flex items-center gap-3 rounded-[1.25rem] bg-surface-container-low px-4 py-3 text-base font-black text-foreground"
+                        >
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-white">
+                            <Check className="h-4 w-4" />
+                          </span>
+                          {item}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+
+                  <div className="space-y-4 text-center">
+                    <h1 className="text-[36px] font-bold leading-[42px] tracking-tight text-foreground">
+                      {copy.welcome.listTitle}
+                    </h1>
+                    <p className="mx-auto max-w-[320px] text-lg leading-7 text-muted">
+                      {copy.welcome.listSubtitle}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="flex justify-center gap-2">
+              {[0, 1, 2].map((page) => (
+                <span
+                  key={page}
+                  className={`h-2 rounded-full transition-all ${page === welcomePage ? "w-8 bg-primary" : "w-2 bg-surface-container-high"}`}
+                />
+              ))}
             </div>
           </div>
         )}
@@ -522,13 +809,24 @@ export default function OnboardingPage() {
       {onboardingStep < 10 && (
         <div className="mt-8 select-none">
           {onboardingStep === 1 ? (
-            <button
-              onClick={handleStart}
-              className="w-full py-4 bg-primary hover:bg-primary-hover text-white rounded-2xl font-extrabold text-base transition-colors shadow-md flex items-center justify-center gap-2 tap-highlight"
-            >
-              <span>Inizia a pianificare</span>
-              <ChevronRight className="w-5 h-5" />
-            </button>
+            <div className="flex gap-3">
+              {welcomePage > 0 && (
+                <button
+                  onClick={handleWelcomeBack}
+                  className="h-14 w-14 rounded-full bg-card text-foreground shadow-sm flex items-center justify-center tap-highlight"
+                  aria-label={copy.common.back}
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+              )}
+              <button
+                onClick={handleWelcomePrimary}
+                className="h-14 flex-1 rounded-full bg-primary hover:bg-primary-hover text-white font-extrabold text-base transition-colors shadow-md flex items-center justify-center gap-2 tap-highlight"
+              >
+                <span>{welcomePage === 2 ? copy.welcome.startPlanning : copy.common.continue}</span>
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
           ) : (
             <button
               onClick={onboardingStep === 9 ? handleNext : handleNext}
