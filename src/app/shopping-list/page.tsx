@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import { ShoppingCategory } from "@/modules/meal-planning/domain/value-objects/ShoppingCategory";
-import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
+import { createMoney, formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { SERA_MARKET_SECTION_LABELS } from "@/shared/seraVisuals";
-import { ArrowRight, Check, Clipboard, ClipboardCheck, ShoppingBag, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Clipboard, ClipboardCheck, ShoppingBag, Trash2 } from "lucide-react";
 
 const categories: ShoppingCategory[] = [
   "Vegetables",
@@ -19,8 +20,9 @@ const categories: ShoppingCategory[] = [
 ];
 
 export default function ShoppingListPage() {
+  const router = useRouter();
   const { activePlan, toggleShoppingItem } = useDinneroStore();
-  const [copied, setCopied] = useState(false);
+  const [exportStatus, setExportStatus] = useState<"idle" | "done" | "error">("idle");
 
   if (!activePlan) {
     return (
@@ -44,8 +46,20 @@ export default function ShoppingListPage() {
   const items = activePlan.shoppingList;
   const checkedCount = items.filter((item) => item.checked).length;
   const totalCount = items.length;
+  const checkedTotal = items.reduce((sum, item) => sum + (item.checked ? item.estimatedPrice.amount : 0), 0);
+  const listTotal = items.reduce((sum, item) => sum + item.estimatedPrice.amount, 0);
+  const remainingTotal = Math.max(0, listTotal - checkedTotal);
 
-  const handleExportList = () => {
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.push("/results");
+  };
+
+  const buildExportText = () => {
     let text = `Sera market list - ${activePlan.shop}\n\n`;
 
     categories.forEach((category) => {
@@ -62,9 +76,44 @@ export default function ShoppingListPage() {
     });
 
     text += `Estimated total: ${formatMoney(activePlan.estimatedTotal)}`;
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    return text;
+  };
+
+  const downloadTextFile = (text: string) => {
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "sera-market-list.txt";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportList = async () => {
+    const text = buildExportText();
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Sera market list", text });
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        downloadTextFile(text);
+      }
+
+      setExportStatus("done");
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+
+      try {
+        downloadTextFile(text);
+        setExportStatus("done");
+      } catch {
+        setExportStatus("error");
+      }
+    }
+
+    setTimeout(() => setExportStatus("idle"), 2500);
   };
 
   const handleClearPurchased = () => {
@@ -82,6 +131,13 @@ export default function ShoppingListPage() {
   return (
     <div className="flex h-[calc(100svh-5rem)] flex-col bg-background">
       <header className="shrink-0 px-5 pb-4 pt-5">
+        <button
+          onClick={handleBack}
+          className="mb-4 flex h-10 items-center gap-2 rounded-full bg-card px-4 text-sm font-semibold text-foreground shadow-sm"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </button>
         <p className="editorial-kicker">Sera market guide</p>
         <div className="mt-2 flex items-end justify-between gap-4">
           <div>
@@ -98,6 +154,20 @@ export default function ShoppingListPage() {
             </span>
           </div>
         </div>
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="rounded-[1.1rem] bg-surface-container-low px-3 py-2.5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Collected</p>
+            <p className="mt-1 font-serif text-xl leading-none text-foreground">{formatMoney(createMoney(checkedTotal))}</p>
+          </div>
+          <div className="rounded-[1.1rem] bg-card px-3 py-2.5 shadow-sm">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">Remaining</p>
+            <p className="mt-1 font-serif text-xl leading-none text-secondary">{formatMoney(createMoney(remainingTotal))}</p>
+          </div>
+          <div className="rounded-[1.1rem] bg-secondary px-3 py-2.5 text-white">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">Total</p>
+            <p className="mt-1 font-serif text-xl leading-none">{formatMoney(createMoney(listTotal))}</p>
+          </div>
+        </div>
       </header>
 
       <div className="flex shrink-0 gap-2 px-5 pb-4">
@@ -105,8 +175,8 @@ export default function ShoppingListPage() {
           onClick={handleExportList}
           className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-foreground text-sm font-semibold text-background"
         >
-          {copied ? <ClipboardCheck className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
-          {copied ? "Copied" : "Export"}
+          {exportStatus === "done" ? <ClipboardCheck className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+          {exportStatus === "done" ? "Exported" : exportStatus === "error" ? "Try again" : "Export"}
         </button>
         <button
           onClick={checkedCount > 0 ? handleClearPurchased : handleMarkAllPurchased}

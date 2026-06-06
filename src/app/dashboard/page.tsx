@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { SERA_IMAGES } from "@/shared/seraVisuals";
+import SeraNotificationCard from "@/shared/presentation/components/SeraNotificationCard";
 import { ArrowRight, Calendar, Crown, ShoppingBag } from "lucide-react";
 
 export default function DashboardPage() {
@@ -97,6 +98,8 @@ export default function DashboardPage() {
           </span>
           <ShoppingBag className="h-5 w-5 stroke-[1.5] text-secondary" />
         </Link>
+
+        <SeraNotificationCard />
       </section>
     </div>
   );

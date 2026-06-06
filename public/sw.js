@@ -1,4 +1,4 @@
-const VERSION = "sera-v2";
+const VERSION = "sera-v3";
 const APP_CACHE = `${VERSION}-app`;
 const STATE_CACHE = `${VERSION}-state`;
 const APP_SHELL = [
@@ -31,6 +31,18 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("message", (event) => {
+  if (event.data?.type === "SERA_NOTIFICATION") {
+    event.waitUntil(
+      self.registration.showNotification(event.data.title ?? "Sera", {
+        body: event.data.body ?? "Your dinner journal is ready.",
+        icon: "/pwa-192.png",
+        badge: "/pwa-192.png",
+        data: { url: event.data.url ?? "/dashboard" },
+      })
+    );
+    return;
+  }
+
   if (event.data?.type !== "SERA_OFFLINE_STATE") {
     return;
   }
@@ -50,6 +62,19 @@ self.addEventListener("message", (event) => {
         })
       )
     )
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = new URL(event.notification.data?.url ?? "/dashboard", self.location.origin).href;
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      const focusedClient = clients.find((client) => client.url === targetUrl);
+      if (focusedClient) return focusedClient.focus();
+      return self.clients.openWindow(targetUrl);
+    })
   );
 });
 
