@@ -1,68 +1,60 @@
 "use client";
 
-import React from "react";
+import type { CSSProperties } from "react";
 import { Meal } from "../../domain/entities/Meal";
 import { formatMoney } from "../../domain/value-objects/Money";
-import { Clock, Flame, ChevronRight } from "lucide-react";
+import { SERA_EDITORIAL_IMAGE_POSITIONS, SERA_IMAGES } from "@/shared/seraVisuals";
 
 interface MealCardProps {
   meal: Meal;
   onClick: () => void;
 }
 
+const dayIndex: Record<string, number> = {
+  Monday: 0,
+  Tuesday: 1,
+  Wednesday: 2,
+  Thursday: 3,
+  Friday: 4,
+  Saturday: 5,
+  Sunday: 6,
+};
+
 export default function MealCard({ meal, onClick }: MealCardProps) {
-  // Generate a soft warm gradient background based on calories/prepTime for premium aesthetics
-  const getGradientClass = (day: string) => {
-    const dayColors: Record<string, string> = {
-      Monday: "from-orange-500/10 to-amber-500/10 border-orange-500/20",
-      Tuesday: "from-emerald-500/10 to-teal-500/10 border-emerald-500/20",
-      Wednesday: "from-blue-500/10 to-indigo-500/10 border-blue-500/20",
-      Thursday: "from-rose-500/10 to-red-500/10 border-rose-500/20",
-      Friday: "from-purple-500/10 to-pink-500/10 border-purple-500/20",
-      Saturday: "from-amber-500/10 to-yellow-500/10 border-amber-500/20",
-      Sunday: "from-teal-500/10 to-emerald-500/10 border-teal-500/20",
-    };
-    return dayColors[day] || "from-stone-500/10 to-stone-600/10 border-stone-500/20";
-  };
+  const imagePosition = SERA_EDITORIAL_IMAGE_POSITIONS[dayIndex[meal.day] ?? 0];
 
   return (
-    <div
+    <article
       onClick={onClick}
-      className={`w-full bg-card rounded-2xl border border-border/80 p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer flex gap-4 items-center tap-highlight bg-gradient-to-r ${getGradientClass(meal.day)}`}
+      className="group cursor-pointer overflow-hidden border-b border-warm-stone/70 pb-8 tap-highlight"
     >
-      <div className="flex-1 space-y-1.5">
-        {/* Day badge */}
-        <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">
-          {meal.day}
-        </span>
-        
-        {/* Title */}
-        <h3 className="text-base font-extrabold text-foreground leading-tight">
+      <div
+        className="editorial-photo h-64 rounded-[2rem] shadow-md transition duration-700 group-hover:scale-[1.01]"
+        style={
+          {
+            "--editorial-image": `url(${SERA_IMAGES.table})`,
+            "--editorial-position": imagePosition,
+          } as CSSProperties
+        }
+      />
+
+      <div className="pt-5">
+        <p className="editorial-kicker">{meal.day}</p>
+        <h3 className="mt-2 font-serif text-[30px] leading-[34px] tracking-[-0.02em] text-foreground">
           {meal.title}
         </h3>
-        
-        {/* Description */}
-        <p className="text-xs text-muted line-clamp-1">
+        <p className="mt-3 text-[15px] leading-6 text-muted line-clamp-2">
           {meal.description}
         </p>
 
-        {/* Badges row */}
-        <div className="flex gap-3 text-[11px] font-semibold text-muted/80 pt-1">
-          <span className="flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5 text-stone-400" />
-            {meal.prepTimeMinutes} min
-          </span>
-          <span className="flex items-center gap-1">
-            <Flame className="w-3.5 h-3.5 text-stone-400" />
-            {meal.calories} kcal
-          </span>
-          <span className="font-bold text-secondary">
-            {formatMoney(meal.estimatedCost)}
-          </span>
+        <div className="mt-5 flex items-center gap-3 text-[13px] text-foreground">
+          <span>{meal.prepTimeMinutes} min</span>
+          <span className="h-1 w-1 rounded-full bg-warm-stone" />
+          <span>{formatMoney(meal.estimatedCost)}</span>
+          <span className="h-1 w-1 rounded-full bg-warm-stone" />
+          <span>{meal.calories} kcal</span>
         </div>
       </div>
-
-      <ChevronRight className="w-5 h-5 text-stone-400 shrink-0" />
-    </div>
+    </article>
   );
 }
