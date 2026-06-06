@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { HandleStripeWebhookUseCase } from "@/modules/subscriptions/application/use-cases/HandleStripeWebhookUseCase";
 import { StripeSubscriptionService } from "@/modules/subscriptions/infrastructure/payments/StripeSubscriptionService";
-import { LocalUserRepository } from "@/modules/users/infrastructure/persistence/LocalUserRepository";
+import { createSupabaseUserRepository } from "@/modules/users/infrastructure/persistence/SupabaseUserRepository";
 
 export const runtime = "nodejs";
 
@@ -15,6 +15,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Stripe webhook is not configured" }, { status: 503 });
   }
 
+  const userRepo = createSupabaseUserRepository();
+  if (!userRepo) {
+    return NextResponse.json({ error: "Supabase server persistence is not configured" }, { status: 503 });
+  }
+
   const signature = request.headers.get("stripe-signature");
   if (!signature) {
     return NextResponse.json({ error: "Missing Stripe signature" }, { status: 400 });
@@ -24,7 +29,7 @@ export async function POST(request: Request) {
     const rawBody = await request.text();
     const stripe = new Stripe(stripeSecretKey);
     const service = new StripeSubscriptionService(stripe, stripePriceId, webhookSecret);
-    const useCase = new HandleStripeWebhookUseCase(service, new LocalUserRepository());
+    const useCase = new HandleStripeWebhookUseCase(service, userRepo);
     const handled = await useCase.execute(signature, rawBody);
 
     return NextResponse.json({ received: true, handled });

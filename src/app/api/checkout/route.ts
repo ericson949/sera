@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { z } from "zod";
 import { StripeSubscriptionService } from "@/modules/subscriptions/infrastructure/payments/StripeSubscriptionService";
+import { createSupabaseUserRepository } from "@/modules/users/infrastructure/persistence/SupabaseUserRepository";
 
 export const runtime = "nodejs";
 
@@ -25,6 +26,22 @@ export async function POST(request: Request) {
         url: `${origin}/dashboard?checkout_mock_success=true&userId=${userId}`,
       });
     }
+
+    const userRepo = createSupabaseUserRepository();
+    if (!userRepo) {
+      return NextResponse.json(
+        { error: "Supabase server persistence is required for Stripe production checkout" },
+        { status: 503 }
+      );
+    }
+
+    const existingUser = await userRepo.findById(userId);
+    await userRepo.save({
+      id: userId,
+      email,
+      subscriptionStatus: existingUser?.subscriptionStatus ?? "free",
+      createdAt: existingUser?.createdAt ?? new Date(),
+    });
 
     const stripe = new Stripe(stripeSecretKey);
     const service = new StripeSubscriptionService(stripe, stripePriceId, webhookSecret);
