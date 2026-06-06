@@ -10,26 +10,26 @@ import PaywallModal from "@/modules/meal-planning/presentation/components/Paywal
 import { formatBudgetRange } from "@/modules/meal-planning/domain/value-objects/BudgetRange";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { SERA_IMAGES } from "@/shared/seraVisuals";
+import { getProductCopy } from "@/shared/seraProductCopy";
 import { ArrowRight, Bookmark, BookmarkCheck, Loader2, RefreshCw, ShoppingBag } from "lucide-react";
 
 export default function ResultsPage() {
   const { activePlan, isGenerating, saveCurrentPlan, regeneratePlan, selectMeal } = useDinneroStore();
+  const copy = getProductCopy(useDinneroStore((state) => state.appLanguage)).results;
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [loadingSave, setLoadingSave] = useState(false);
 
   if (!activePlan && !isGenerating) {
     return (
       <div className="flex min-h-[calc(100svh-5rem)] flex-col justify-center bg-background px-6 text-center">
-        <p className="editorial-kicker">Sera Journal</p>
-        <h1 className="mt-3 font-serif text-[40px] leading-[43px] text-foreground">Your table is still empty.</h1>
-        <p className="mx-auto mt-4 max-w-[300px] text-sm leading-6 text-muted">
-          Begin with your tastes and budget. Sera will compose the week.
-        </p>
+        <p className="editorial-kicker">{copy.emptyKicker}</p>
+        <h1 className="mt-3 font-serif text-[40px] leading-[43px] text-foreground">{copy.emptyTitle}</h1>
+        <p className="mx-auto mt-4 max-w-[300px] text-sm leading-6 text-muted">{copy.emptyBody}</p>
         <Link
           href="/onboarding"
           className="mt-7 inline-flex h-14 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-white shadow-md"
         >
-          Start planning
+          {copy.start}
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
@@ -40,8 +40,8 @@ export default function ResultsPage() {
     return (
       <div className="flex min-h-[calc(100svh-5rem)] flex-col items-center justify-center bg-background px-6 text-center">
         <div className="h-16 w-16 rounded-full border border-warm-stone border-t-primary animate-spin" />
-        <h1 className="mt-6 font-serif text-[36px] leading-[39px] text-foreground">Composing your week.</h1>
-        <p className="mt-3 text-sm leading-6 text-muted">A calmer menu is being assembled.</p>
+        <h1 className="mt-6 font-serif text-[36px] leading-[39px] text-foreground">{copy.loadingTitle}</h1>
+        <p className="mt-3 text-sm leading-6 text-muted">{copy.loadingBody}</p>
       </div>
     );
   }
