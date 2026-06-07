@@ -7,7 +7,7 @@ import { Apple, Beef, Check, ChevronLeft, ChevronRight, Clock, Compass, CookingP
 import BudgetSlider from "@/modules/meal-planning/presentation/components/BudgetSlider";
 import PeopleSlider from "@/modules/meal-planning/presentation/components/PeopleSlider";
 import GoalSelector from "@/modules/meal-planning/presentation/components/GoalSelector";
-import CookingTimeSelector from "@/modules/meal-planning/presentation/components/CookingTimeSelector";
+import CookingTimeCards from "@/modules/meal-planning/presentation/components/CookingTimeCards";
 import SeraPreOnboarding from "@/modules/meal-planning/presentation/components/SeraPreOnboarding";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import { useSeraLocaleDetection } from "@/modules/meal-planning/presentation/hooks/useSeraLocaleDetection";
@@ -178,7 +178,7 @@ export default function OnboardingPage() {
 
         {onboardingStep === 8 && (
           <StepShell icon={<Clock />} title={onboardingCopy.timeTitle} body={onboardingCopy.timeBody} kicker={onboardingCopy.kicker}>
-            <CookingTimeSelector times={COOKING_TIMES} selected={onboardingCookingTime} language={store.appLanguage} onSelect={(time) => setOnboardingField("onboardingCookingTime", time)} />
+            <CookingTimeCards times={COOKING_TIMES} selected={onboardingCookingTime} copy={onboardingCopy.cookingTimeCards} onSelect={(time) => setOnboardingField("onboardingCookingTime", time)} />
           </StepShell>
         )}
 

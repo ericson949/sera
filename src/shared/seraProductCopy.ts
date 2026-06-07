@@ -16,6 +16,9 @@ export const PRODUCT_COPY = {
       dietTitle: "Any dietary needs?", dietBody: "Sera will respect these boundaries.",
       timeTitle: "How much time do you have?", timeBody: "No elaborate recipes on rushed evenings.",
       kitchenTitle: "What is already in your kitchen?", kitchenBody: "Use what is there first.",
+      cookingTimeCards: {
+        "15 min": ["15", "Fast pantry dinners"], "30 min": ["30", "Weeknight rhythm"], "45 min": ["45", "A little more care"], "60 min": ["60", "Slow evening cooking"], "No limit": ["No limit", "Let Sera choose freely"],
+      },
     },
     marketSections: { Vegetables: ["Vegetables", "Market Fresh"], "Meat & Fish": ["Meat & Fish", "The Counter"], Dairy: ["Dairy", "From the Fridge"], Pantry: ["Pantry", "Kitchen Essentials"], Frozen: ["Frozen", "For Later"], Spices: ["Spices", "Aromatic Shelf"], Other: ["Other", "Last Details"] },
     dashboard: {
@@ -74,6 +77,9 @@ export const PRODUCT_COPY = {
       dietTitle: "Des besoins alimentaires ?", dietBody: "Sera respectera ces limites.",
       timeTitle: "Combien de temps as-tu ?", timeBody: "Pas de recettes compliquees les soirs presses.",
       kitchenTitle: "Qu'as-tu deja en cuisine ?", kitchenBody: "On utilise d'abord ce qui est la.",
+      cookingTimeCards: {
+        "15 min": ["15", "Diners tres rapides"], "30 min": ["30", "Rythme de semaine"], "45 min": ["45", "Un peu plus soigne"], "60 min": ["60", "Cuisine plus lente"], "No limit": ["Sans limite", "Sera choisit librement"],
+      },
     },
     marketSections: { Vegetables: ["Legumes", "Frais du marche"], "Meat & Fish": ["Viande & poisson", "Le comptoir"], Dairy: ["Frais", "Du refrigerateur"], Pantry: ["Epicerie", "Essentiels cuisine"], Frozen: ["Surgeles", "Pour plus tard"], Spices: ["Epices", "Etagere aromatique"], Other: ["Autres", "Derniers details"] },
     dashboard: {
@@ -132,6 +138,9 @@ export const PRODUCT_COPY = {
       dietTitle: "Esigenze alimentari?", dietBody: "Sera rispettera questi limiti.",
       timeTitle: "Quanto tempo hai?", timeBody: "Niente ricette elaborate nelle sere di corsa.",
       kitchenTitle: "Cosa hai gia in cucina?", kitchenBody: "Usiamo prima quello che c'e.",
+      cookingTimeCards: {
+        "15 min": ["15", "Cene molto rapide"], "30 min": ["30", "Ritmo settimanale"], "45 min": ["45", "Un po' piu cura"], "60 min": ["60", "Cucina lenta"], "No limit": ["Senza limite", "Sera sceglie libera"],
+      },
     },
     marketSections: { Vegetables: ["Verdure", "Fresco di mercato"], "Meat & Fish": ["Carne & pesce", "Il banco"], Dairy: ["Frigo", "Dal fresco"], Pantry: ["Dispensa", "Essenziali cucina"], Frozen: ["Surgelati", "Per dopo"], Spices: ["Spezie", "Mensola aromatica"], Other: ["Altro", "Ultimi dettagli"] },
     dashboard: {
