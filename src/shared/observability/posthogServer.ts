@@ -1,4 +1,4 @@
-const POSTHOG_KEY = process.env.POSTHOG_API_KEY || process.env.NEXT_PUBLIC_POSTHOG_KEY;
+const POSTHOG_KEY = process.env.POSTHOG_API_KEY;
 const POSTHOG_HOST = process.env.POSTHOG_HOST || process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://app.posthog.com";
 
 export async function captureServerEvent(event: string, properties?: Record<string, unknown>, distinctId = "server") {

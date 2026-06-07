@@ -3,25 +3,15 @@
 import type { CSSProperties } from "react";
 import { Meal } from "../../domain/entities/Meal";
 import { formatMoney } from "../../domain/value-objects/Money";
-import { SERA_EDITORIAL_IMAGE_POSITIONS, SERA_IMAGES } from "@/shared/seraVisuals";
+import { getSeraMealImagePosition, getSeraMealImageUrl } from "@/shared/seraVisuals";
 
 interface MealCardProps {
   meal: Meal;
   onClick: () => void;
 }
 
-const dayIndex: Record<string, number> = {
-  Monday: 0,
-  Tuesday: 1,
-  Wednesday: 2,
-  Thursday: 3,
-  Friday: 4,
-  Saturday: 5,
-  Sunday: 6,
-};
-
 export default function MealCard({ meal, onClick }: MealCardProps) {
-  const imagePosition = SERA_EDITORIAL_IMAGE_POSITIONS[dayIndex[meal.day] ?? 0];
+  const imagePosition = getSeraMealImagePosition(meal.day);
 
   return (
     <article
@@ -32,7 +22,7 @@ export default function MealCard({ meal, onClick }: MealCardProps) {
         className="editorial-photo h-64 rounded-[2rem] shadow-md transition duration-700 group-hover:scale-[1.01]"
         style={
           {
-            "--editorial-image": `url(${SERA_IMAGES.table})`,
+            "--editorial-image": `url(${getSeraMealImageUrl(meal.imageUrl)})`,
             "--editorial-position": imagePosition,
           } as CSSProperties
         }

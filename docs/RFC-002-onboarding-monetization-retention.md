@@ -30,6 +30,7 @@ Existing local preferences are normalized with `batchCooking: false` when missin
 - Onboarding asks whether the user batch cooks the whole week at once.
 - First plan generation goes to `/plan-preview`.
 - `/plan-preview` lets the user validate the generated plan before entering the app.
+- `/plan-preview` may show a compact estimated shopping total and a "market list" conversion CTA, but it must not deep-link into the full shopping list for anonymous/free pre-conversion users.
 - `/post-onboarding` shows a soft, non-blocking paywall and notification opt-in.
 - `/new-week` is a hard Pro gate in this MVP.
 - Shopping list and full meal details are contextual Pro upsells for free users.

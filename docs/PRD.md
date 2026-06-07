@@ -62,6 +62,7 @@ Initial countries:
 3. Post-onboarding conversion
    - First generated plan opens in a personalized preview.
    - User validates the plan before entering the app.
+   - The preview can show a compact estimated market total, but it must not expose the full shopping list before the conversion/account moment.
    - A soft paywall/account prompt appears but is not blocking.
    - Notification opt-in appears immediately after this conversion step.
 
@@ -74,6 +75,7 @@ Initial countries:
    - The week is scheduled from the meal plan creation date, so the current day's meal can be identified clearly.
    - User sees the active week with cooked/planned/skipped statuses.
    - User can drag meals to swap dinners between days.
+   - Results/preview review screens can also reorder meals and open meal details while a plan is being reviewed.
    - User can mark only today's meal cooked or skipped.
    - Cooked meals cannot be replaced or moved by drag/drop.
    - User can open recipes, access the shopping list, or start a new week.

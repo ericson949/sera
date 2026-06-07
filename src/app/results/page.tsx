@@ -1,22 +1,52 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Bookmark, BookmarkCheck, Loader2, RefreshCw, ShoppingBag } from "lucide-react";
+import { ArrowRight, Bookmark, BookmarkCheck, GripVertical, Loader2, RefreshCw, ShoppingBag } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
-import MealCard from "@/modules/meal-planning/presentation/components/MealCard";
 import MealDetailModal from "@/modules/meal-planning/presentation/components/MealDetailModal";
 import PaywallModal from "@/modules/meal-planning/presentation/components/PaywallModal";
+import { useWeeklyMealState } from "@/modules/meal-planning/presentation/hooks/useWeeklyMealState";
+import { useFeatureFlag } from "@/shared/presentation/hooks/useFeatureFlag";
 import { createMoney, formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
-import { SERA_IMAGES } from "@/shared/seraVisuals";
+import { getSeraMealImagePosition, getSeraMealImageUrl, SERA_IMAGES } from "@/shared/seraVisuals";
 import { getProductCopy } from "@/shared/seraProductCopy";
 
 export default function ResultsPage() {
-  const { activePlan, isGenerating, saveCurrentPlan, regeneratePlan, selectMeal, appLanguage } = useDinneroStore();
+  const { activePlan, isGenerating, saveCurrentPlan, regeneratePlan, selectMeal, swapPlannedMeals, userId, appLanguage } = useDinneroStore();
+  const [draggedMealId, setDraggedMealId] = useState<string | null>(null);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [loadingSave, setLoadingSave] = useState(false);
   const copy = getProductCopy(appLanguage).results;
+  const weekCopy = getProductCopy(appLanguage).weekView;
+  const weekState = useWeeklyMealState(activePlan, userId);
+  const dragAndDropV2 = useFeatureFlag("flag-drag-and-drop-v2", true);
+
+  useEffect(() => {
+    if (!draggedMealId) return;
+
+    const finishDrag = (event: PointerEvent) => {
+      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-meal-id]");
+      const targetMealId = target?.dataset.mealId;
+
+      if (dragAndDropV2 && targetMealId && weekState.canSwapPair(draggedMealId, targetMealId)) {
+        void swapPlannedMeals(draggedMealId, targetMealId);
+      }
+
+      setDraggedMealId(null);
+    };
+
+    const cancelDrag = () => setDraggedMealId(null);
+
+    window.addEventListener("pointerup", finishDrag);
+    window.addEventListener("pointercancel", cancelDrag);
+
+    return () => {
+      window.removeEventListener("pointerup", finishDrag);
+      window.removeEventListener("pointercancel", cancelDrag);
+    };
+  }, [dragAndDropV2, draggedMealId, swapPlannedMeals, weekState]);
 
   if (!activePlan && !isGenerating) {
     return (
@@ -101,10 +131,53 @@ export default function ResultsPage() {
 
       <section className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 no-scrollbar">
         <p className="editorial-kicker mb-5">{copy.evenings}</p>
-        <div className="space-y-8">
-          {plan.days.map((meal) => (
-            <MealCard key={meal.id} meal={meal} onClick={() => selectMeal(meal)} />
-          ))}
+        {dragAndDropV2 && <p className="-mt-2 mb-4 text-center text-xs font-semibold text-muted">{weekCopy.dragHint}</p>}
+        <div className="space-y-3">
+          {weekState.scheduledMeals.map((item) => {
+            const { meal, status } = item;
+
+            return (
+              <article
+                key={meal.id}
+                data-meal-id={meal.id}
+                className={`rounded-[1.6rem] bg-card p-3 shadow-sm transition ${item.isToday ? "border border-primary" : ""} ${draggedMealId === meal.id ? "opacity-55" : ""}`}
+              >
+                <button onClick={() => selectMeal(meal)} className="w-full text-left">
+                  <div className="grid grid-cols-[96px_1fr_auto] gap-3">
+                    <div
+                      className="editorial-photo h-28 rounded-[1.25rem]"
+                      style={
+                        {
+                          "--editorial-image": `url(${getSeraMealImageUrl(meal.imageUrl)})`,
+                          "--editorial-position": getSeraMealImagePosition(meal.day),
+                        } as CSSProperties
+                      }
+                    />
+                    <div className="min-w-0 py-1">
+                      <p className="editorial-kicker">{item.isToday ? `${weekCopy.today} - ${item.dateLabel}` : item.dateLabel}</p>
+                      <h2 className="mt-1 line-clamp-2 font-serif text-[26px] leading-[28px] text-foreground">{meal.title}</h2>
+                      <p className="mt-2 text-xs text-muted">
+                        {meal.prepTimeMinutes} min - {formatMoney(meal.estimatedCost)} - {status === "cooked" ? weekCopy.cooked : status === "skipped" ? weekCopy.skipped : weekCopy.planned}
+                      </p>
+                    </div>
+                    <div
+                      onPointerDown={(event) => {
+                        if (!item.canDrag || !dragAndDropV2) return;
+                        event.preventDefault();
+                        setDraggedMealId(meal.id);
+                      }}
+                      className={`mt-1 flex h-9 w-9 shrink-0 touch-none items-center justify-center rounded-full ${item.canDrag && dragAndDropV2 ? "bg-surface-container-low text-muted" : "bg-surface-container-low/50 text-muted/35"}`}
+                      role="button"
+                      aria-label={weekCopy.dragHint}
+                    >
+                      <GripVertical className="h-5 w-5" />
+                    </div>
+                  </div>
+                  <p className="mt-3 line-clamp-2 text-sm leading-5 text-muted">{meal.description}</p>
+                </button>
+              </article>
+            );
+          })}
         </div>
       </section>
 

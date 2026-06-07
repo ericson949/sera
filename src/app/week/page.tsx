@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, GripVertical, Plus, ShoppingBag, X } from "lucide-react";
@@ -10,6 +11,7 @@ import { useWeeklyMealState } from "@/modules/meal-planning/presentation/hooks/u
 import { useFeatureFlag } from "@/shared/presentation/hooks/useFeatureFlag";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getProductCopy } from "@/shared/seraProductCopy";
+import { getSeraMealImagePosition, getSeraMealImageUrl } from "@/shared/seraVisuals";
 
 export default function WeekPage() {
   const [draggedMealId, setDraggedMealId] = useState<string | null>(null);
@@ -87,13 +89,23 @@ export default function WeekPage() {
               <article
                 key={meal.id}
                 data-meal-id={meal.id}
-                className={`rounded-[1.6rem] p-4 shadow-sm transition ${item.isToday ? "border border-primary bg-card" : "bg-card"} ${draggedMealId === meal.id ? "opacity-55" : ""} ${!item.canDrag || !dragAndDropV2 ? "cursor-not-allowed" : ""}`}
+                className={`rounded-[1.6rem] p-3 shadow-sm transition ${item.isToday ? "border border-primary bg-card" : "bg-card"} ${draggedMealId === meal.id ? "opacity-55" : ""} ${!item.canDrag || !dragAndDropV2 ? "cursor-not-allowed" : ""}`}
               >
                 <button onClick={() => openMeal(meal)} className="w-full text-left">
-                  <div className="flex items-start justify-between gap-3">
-                    <span>
+                  <div className="grid grid-cols-[86px_1fr_auto] gap-3">
+                    <div
+                      className="editorial-photo h-24 rounded-[1.2rem]"
+                      style={
+                        {
+                          "--editorial-image": `url(${getSeraMealImageUrl(meal.imageUrl)})`,
+                          "--editorial-position": getSeraMealImagePosition(meal.day),
+                        } as CSSProperties
+                      }
+                    />
+                    <span className="min-w-0 py-1">
                       <p className="editorial-kicker">{item.isToday ? `${copy.today} - ${item.dateLabel}` : item.dateLabel}</p>
-                      <h2 className="mt-1 font-serif text-[28px] leading-[30px] text-foreground">{meal.title}</h2>
+                      <h2 className="mt-1 line-clamp-2 font-serif text-[26px] leading-[28px] text-foreground">{meal.title}</h2>
+                      <p className="mt-2 text-xs text-muted">{meal.prepTimeMinutes} min - {formatMoney(meal.estimatedCost)} - {status === "cooked" ? copy.cooked : status === "skipped" ? copy.skipped : copy.planned}</p>
                     </span>
                     <span
                       onPointerDown={(event) => {
@@ -108,7 +120,6 @@ export default function WeekPage() {
                       <GripVertical className="h-5 w-5" />
                     </span>
                   </div>
-                  <p className="mt-2 text-xs text-muted">{meal.prepTimeMinutes} min - {formatMoney(meal.estimatedCost)} - {status === "cooked" ? copy.cooked : status === "skipped" ? copy.skipped : copy.planned}</p>
                 </button>
                 <div className="mt-4 flex gap-2">
                   <button disabled={!item.canCook} onClick={() => weekState.setMealStatus(meal, "cooked")} className="flex h-10 flex-1 items-center justify-center gap-2 rounded-full bg-primary text-xs font-semibold text-white disabled:opacity-40">

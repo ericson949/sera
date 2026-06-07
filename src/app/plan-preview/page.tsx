@@ -1,10 +1,12 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, ShoppingBag } from "lucide-react";
+import { Check, ShoppingBag } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getProductCopy } from "@/shared/seraProductCopy";
+import { getSeraMealImagePosition, getSeraMealImageUrl } from "@/shared/seraVisuals";
 
 export default function PlanPreviewPage() {
   const { activePlan, appLanguage } = useDinneroStore();
@@ -27,31 +29,46 @@ export default function PlanPreviewPage() {
       <header className="shrink-0 pb-4 pt-2">
         <p className="editorial-kicker">{copy.journal}</p>
         <h1 className="mt-2 font-serif text-[44px] leading-[45px] text-foreground">{copy.title}</h1>
-        <div className="mt-4 rounded-[1.6rem] bg-primary p-5 text-white shadow-md">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/75">{copy.estimated}</p>
-          <p className="mt-2 font-serif text-4xl leading-none">{formatMoney(activePlan.estimatedTotal)}</p>
-        </div>
       </header>
 
       <section className="min-h-0 flex-1 overflow-y-auto no-scrollbar">
         <div className="space-y-2">
           {activePlan.days.map((meal) => (
-            <article key={meal.id} className="rounded-[1.4rem] bg-card p-4 shadow-sm">
-              <p className="editorial-kicker">{meal.day}</p>
-              <h2 className="mt-1 font-serif text-[25px] leading-[27px] text-foreground">{meal.title}</h2>
-              <p className="mt-2 text-xs text-muted">{meal.prepTimeMinutes} min - {formatMoney(meal.estimatedCost)}</p>
+            <article key={meal.id} className="grid grid-cols-[84px_1fr] gap-3 rounded-[1.4rem] bg-card p-3 shadow-sm">
+              <div
+                className="editorial-photo h-24 rounded-[1.1rem]"
+                style={
+                  {
+                    "--editorial-image": `url(${getSeraMealImageUrl(meal.imageUrl)})`,
+                    "--editorial-position": getSeraMealImagePosition(meal.day),
+                  } as CSSProperties
+                }
+              />
+              <div className="min-w-0 py-1">
+                <p className="editorial-kicker">{meal.day}</p>
+                <h2 className="mt-1 line-clamp-2 font-serif text-[24px] leading-[26px] text-foreground">{meal.title}</h2>
+                <p className="mt-2 text-xs text-muted">{meal.prepTimeMinutes} min - {formatMoney(meal.estimatedCost)}</p>
+              </div>
             </article>
           ))}
         </div>
       </section>
 
       <div className="mt-4 grid grid-cols-[1fr_auto] gap-3">
+        <Link href="/post-onboarding" className="flex h-14 items-center justify-center gap-2 rounded-full bg-card px-5 text-sm font-semibold text-foreground shadow-sm">
+          <ShoppingBag className="h-4 w-4" />
+          {copy.marketList}
+        </Link>
+        <div className="flex h-14 min-w-28 flex-col justify-center rounded-full bg-primary px-5 text-right text-white shadow-md">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/70">{copy.estimated}</p>
+          <p className="font-serif text-xl leading-none">{formatMoney(activePlan.estimatedTotal)}</p>
+        </div>
+      </div>
+
+      <div className="mt-3">
         <Link href="/post-onboarding" className="flex h-14 items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-white shadow-md">
           <Check className="h-4 w-4" />
           {copy.save}
-        </Link>
-        <Link href="/shopping-list" className="flex h-14 w-14 items-center justify-center rounded-full bg-card shadow-sm" aria-label={copy.marketList}>
-          <ShoppingBag className="h-4 w-4" />
         </Link>
       </div>
     </div>
