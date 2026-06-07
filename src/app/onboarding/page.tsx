@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { Apple, Beef, Check, ChevronLeft, ChevronRight, Clock, Compass, CookingPot, Egg, Fish, Flame, Heart, Leaf, Milk, PiggyBank, Salad, Sparkles, Store, Target, Timer, User, Users, Utensils, Wallet, WheatOff } from "lucide-react";
 import BudgetSlider from "@/modules/meal-planning/presentation/components/BudgetSlider";
 import PeopleSlider from "@/modules/meal-planning/presentation/components/PeopleSlider";
+import GoalSelector from "@/modules/meal-planning/presentation/components/GoalSelector";
+import CookingTimeSelector from "@/modules/meal-planning/presentation/components/CookingTimeSelector";
 import SeraPreOnboarding from "@/modules/meal-planning/presentation/components/SeraPreOnboarding";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import { useSeraLocaleDetection } from "@/modules/meal-planning/presentation/hooks/useSeraLocaleDetection";
@@ -158,7 +160,7 @@ export default function OnboardingPage() {
 
         {onboardingStep === 5 && (
           <StepShell icon={<Target />} title={onboardingCopy.goalTitle} body={onboardingCopy.goalBody} kicker={onboardingCopy.kicker}>
-            <OptionList values={MEAL_GOALS} selected={onboardingGoal} onSelect={(goal) => setOnboardingField("onboardingGoal", goal)} iconFor={getOptionIcon} />
+            <GoalSelector goals={MEAL_GOALS} selected={onboardingGoal} language={store.appLanguage} onSelect={(goal) => setOnboardingField("onboardingGoal", goal)} />
           </StepShell>
         )}
 
@@ -176,7 +178,7 @@ export default function OnboardingPage() {
 
         {onboardingStep === 8 && (
           <StepShell icon={<Clock />} title={onboardingCopy.timeTitle} body={onboardingCopy.timeBody} kicker={onboardingCopy.kicker}>
-            <OptionList values={COOKING_TIMES} selected={onboardingCookingTime} onSelect={(time) => setOnboardingField("onboardingCookingTime", time)} iconFor={getOptionIcon} />
+            <CookingTimeSelector times={COOKING_TIMES} selected={onboardingCookingTime} language={store.appLanguage} onSelect={(time) => setOnboardingField("onboardingCookingTime", time)} />
           </StepShell>
         )}
 

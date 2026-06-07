@@ -30,7 +30,7 @@ export const PRODUCT_COPY = {
       emptyBody: "Begin with your tastes and budget. Sera will compose the week.", start: "Start planning",
       loadingTitle: "Composing your week.", loadingBody: "A calmer menu is being assembled.",
       journal: "Sera weekly journal", title: "Dinner, curated.", guest: "guest", guests: "guests",
-      estimated: "Estimated market", budget: "Budget", inRange: "In range", watch: "Watch list",
+      estimated: "Estimated market", budget: "Budget", budgetMax: "Budget max", inRange: "In range", watch: "Watch list",
       marketList: "Market list", regenerate: "Regenerate menu", save: "Save plan", evenings: "Seven evenings",
     },
     shopping: {
@@ -88,7 +88,7 @@ export const PRODUCT_COPY = {
       emptyBody: "Commence par tes gouts et ton budget. Sera compose la semaine.", start: "Commencer",
       loadingTitle: "Composition de ta semaine.", loadingBody: "Un menu plus calme est en preparation.",
       journal: "Journal hebdomadaire Sera", title: "Diners, selectionnes.", guest: "personne", guests: "personnes",
-      estimated: "Courses estimees", budget: "Budget", inRange: "Dans la fourchette", watch: "A surveiller",
+      estimated: "Courses estimees", budget: "Budget", budgetMax: "Budget maximum", inRange: "Dans la limite", watch: "A surveiller",
       marketList: "Liste courses", regenerate: "Regenerer le menu", save: "Sauver le plan", evenings: "Sept soirs",
     },
     shopping: {
@@ -146,7 +146,7 @@ export const PRODUCT_COPY = {
       emptyBody: "Parti da gusti e budget. Sera compone la settimana.", start: "Inizia",
       loadingTitle: "Composizione della settimana.", loadingBody: "Un menu piu calmo sta prendendo forma.",
       journal: "Diario settimanale Sera", title: "Cene curate.", guest: "persona", guests: "persone",
-      estimated: "Spesa stimata", budget: "Budget", inRange: "Nel range", watch: "Da controllare",
+      estimated: "Spesa stimata", budget: "Budget", budgetMax: "Budget massimo", inRange: "Nel limite", watch: "Da controllare",
       marketList: "Lista spesa", regenerate: "Rigenera menu", save: "Salva piano", evenings: "Sette sere",
     },
     shopping: {

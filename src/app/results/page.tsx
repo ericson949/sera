@@ -8,8 +8,7 @@ import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useD
 import MealCard from "@/modules/meal-planning/presentation/components/MealCard";
 import MealDetailModal from "@/modules/meal-planning/presentation/components/MealDetailModal";
 import PaywallModal from "@/modules/meal-planning/presentation/components/PaywallModal";
-import { formatBudgetRange } from "@/modules/meal-planning/domain/value-objects/BudgetRange";
-import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
+import { createMoney, formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { SERA_IMAGES } from "@/shared/seraVisuals";
 import { getProductCopy } from "@/shared/seraProductCopy";
 
@@ -77,7 +76,7 @@ export default function ResultsPage() {
           <div className="rounded-[1.5rem] bg-surface-container-low p-4">
             <p className="editorial-kicker">{copy.estimated}</p>
             <p className="mt-1 font-serif text-3xl leading-none text-foreground">{formatMoney(plan.estimatedTotal)}</p>
-            <p className="mt-2 text-xs text-muted">{formatBudgetRange(plan.budget)}</p>
+            <p className="mt-2 text-xs text-muted">{copy.budgetMax}: {formatMoney(createMoney(plan.budget.max))}</p>
           </div>
           <div className="rounded-[1.5rem] bg-primary p-4 text-white">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">{copy.budget}</p>
