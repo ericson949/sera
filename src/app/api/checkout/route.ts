@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { z } from "zod";
 import { StripeSubscriptionService } from "@/modules/subscriptions/infrastructure/payments/StripeSubscriptionService";
 import { createSupabaseUserRepository } from "@/modules/users/infrastructure/persistence/SupabaseUserRepository";
+import { captureServerException } from "@/shared/observability/posthogServer";
 
 export const runtime = "nodejs";
 
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
     return NextResponse.json(await service.createCheckoutSession(userId, email, origin));
   } catch (error) {
     console.error("Stripe checkout error:", error);
+    await captureServerException(error, { route: "/api/checkout" });
     const message = error instanceof Error ? error.message : "Unable to create checkout session";
     const status = error instanceof z.ZodError ? 400 : 500;
     return NextResponse.json({ error: message }, { status });

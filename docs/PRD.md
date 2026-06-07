@@ -117,6 +117,7 @@ Initial countries:
 ## Technical Requirements
 
 - Preserve DDD / hexagonal architecture.
+- Use PostHog as the single beta analytics, replay, feature flag, feedback, and exception capture tool.
 - Keep files under 300 effective lines.
 - Keep complex UI behavior in hooks.
 - Keep constants and copy centralized.
@@ -126,6 +127,7 @@ Initial countries:
 - Cache app shell and last useful plan for offline use.
 - Track cooked/skipped meal execution locally in the MVP.
 - Verify TypeScript before release.
+- Staging must simulate paywall purchase and expose beta reset tooling.
 
 ## Production Readiness Checklist
 

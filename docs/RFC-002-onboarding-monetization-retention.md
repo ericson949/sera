@@ -46,3 +46,7 @@ Existing local preferences are normalized with `batchCooking: false` when missin
 - Migrate local meal executions and preferences into durable user-scoped persistence.
 - Add clone previous week and compose from history options to `/new-week`.
 - Add reliable server-side push scheduling.
+
+## Beta Observability
+
+PostHog is the only beta observability SDK/tool. It handles route analytics, session replay, frontend exceptions, API exception events, beta feedback, and feature flags. See `docs/BETA_OBSERVABILITY.md`.

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Check, Loader2, X } from "lucide-react";
 import { useDinneroStore } from "../hooks/useDinneroStore";
 import { getProductCopy } from "@/shared/seraProductCopy";
+import { isStagingEnv } from "@/shared/env";
 
 export default function PaywallModal() {
   const { showPaywall, closePaywall, simulateProUpgrade, triggerUpgradeCheckout, appLanguage } = useDinneroStore();
@@ -22,6 +23,11 @@ export default function PaywallModal() {
   };
 
   const handleStripeCheckout = async () => {
+    if (isStagingEnv()) {
+      await handleSimulateUpgrade();
+      return;
+    }
+
     setLoadingCheckout(true);
     const checkoutUrl = await triggerUpgradeCheckout(window.location.origin);
     setLoadingCheckout(false);
@@ -30,7 +36,7 @@ export default function PaywallModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#1E1E1E]/60 px-4 pb-4">
-      <article className="relative w-full max-w-[440px] rounded-[2.25rem] bg-background p-6 shadow-lg">
+      <article className="ph-no-capture relative w-full max-w-[440px] rounded-[2.25rem] bg-background p-6 shadow-lg">
         <button onClick={closePaywall} className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-low" aria-label={productCopy.common.close}>
           <X className="h-4 w-4" />
         </button>

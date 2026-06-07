@@ -5,8 +5,9 @@ import { Bell, ChevronRight, Crown, Globe2, Languages, Scale, UserRound, Users }
 import { AppCountry, AppLanguage, useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import { getCountryConfig, SERA_COUNTRIES } from "@/modules/meal-planning/presentation/hooks/useSeraLocaleDetection";
 import SeraNotificationCard from "@/shared/presentation/components/SeraNotificationCard";
-import { LANGUAGE_OPTIONS } from "@/shared/profileOptions";
+import { BETA_RESET_STORAGE_KEYS, LANGUAGE_OPTIONS } from "@/shared/profileOptions";
 import { getProductCopy } from "@/shared/seraProductCopy";
+import { isStagingEnv } from "@/shared/env";
 
 export default function ProfilePage() {
   const { user, appLanguage, appCountry, onboardingBudgetMax, onboardingPeople, setOnboardingField } = useDinneroStore();
@@ -22,6 +23,16 @@ export default function ProfilePage() {
     const config = getCountryConfig(country);
     setOnboardingField("appCountry", config.value);
     setOnboardingField("onboardingShop", config.defaultShop);
+  };
+
+  const resetBetaAccount = async () => {
+    await fetch("/api/beta/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user?.id }),
+    });
+    BETA_RESET_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+    window.location.href = "/onboarding";
   };
 
   return (
@@ -89,6 +100,12 @@ export default function ProfilePage() {
           </span>
           <ChevronRight className="h-4 w-4 text-muted" />
         </Link>
+
+        {isStagingEnv() && (
+          <button onClick={resetBetaAccount} className="mt-3 h-12 w-full rounded-full bg-foreground text-sm font-semibold text-white">
+            Reinitialiser mon compte de test
+          </button>
+        )}
       </section>
     </div>
   );

@@ -7,6 +7,7 @@ import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useD
 import MealDetailModal from "@/modules/meal-planning/presentation/components/MealDetailModal";
 import PaywallModal from "@/modules/meal-planning/presentation/components/PaywallModal";
 import { useWeeklyMealState } from "@/modules/meal-planning/presentation/hooks/useWeeklyMealState";
+import { useFeatureFlag } from "@/shared/presentation/hooks/useFeatureFlag";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getProductCopy } from "@/shared/seraProductCopy";
 
@@ -15,6 +16,7 @@ export default function WeekPage() {
   const { activePlan, dashboard, user, userId, selectMeal, openPaywall, swapPlannedMeals, activatePlan, appLanguage } = useDinneroStore();
   const copy = getProductCopy(appLanguage).weekView;
   const weekState = useWeeklyMealState(activePlan, userId);
+  const dragAndDropV2 = useFeatureFlag("flag-drag-and-drop-v2", true);
   const openMeal = (meal: NonNullable<typeof activePlan>["days"][number]) => (user?.subscriptionStatus === "pro" ? selectMeal(meal) : openPaywall());
 
   useEffect(() => {
@@ -24,7 +26,7 @@ export default function WeekPage() {
       const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-meal-id]");
       const targetMealId = target?.dataset.mealId;
 
-      if (targetMealId && weekState.canSwapPair(draggedMealId, targetMealId)) {
+      if (dragAndDropV2 && targetMealId && weekState.canSwapPair(draggedMealId, targetMealId)) {
         void swapPlannedMeals(draggedMealId, targetMealId);
       }
 
@@ -40,7 +42,7 @@ export default function WeekPage() {
       window.removeEventListener("pointerup", finishDrag);
       window.removeEventListener("pointercancel", cancelDrag);
     };
-  }, [draggedMealId, swapPlannedMeals, weekState]);
+  }, [dragAndDropV2, draggedMealId, swapPlannedMeals, weekState]);
 
   if (!activePlan) {
     return (
@@ -77,7 +79,7 @@ export default function WeekPage() {
       </div>
 
       <section className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 no-scrollbar">
-        <p className="mb-3 text-center text-xs font-semibold text-muted">{copy.dragHint}</p>
+        {dragAndDropV2 && <p className="mb-3 text-center text-xs font-semibold text-muted">{copy.dragHint}</p>}
         <div className="space-y-3">
           {weekState.scheduledMeals.map((item) => {
             const { meal, status } = item;
@@ -85,7 +87,7 @@ export default function WeekPage() {
               <article
                 key={meal.id}
                 data-meal-id={meal.id}
-                className={`rounded-[1.6rem] p-4 shadow-sm transition ${item.isToday ? "border border-primary bg-card" : "bg-card"} ${draggedMealId === meal.id ? "opacity-55" : ""} ${!item.canDrag ? "cursor-not-allowed" : ""}`}
+                className={`rounded-[1.6rem] p-4 shadow-sm transition ${item.isToday ? "border border-primary bg-card" : "bg-card"} ${draggedMealId === meal.id ? "opacity-55" : ""} ${!item.canDrag || !dragAndDropV2 ? "cursor-not-allowed" : ""}`}
               >
                 <button onClick={() => openMeal(meal)} className="w-full text-left">
                   <div className="flex items-start justify-between gap-3">
@@ -95,11 +97,11 @@ export default function WeekPage() {
                     </span>
                     <span
                       onPointerDown={(event) => {
-                        if (!item.canDrag) return;
+                        if (!item.canDrag || !dragAndDropV2) return;
                         event.preventDefault();
                         setDraggedMealId(meal.id);
                       }}
-                      className={`mt-1 flex h-9 w-9 shrink-0 touch-none items-center justify-center rounded-full ${item.canDrag ? "bg-surface-container-low text-muted" : "bg-surface-container-low/50 text-muted/35"}`}
+                      className={`mt-1 flex h-9 w-9 shrink-0 touch-none items-center justify-center rounded-full ${item.canDrag && dragAndDropV2 ? "bg-surface-container-low text-muted" : "bg-surface-container-low/50 text-muted/35"}`}
                       role="button"
                       aria-label={copy.dragHint}
                     >

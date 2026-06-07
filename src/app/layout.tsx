@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import ClientInitializer from "@/shared/presentation/components/ClientInitializer";
+import PostHogProvider from "@/shared/presentation/components/PostHogProvider";
+import BetaFeedbackWidget from "@/shared/presentation/components/BetaFeedbackWidget";
 import AppFrame from "@/shared/presentation/components/AppFrame";
 import BottomNav from "@/modules/meal-planning/presentation/components/BottomNav";
 
@@ -39,11 +41,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full bg-[#f3f1ea]">
       <body className="h-full font-sans antialiased text-foreground">
+        <PostHogProvider />
         <ClientInitializer />
         <div className="relative mx-auto flex min-h-svh w-full max-w-[480px] flex-col border-x border-border/80 bg-background shadow-[0_0_40px_rgba(0,0,0,0.05)]">
           <AppFrame>{children}</AppFrame>
           <BottomNav />
         </div>
+        <BetaFeedbackWidget />
       </body>
     </html>
   );

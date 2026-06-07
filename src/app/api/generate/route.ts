@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import { z } from "zod";
 import { MockMealPlanAIService } from "@/modules/meal-planning/infrastructure/ai/MockMealPlanAIService";
 import { SHOPPING_CATEGORIES } from "@/modules/meal-planning/domain/value-objects/ShoppingCategory";
+import { captureServerException } from "@/shared/observability/posthogServer";
 
 const mockAIService = new MockMealPlanAIService();
 const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
@@ -76,6 +77,7 @@ export async function POST(request: Request) {
     return NextResponse.json(input.action === "swap" ? mealSchema.parse(data) : planSchema.parse(data));
   } catch (error) {
     console.error("AI generation failed, using validated mock fallback:", error);
+    await captureServerException(error, { route: "/api/generate", fallback: "mock" });
     return NextResponse.json(await runMock(input));
   }
 }

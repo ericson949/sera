@@ -7,6 +7,7 @@ import { Check, Loader2 } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import { SERA_IMAGES } from "@/shared/seraVisuals";
 import { getProductCopy } from "@/shared/seraProductCopy";
+import { isStagingEnv } from "@/shared/env";
 
 export default function PricingPage() {
   const { user, simulateProUpgrade, simulateProDowngrade, triggerUpgradeCheckout, appLanguage } = useDinneroStore();
@@ -16,6 +17,11 @@ export default function PricingPage() {
   const isMember = user?.subscriptionStatus === "pro";
 
   const handleStripeCheckout = async () => {
+    if (isStagingEnv()) {
+      await handleSandboxToggle();
+      return;
+    }
+
     setLoadingCheckout(true);
     const checkoutUrl = await triggerUpgradeCheckout(window.location.origin);
     setLoadingCheckout(false);
@@ -37,7 +43,7 @@ export default function PricingPage() {
       </section>
 
       <section className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-5 no-scrollbar">
-        <div className="rounded-[2rem] bg-card p-6 shadow-sm">
+        <div className="ph-no-capture rounded-[2rem] bg-card p-6 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="editorial-kicker">{isMember ? copy.active : copy.monthly}</p>

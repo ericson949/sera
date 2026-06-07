@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { HandleStripeWebhookUseCase } from "@/modules/subscriptions/application/use-cases/HandleStripeWebhookUseCase";
 import { StripeSubscriptionService } from "@/modules/subscriptions/infrastructure/payments/StripeSubscriptionService";
 import { createSupabaseUserRepository } from "@/modules/users/infrastructure/persistence/SupabaseUserRepository";
+import { captureServerException } from "@/shared/observability/posthogServer";
 
 export const runtime = "nodejs";
 
@@ -34,6 +35,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ received: true, handled });
   } catch (error) {
+    await captureServerException(error, { route: "/api/stripe/webhook" });
     const message = error instanceof Error ? error.message : "Invalid Stripe webhook";
     return NextResponse.json({ error: message }, { status: 400 });
   }
