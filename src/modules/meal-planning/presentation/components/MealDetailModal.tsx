@@ -3,18 +3,22 @@
 import type { CSSProperties } from "react";
 import { Check, Loader2, RefreshCw, X } from "lucide-react";
 import { useDinneroStore } from "../hooks/useDinneroStore";
+import { useWeeklyMealState } from "../hooks/useWeeklyMealState";
 import { formatMoney } from "../../domain/value-objects/Money";
 import { SERA_IMAGES } from "@/shared/seraVisuals";
 import { getProductCopy } from "@/shared/seraProductCopy";
 
 export default function MealDetailModal() {
-  const { selectedMeal, selectMeal, swapMeal, isSwapping, appLanguage } = useDinneroStore();
+  const { selectedMeal, activePlan, userId, selectMeal, swapMeal, isSwapping, appLanguage } = useDinneroStore();
+  const weekState = useWeeklyMealState(activePlan, userId);
   const productCopy = getProductCopy(appLanguage);
   const copy = productCopy.meal;
 
   if (!selectedMeal) return null;
+  const canSwap = weekState.canSwapMeal(selectedMeal);
 
   const handleSwap = async () => {
+    if (!canSwap) return;
     await swapMeal(selectedMeal.day);
   };
 
@@ -85,9 +89,9 @@ export default function MealDetailModal() {
           <button onClick={() => selectMeal(null)} className="h-12 flex-1 rounded-full bg-surface-container-low text-sm font-semibold text-foreground">
             {productCopy.common.close}
           </button>
-          <button onClick={handleSwap} disabled={isSwapping} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-white disabled:opacity-60 shadow-md">
+          <button title={!canSwap ? copy.cookedLocked : undefined} onClick={handleSwap} disabled={isSwapping || !canSwap} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-white disabled:opacity-60 shadow-md">
             {isSwapping ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-            {productCopy.common.swap}
+            {canSwap ? productCopy.common.swap : copy.cookedLocked}
           </button>
         </div>
       </article>

@@ -38,7 +38,7 @@ export const PRODUCT_COPY = {
       marketKicker: "Market", shoppingGuide: "Shopping guide",
     },
     tonight: { kicker: "Tonight", title: "One clear dinner.", noPlan: "No dinner planned yet.", startWeek: "Plan the week", start: "Start", tired: "Too tired", cooked: "I cooked it", skipped: "Skip tonight", week: "Week", market: "Shopping list", backupTitle: "Plan B", backupBody: "Choose the quickest dinner this week and move the rest forward." },
-    weekView: { kicker: "This week", title: "The week, gently held.", empty: "Plan a week first.", newWeek: "New week", market: "Shopping list", cooked: "cooked", planned: "planned", skipped: "skipped", done: "Cooked", skip: "Skip", previous: "Previous weeks", dragHint: "Drag meals to swap days", open: "Open" },
+    weekView: { kicker: "This week", title: "The week, gently held.", empty: "Plan a week first.", newWeek: "New week", market: "Shopping list", cooked: "cooked", planned: "planned", skipped: "skipped", done: "Cooked", skip: "Skip", previous: "Previous weeks", dragHint: "Drag meals to swap days. Cooked meals stay fixed.", open: "Open", today: "Today", onlyToday: "Available on today's dinner" },
     profile: { kicker: "Sera profile", title: "Your kitchen settings.", demo: "Demo session", account: "Create profile", accountBody: "Sync history, preferences and reminders when account creation is enabled.", language: "Language", country: "Country", budget: "Default budget", people: "Table size", subscription: "Subscription", manage: "Manage membership", legal: "Legal pages", notifications: "Notifications" },
     results: {
       emptyKicker: "Sera Journal", emptyTitle: "Your table is still empty.",
@@ -61,7 +61,7 @@ export const PRODUCT_COPY = {
       unlock: "Demo: unlock membership", stripe: "Payments are processed by Stripe. By continuing, you agree to the terms and cancellation policy.",
       links: "Privacy, terms and cancellation", features: ["Unlimited weekly dinner journals", "Unlimited meal swaps", "Saved menus and favourite recipes", "Exportable market guide", "Budget history for calmer shopping", "Family portions and pantry-aware planning"],
     },
-    meal: { time: "Time", energy: "Energy", cost: "Cost", why: "Why it belongs here", ingredients: "Ingredients", method: "Method" },
+    meal: { time: "Time", energy: "Energy", cost: "Cost", why: "Why it belongs here", ingredients: "Ingredients", method: "Method", cookedLocked: "Cooked meals cannot be replaced." },
     paywall: {
       kicker: "Sera membership", title: "Keep the week beautifully planned.",
       body: "Designed for households that want a calmer table, a clearer market list, and fewer last-minute decisions.",
@@ -111,7 +111,7 @@ export const PRODUCT_COPY = {
       marketKicker: "Marche", shoppingGuide: "Guide courses",
     },
     tonight: { kicker: "Ce soir", title: "Un diner clair.", noPlan: "Aucun diner planifie.", startWeek: "Planifier la semaine", start: "Commencer", tired: "Trop fatiguee", cooked: "Je l'ai cuisine", skipped: "Sauter ce soir", week: "Semaine", market: "Liste courses", backupTitle: "Plan B", backupBody: "Choisis le diner le plus rapide de la semaine et garde le reste pour plus tard." },
-    weekView: { kicker: "Cette semaine", title: "La semaine, sans pression.", empty: "Planifie d'abord une semaine.", newWeek: "Nouvelle semaine", market: "Liste courses", cooked: "cuisines", planned: "prevu", skipped: "saute", done: "Cuisine", skip: "Sauter", previous: "Semaines precedentes", dragHint: "Glisse les repas pour echanger les jours", open: "Ouvrir" },
+    weekView: { kicker: "Cette semaine", title: "La semaine, sans pression.", empty: "Planifie d'abord une semaine.", newWeek: "Nouvelle semaine", market: "Liste courses", cooked: "cuisines", planned: "prevu", skipped: "saute", done: "Cuisine", skip: "Sauter", previous: "Semaines precedentes", dragHint: "Glisse les repas pour echanger les jours. Les plats cuisines restent fixes.", open: "Ouvrir", today: "Aujourd'hui", onlyToday: "Disponible sur le diner du jour" },
     profile: { kicker: "Profil Sera", title: "Tes reglages cuisine.", demo: "Session demo", account: "Creer un profil", accountBody: "Synchronise historique, preferences et rappels quand la creation de compte sera active.", language: "Langue", country: "Pays", budget: "Budget par defaut", people: "Taille de table", subscription: "Abonnement", manage: "Gerer l'abonnement", legal: "Pages legales", notifications: "Notifications" },
     results: {
       emptyKicker: "Journal Sera", emptyTitle: "Ta table est encore vide.",
@@ -134,7 +134,7 @@ export const PRODUCT_COPY = {
       unlock: "Demo : debloquer", stripe: "Paiements traites par Stripe. En continuant, tu acceptes les conditions et la politique d'annulation.",
       links: "Confidentialite, conditions et annulation", features: ["Semaines de diners illimitees", "Remplacements illimites", "Menus sauvegardes", "Guide courses exportable", "Historique budget", "Portions famille et placard pris en compte"],
     },
-    meal: { time: "Temps", energy: "Energie", cost: "Cout", why: "Pourquoi ce plat", ingredients: "Ingredients", method: "Methode" },
+    meal: { time: "Temps", energy: "Energie", cost: "Cout", why: "Pourquoi ce plat", ingredients: "Ingredients", method: "Methode", cookedLocked: "Un plat deja cuisine ne peut pas etre remplace." },
     paywall: {
       kicker: "Abonnement Sera", title: "Garde la semaine joliment planifiee.",
       body: "Pour les foyers qui veulent une table plus calme, une liste plus claire et moins de decisions de derniere minute.",
@@ -184,7 +184,7 @@ export const PRODUCT_COPY = {
       marketKicker: "Mercato", shoppingGuide: "Guida spesa",
     },
     tonight: { kicker: "Stasera", title: "Una cena chiara.", noPlan: "Nessuna cena pianificata.", startWeek: "Pianifica la settimana", start: "Inizia", tired: "Troppo stanca", cooked: "L'ho cucinato", skipped: "Salta stasera", week: "Settimana", market: "Lista spesa", backupTitle: "Piano B", backupBody: "Scegli la cena piu rapida della settimana e sposta il resto." },
-    weekView: { kicker: "Questa settimana", title: "La settimana, con calma.", empty: "Pianifica prima una settimana.", newWeek: "Nuova settimana", market: "Lista spesa", cooked: "cucinate", planned: "previsto", skipped: "saltato", done: "Cucinato", skip: "Salta", previous: "Settimane precedenti", dragHint: "Trascina le cene per scambiare i giorni", open: "Apri" },
+    weekView: { kicker: "Questa settimana", title: "La settimana, con calma.", empty: "Pianifica prima una settimana.", newWeek: "Nuova settimana", market: "Lista spesa", cooked: "cucinate", planned: "previsto", skipped: "saltato", done: "Cucinato", skip: "Salta", previous: "Settimane precedenti", dragHint: "Trascina le cene per scambiare i giorni. Le cene cucinate restano fisse.", open: "Apri", today: "Oggi", onlyToday: "Disponibile sulla cena di oggi" },
     profile: { kicker: "Profilo Sera", title: "Le tue impostazioni cucina.", demo: "Sessione demo", account: "Crea profilo", accountBody: "Sincronizza storico, preferenze e promemoria quando l'account sara attivo.", language: "Lingua", country: "Paese", budget: "Budget predefinito", people: "Persone a tavola", subscription: "Abbonamento", manage: "Gestisci abbonamento", legal: "Pagine legali", notifications: "Notifiche" },
     results: {
       emptyKicker: "Diario Sera", emptyTitle: "La tua tavola e ancora vuota.",
@@ -207,7 +207,7 @@ export const PRODUCT_COPY = {
       unlock: "Demo: sblocca", stripe: "Pagamenti gestiti da Stripe. Continuando accetti termini e cancellazione.",
       links: "Privacy, termini e cancellazione", features: ["Diari settimanali illimitati", "Cambi pasto illimitati", "Menu salvati", "Guida spesa esportabile", "Storico budget", "Porzioni famiglia e dispensa"],
     },
-    meal: { time: "Tempo", energy: "Energia", cost: "Costo", why: "Perche questo piatto", ingredients: "Ingredienti", method: "Metodo" },
+    meal: { time: "Tempo", energy: "Energia", cost: "Costo", why: "Perche questo piatto", ingredients: "Ingredienti", method: "Metodo", cookedLocked: "Una cena gia cucinata non puo essere sostituita." },
     paywall: {
       kicker: "Abbonamento Sera", title: "Mantieni la settimana ben pianificata.",
       body: "Per famiglie che vogliono una tavola piu calma, una lista piu chiara e meno decisioni all'ultimo minuto.",

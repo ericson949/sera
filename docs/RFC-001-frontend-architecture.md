@@ -72,6 +72,7 @@ The first family-focused navigation refactor establishes:
 - `/shopping-list` as a secondary flow reachable from Tonight and Week;
 - local meal execution tracking as an MVP hook before adding durable backend persistence.
 - weekly meal day swaps as an application use case so drag/drop UI still persists through the meal plan repository.
+- weekly presentation state in `useWeeklyMealState`, which derives scheduled dates, today's meal, cooked/skipped status, and action permissions for Tonight, Week, and meal detail surfaces.
 
 ## Verification
 

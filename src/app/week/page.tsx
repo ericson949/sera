@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, GripVertical, Plus, ShoppingBag, X } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import MealDetailModal from "@/modules/meal-planning/presentation/components/MealDetailModal";
-import { useMealExecutions } from "@/modules/meal-planning/presentation/hooks/useMealExecutions";
+import { useWeeklyMealState } from "@/modules/meal-planning/presentation/hooks/useWeeklyMealState";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getProductCopy } from "@/shared/seraProductCopy";
 
@@ -13,7 +13,32 @@ export default function WeekPage() {
   const [draggedMealId, setDraggedMealId] = useState<string | null>(null);
   const { activePlan, dashboard, userId, selectMeal, swapPlannedMeals, activatePlan, appLanguage } = useDinneroStore();
   const copy = getProductCopy(appLanguage).weekView;
-  const executions = useMealExecutions(activePlan?.id, userId);
+  const weekState = useWeeklyMealState(activePlan, userId);
+
+  useEffect(() => {
+    if (!draggedMealId) return;
+
+    const finishDrag = (event: PointerEvent) => {
+      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-meal-id]");
+      const targetMealId = target?.dataset.mealId;
+
+      if (targetMealId && weekState.canSwapPair(draggedMealId, targetMealId)) {
+        void swapPlannedMeals(draggedMealId, targetMealId);
+      }
+
+      setDraggedMealId(null);
+    };
+
+    const cancelDrag = () => setDraggedMealId(null);
+
+    window.addEventListener("pointerup", finishDrag);
+    window.addEventListener("pointercancel", cancelDrag);
+
+    return () => {
+      window.removeEventListener("pointerup", finishDrag);
+      window.removeEventListener("pointercancel", cancelDrag);
+    };
+  }, [draggedMealId, swapPlannedMeals, weekState]);
 
   if (!activePlan) {
     return (
@@ -33,7 +58,7 @@ export default function WeekPage() {
         <p className="editorial-kicker">{copy.kicker}</p>
         <h1 className="mt-2 font-serif text-[44px] leading-[45px] text-foreground">{copy.title}</h1>
         <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-          <Stat value={`${executions.cookedCount}/${activePlan.days.length}`} label={copy.cooked} />
+          <Stat value={`${weekState.cookedCount}/${activePlan.days.length}`} label={copy.cooked} />
           <Stat value={formatMoney(activePlan.estimatedTotal)} label={copy.market} />
           <Stat value={String(dashboard?.savedPlans.length ?? 0)} label={copy.previous} />
         </div>
@@ -52,39 +77,43 @@ export default function WeekPage() {
       <section className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 no-scrollbar">
         <p className="mb-3 text-center text-xs font-semibold text-muted">{copy.dragHint}</p>
         <div className="space-y-3">
-          {activePlan.days.map((meal) => {
-            const status = executions.getMealStatus(meal.id);
+          {weekState.scheduledMeals.map((item) => {
+            const { meal, status } = item;
             return (
               <article
                 key={meal.id}
-                draggable
-                onDragStart={() => setDraggedMealId(meal.id)}
-                onDragOver={(event) => event.preventDefault()}
-                onDrop={() => {
-                  if (draggedMealId) void swapPlannedMeals(draggedMealId, meal.id);
-                  setDraggedMealId(null);
-                }}
-                onDragEnd={() => setDraggedMealId(null)}
-                className={`rounded-[1.6rem] bg-card p-4 shadow-sm transition ${draggedMealId === meal.id ? "opacity-55" : ""}`}
+                data-meal-id={meal.id}
+                className={`rounded-[1.6rem] p-4 shadow-sm transition ${item.isToday ? "border border-primary bg-card" : "bg-card"} ${draggedMealId === meal.id ? "opacity-55" : ""} ${!item.canDrag ? "cursor-not-allowed" : ""}`}
               >
                 <button onClick={() => selectMeal(meal)} className="w-full text-left">
                   <div className="flex items-start justify-between gap-3">
                     <span>
-                      <p className="editorial-kicker">{meal.day}</p>
+                      <p className="editorial-kicker">{item.isToday ? `${copy.today} - ${item.dateLabel}` : item.dateLabel}</p>
                       <h2 className="mt-1 font-serif text-[28px] leading-[30px] text-foreground">{meal.title}</h2>
                     </span>
-                    <GripVertical className="mt-1 h-5 w-5 shrink-0 text-muted" />
+                    <span
+                      onPointerDown={(event) => {
+                        if (!item.canDrag) return;
+                        event.preventDefault();
+                        setDraggedMealId(meal.id);
+                      }}
+                      className={`mt-1 flex h-9 w-9 shrink-0 touch-none items-center justify-center rounded-full ${item.canDrag ? "bg-surface-container-low text-muted" : "bg-surface-container-low/50 text-muted/35"}`}
+                      role="button"
+                      aria-label={copy.dragHint}
+                    >
+                      <GripVertical className="h-5 w-5" />
+                    </span>
                   </div>
                   <p className="mt-2 text-xs text-muted">{meal.prepTimeMinutes} min - {formatMoney(meal.estimatedCost)} - {status === "cooked" ? copy.cooked : status === "skipped" ? copy.skipped : copy.planned}</p>
                 </button>
                 <div className="mt-4 flex gap-2">
-                  <button onClick={() => executions.setMealStatus(meal, "cooked")} className="flex h-10 flex-1 items-center justify-center gap-2 rounded-full bg-primary text-xs font-semibold text-white">
+                  <button disabled={!item.canCook} onClick={() => weekState.setMealStatus(meal, "cooked")} className="flex h-10 flex-1 items-center justify-center gap-2 rounded-full bg-primary text-xs font-semibold text-white disabled:opacity-40">
                     <Check className="h-3.5 w-3.5" />
                     {copy.done}
                   </button>
-                  <button onClick={() => executions.setMealStatus(meal, "skipped")} className="flex h-10 flex-1 items-center justify-center gap-2 rounded-full bg-surface-container-low text-xs font-semibold text-foreground">
+                  <button disabled={!item.canSkip} onClick={() => weekState.setMealStatus(meal, "skipped")} className="flex h-10 flex-1 items-center justify-center gap-2 rounded-full bg-surface-container-low text-xs font-semibold text-foreground disabled:opacity-40">
                     <X className="h-3.5 w-3.5" />
-                    {copy.skip}
+                    {item.isToday ? copy.skip : copy.onlyToday}
                   </button>
                 </div>
               </article>

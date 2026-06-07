@@ -4,30 +4,31 @@ import Link from "next/link";
 import { ArrowRight, Check, ChefHat, Clock3, Shuffle, ShoppingBag } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import MealDetailModal from "@/modules/meal-planning/presentation/components/MealDetailModal";
-import { useMealExecutions } from "@/modules/meal-planning/presentation/hooks/useMealExecutions";
+import { useWeeklyMealState } from "@/modules/meal-planning/presentation/hooks/useWeeklyMealState";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getProductCopy } from "@/shared/seraProductCopy";
 
 export default function DashboardPage() {
-  const { activePlan, userId, selectMeal, swapMeal, appLanguage } = useDinneroStore();
+  const { activePlan, userId, selectMeal, appLanguage } = useDinneroStore();
   const copy = getProductCopy(appLanguage).tonight;
-  const meal = activePlan?.days[0];
-  const executions = useMealExecutions(activePlan?.id, userId);
+  const weekState = useWeeklyMealState(activePlan, userId);
+  const meal = weekState.todayMeal;
 
   if (!activePlan || !meal) {
     return (
       <div className="flex h-[calc(100svh-5rem)] flex-col justify-center bg-background px-6 text-center">
         <p className="editorial-kicker">{copy.kicker}</p>
         <h1 className="mt-3 font-serif text-[44px] leading-[46px] text-foreground">{copy.noPlan}</h1>
-        <Link href="/onboarding" className="mt-8 flex h-14 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white shadow-md">
+        <Link href="/new-week" className="mt-8 flex h-14 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white shadow-md">
           {copy.startWeek}
         </Link>
       </div>
     );
   }
 
-  const status = executions.getMealStatus(meal.id);
-  const quickMeal = activePlan.days.slice().sort((a, b) => a.prepTimeMinutes - b.prepTimeMinutes)[0];
+  const mealState = weekState.getState(meal);
+  const status = mealState?.status ?? "planned";
+  const quickMeal = weekState.scheduledMeals.filter((item) => item.canSwap).map((item) => item.meal).sort((a, b) => a.prepTimeMinutes - b.prepTimeMinutes)[0];
 
   return (
     <div className="flex h-[calc(100svh-5rem)] flex-col bg-background">
@@ -36,6 +37,7 @@ export default function DashboardPage() {
         <h1 className="mt-3 font-serif text-[48px] leading-[49px] text-foreground">{copy.title}</h1>
         <button onClick={() => selectMeal(meal)} className="mt-6 w-full text-left">
           <p className="font-serif text-[34px] leading-[36px] text-primary">{meal.title}</p>
+          {mealState && <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted">{mealState.dateLabel}</p>}
           <p className="mt-3 text-sm leading-6 text-muted">{meal.description}</p>
         </button>
         <div className="mt-5 flex gap-3 text-sm font-semibold text-muted">
@@ -51,7 +53,7 @@ export default function DashboardPage() {
             <ChefHat className="h-5 w-5" />
             <p className="mt-8 font-serif text-[28px] leading-[30px]">{copy.start}</p>
           </button>
-          <button onClick={() => executions.setMealStatus(meal, "cooked")} className="rounded-[1.6rem] bg-card p-5 text-left shadow-sm">
+          <button disabled={!mealState?.canCook} onClick={() => weekState.setMealStatus(meal, "cooked")} className="rounded-[1.6rem] bg-card p-5 text-left shadow-sm disabled:opacity-45">
             <Check className="h-5 w-5 text-primary" />
             <p className="mt-8 font-serif text-[28px] leading-[30px] text-foreground">{copy.cooked}</p>
           </button>

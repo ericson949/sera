@@ -49,7 +49,7 @@ export function useWeeklyMealState(plan: MealPlan | null, userId: string) {
     });
   }, [executions, plan]);
 
-  const todayMeal = scheduledMeals.find((item) => item.isToday)?.meal ?? scheduledMeals[0]?.meal ?? null;
+  const todayMeal = scheduledMeals.find((item) => item.isToday)?.meal ?? null;
   const getState = (meal: Meal) => scheduledMeals.find((item) => item.meal.id === meal.id);
 
   return {

@@ -63,9 +63,12 @@ Initial countries:
    - This screen is optimized for low cognitive load after work.
 
 4. Week
+   - The week is scheduled from the meal plan creation date, so the current day's meal can be identified clearly.
    - User sees the active week with cooked/planned/skipped statuses.
    - User can drag meals to swap dinners between days.
-   - User can mark meals cooked, skip meals, open recipes, access the shopping list, or start a new week.
+   - User can mark only today's meal cooked or skipped.
+   - Cooked meals cannot be replaced or moved by drag/drop.
+   - User can open recipes, access the shopping list, or start a new week.
    - Previous saved weeks are clickable so a user can reopen an older plan.
 
 5. Shopping list
