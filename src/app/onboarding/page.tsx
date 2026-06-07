@@ -95,7 +95,7 @@ export default function OnboardingPage() {
     return (
       <div className="mb-4 flex w-full gap-1.5 px-6 pt-4">
         {Array.from({ length: 8 }).map((_, idx) => (
-          <div key={idx} className={`h-1 flex-1 rounded-full ${idx < onboardingStep - 1 ? "bg-secondary" : "bg-border"}`} />
+          <div key={idx} className={`h-1 flex-1 rounded-full ${idx < onboardingStep - 1 ? "bg-primary" : "bg-border"}`} />
         ))}
       </div>
     );
@@ -194,7 +194,7 @@ export default function OnboardingPage() {
       </div>
 
       {onboardingStep > 1 && onboardingStep < 10 && (
-        <button onClick={nextStep} className="mt-8 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-foreground text-base font-semibold text-background">
+        <button onClick={nextStep} className="mt-8 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary text-base font-semibold text-white shadow-md">
           <span>{onboardingStep === 9 ? "Compose the week" : "Continue"}</span>
           <ChevronRight className="h-4 w-4" />
         </button>
@@ -247,7 +247,7 @@ function OptionButton({ active, disabled, onClick, children }: { active: boolean
     <button
       disabled={disabled}
       onClick={onClick}
-      className={`flex min-h-12 items-center justify-between rounded-[1.1rem] px-4 py-3 text-left text-sm font-semibold transition disabled:opacity-35 ${active ? "bg-secondary text-white" : "bg-card text-foreground shadow-sm"}`}
+      className={`flex min-h-12 items-center justify-between rounded-[1.1rem] px-4 py-3 text-left text-sm font-semibold transition disabled:opacity-35 ${active ? "bg-primary text-white" : "bg-card text-foreground shadow-sm"}`}
     >
       <span>{children}</span>
       {active && <Check className="h-4 w-4" />}

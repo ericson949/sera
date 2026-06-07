@@ -18,16 +18,16 @@ export default function IosInstallBanner({ copy }: Props) {
   return (
     <div className="rounded-[1.25rem] border border-warm-stone/70 bg-card p-3 text-left shadow-md">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-white">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-white">
           <Share className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-black text-foreground">{copy.pwaInstall.title}</p>
           <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs font-semibold leading-5 text-muted">
             <span>{copy.pwaInstall.stepShare}</span>
-            <Share className="h-3.5 w-3.5 text-secondary" />
+            <Share className="h-3.5 w-3.5 text-primary" />
             <span>{copy.pwaInstall.stepThen}</span>
-            <Plus className="h-3.5 w-3.5 text-secondary" />
+            <Plus className="h-3.5 w-3.5 text-primary" />
             <span>{copy.pwaInstall.stepHome}</span>
           </div>
         </div>

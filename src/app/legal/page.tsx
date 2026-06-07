@@ -22,7 +22,7 @@ export default function LegalIndexPage() {
         {links.map((link) => (
           <Link key={link.href} href={link.href} className="flex items-center justify-between rounded-[1.5rem] bg-card p-5 shadow-sm">
             <span className="font-serif text-[26px] leading-[28px]">{link.label}</span>
-            <ArrowRight className="h-4 w-4 text-secondary" />
+            <ArrowRight className="h-4 w-4 text-primary" />
           </Link>
         ))}
       </div>

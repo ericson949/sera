@@ -58,7 +58,7 @@ export default function BottomNav() {
                 isActive
                   ? item.highlight
                     ? "scale-110 text-primary"
-                    : "scale-110 text-secondary"
+                    : "scale-110 text-primary"
                   : "text-muted hover:text-foreground",
                 item.highlight && !isActive && "text-tertiary"
               )}
@@ -69,7 +69,7 @@ export default function BottomNav() {
                 isActive
                   ? item.highlight
                     ? "font-semibold text-primary"
-                    : "font-semibold text-secondary"
+                    : "font-semibold text-primary"
                   : "text-muted"
               )}
             >
@@ -79,7 +79,7 @@ export default function BottomNav() {
               <span
                 className={cn(
                   "absolute bottom-0 h-0.5 w-4 rounded-full",
-                  item.highlight ? "bg-primary" : "bg-secondary"
+                  "bg-primary"
                 )}
               />
             )}

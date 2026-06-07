@@ -49,7 +49,7 @@ export default function MealDetailModal() {
             <div className="mt-3 space-y-2">
               {selectedMeal.whyThisMeal.map((reason) => (
                 <div key={reason} className="flex gap-3 text-sm leading-6 text-muted">
-                  <Check className="mt-1 h-4 w-4 shrink-0 text-secondary" />
+                  <Check className="mt-1 h-4 w-4 shrink-0 text-primary" />
                   <span>{reason}</span>
                 </div>
               ))}
@@ -85,7 +85,7 @@ export default function MealDetailModal() {
           <button onClick={() => selectMeal(null)} className="h-12 flex-1 rounded-full bg-surface-container-low text-sm font-semibold text-foreground">
             {productCopy.common.close}
           </button>
-          <button onClick={handleSwap} disabled={isSwapping} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-secondary text-sm font-semibold text-white disabled:opacity-60">
+          <button onClick={handleSwap} disabled={isSwapping} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-white disabled:opacity-60 shadow-md">
             {isSwapping ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             {productCopy.common.swap}
           </button>

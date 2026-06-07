@@ -28,7 +28,7 @@ export default function SeraNotificationCard() {
         <button
           disabled={status === "denied"}
           onClick={enabled ? disableNotifications : enableNotifications}
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-foreground text-background disabled:opacity-40"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-white disabled:opacity-40"
           aria-label={enabled ? copy.disable : copy.enable}
         >
           {enabled ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}

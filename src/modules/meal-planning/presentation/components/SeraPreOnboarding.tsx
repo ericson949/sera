@@ -108,7 +108,7 @@ export default function SeraPreOnboarding({ appCountry, copy, setOnboardingField
                   {countryPickerOpen && (
                     <motion.div initial={{ opacity: 0, y: 10, height: 0 }} animate={{ opacity: 1, y: 0, height: "auto" }} exit={{ opacity: 0, y: 10, height: 0 }} className="grid grid-cols-2 gap-2 overflow-hidden">
                       {SERA_COUNTRIES.map((country) => (
-                        <button key={country.value} onClick={() => selectCountry(country.value)} className={`rounded-2xl px-4 py-2.5 text-left text-sm font-black shadow-sm tap-highlight ${appCountry === country.value ? "bg-secondary text-white" : "bg-card text-foreground"}`}>{country.flag} {country.label}</button>
+                        <button key={country.value} onClick={() => selectCountry(country.value)} className={`rounded-2xl px-4 py-2.5 text-left text-sm font-black shadow-sm tap-highlight ${appCountry === country.value ? "bg-primary text-white" : "bg-card text-foreground"}`}>{country.flag} {country.label}</button>
                       ))}
                     </motion.div>
                   )}
@@ -125,7 +125,7 @@ export default function SeraPreOnboarding({ appCountry, copy, setOnboardingField
                   <motion.div key={day} variants={itemVariants} initial="enter" animate="center" transition={{ delay: index * 0.08 }} className="flex items-center gap-3 rounded-[1.1rem] bg-surface-container-low px-3 py-2.5">
                     <span className="w-9 text-xs font-black uppercase text-muted">{day}</span>
                     <motion.span initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.55 + index * 0.2 }} className="flex items-center gap-2 text-sm font-black text-foreground">
-                      <Check className="h-4 w-4 text-secondary" />{WEEKLY_MEALS[index]}
+                      <Check className="h-4 w-4 text-primary" />{WEEKLY_MEALS[index]}
                     </motion.span>
                   </motion.div>
                 ))}
@@ -142,12 +142,12 @@ export default function SeraPreOnboarding({ appCountry, copy, setOnboardingField
               <div className="rounded-[1.6rem] bg-card p-4 shadow-md">
                 <div className="mb-4 flex items-center justify-between">
                   <span className="text-sm font-black text-foreground">Sera list</span>
-                  <span className="rounded-full bg-secondary/10 px-3 py-1 text-xs font-black text-secondary">{copy.welcome.timeBadge}</span>
+                  <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-black text-primary">{copy.welcome.timeBadge}</span>
                 </div>
                 <div className="space-y-2">
                   {SHOPPING_ITEMS.map((item, index) => (
                     <motion.div key={item} variants={itemVariants} initial="enter" animate="center" transition={{ delay: index * 0.16 }} className="flex items-center gap-3 rounded-[1.1rem] bg-surface-container-low px-4 py-2.5 text-base font-semibold text-foreground">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-white"><Check className="h-4 w-4" /></span>{item}
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white"><Check className="h-4 w-4" /></span>{item}
                     </motion.div>
                   ))}
                 </div>

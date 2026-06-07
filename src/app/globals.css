@@ -6,20 +6,20 @@
   --foreground: #1E1E1E;
   --primary: #C96A3D;
   --primary-hover: #A95431;
-  --secondary: #46513E;
-  --secondary-hover: #30382B;
+  --secondary: #C96A3D;
+  --secondary-hover: #A95431;
   --muted: #6E3B32;
   --card: #FBF7EF;
   --border: #C8B9A6;
-  --success: #46513E;
+  --success: #C96A3D;
   --surface-container-low: #EFE6D8;
   --surface-container: #E8D9C7;
   --surface-container-high: #D8C6B2;
   --tertiary: #6E3B32;
   --warm-stone: #C8B9A6;
-  --shadow-sm: 0 6px 16px rgba(70, 81, 62, 0.07);
-  --shadow-md: 0 18px 45px rgba(70, 81, 62, 0.11);
-  --shadow-lg: 0 28px 70px rgba(70, 81, 62, 0.16);
+  --shadow-sm: 0 6px 16px rgba(201, 106, 61, 0.08);
+  --shadow-md: 0 18px 45px rgba(201, 106, 61, 0.12);
+  --shadow-lg: 0 28px 70px rgba(201, 106, 61, 0.16);
   --radius-sm: 8px;
   --radius-md: 24px;
   --radius-lg: 32px;
@@ -202,8 +202,8 @@ input[type="range"]::-webkit-slider-thumb:active {
 }
 
 .custom-checkbox.checked {
-  background-color: var(--secondary);
-  border-color: var(--secondary);
+  background-color: var(--primary);
+  border-color: var(--primary);
 }
 
 .custom-checkbox svg {

@@ -58,7 +58,7 @@ export default function DashboardPage() {
           </Link>
 
           <Link href="/results" className="rounded-[1.6rem] bg-card p-5 shadow-sm">
-            <Calendar className="h-5 w-5 stroke-[1.5] text-secondary" />
+            <Calendar className="h-5 w-5 stroke-[1.5] text-primary" />
             <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{copy.current}</p>
             <h2 className="mt-1 font-serif text-[26px] leading-[28px] text-foreground">
               {activePlan ? activePlan.shop : copy.noPlan}
@@ -98,7 +98,7 @@ export default function DashboardPage() {
             <span className="editorial-kicker">{copy.marketKicker}</span>
             <span className="mt-1 block font-serif text-[28px] leading-[30px] text-foreground">{copy.shoppingGuide}</span>
           </span>
-          <ShoppingBag className="h-5 w-5 stroke-[1.5] text-secondary" />
+          <ShoppingBag className="h-5 w-5 stroke-[1.5] text-primary" />
         </Link>
 
         <SeraNotificationCard />

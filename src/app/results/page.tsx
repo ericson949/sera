@@ -79,7 +79,7 @@ export default function ResultsPage() {
             <p className="mt-1 font-serif text-3xl leading-none text-foreground">{formatMoney(plan.estimatedTotal)}</p>
             <p className="mt-2 text-xs text-muted">{formatBudgetRange(plan.budget)}</p>
           </div>
-          <div className="rounded-[1.5rem] bg-secondary p-4 text-white">
+          <div className="rounded-[1.5rem] bg-primary p-4 text-white">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">{copy.budget}</p>
             <p className="mt-2 text-sm font-semibold">{withinBudget ? copy.inRange : copy.watch}</p>
             <p className="mt-1 text-2xl font-semibold">{plan.budgetConfidence}%</p>
@@ -88,7 +88,7 @@ export default function ResultsPage() {
       </header>
 
       <div className="flex shrink-0 gap-2 px-5 pb-4">
-        <Link href="/shopping-list" className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-foreground text-sm font-semibold text-background">
+        <Link href="/shopping-list" className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-white shadow-md">
           <ShoppingBag className="h-4 w-4" />
           {copy.marketList}
         </Link>
@@ -96,7 +96,7 @@ export default function ResultsPage() {
           <RefreshCw className="h-4 w-4" />
         </button>
         <button disabled={loadingSave} onClick={handleSavePlan} className="flex h-12 w-12 items-center justify-center rounded-full bg-card shadow-sm disabled:opacity-60" aria-label={copy.save}>
-          {loadingSave ? <Loader2 className="h-4 w-4 animate-spin" /> : plan.saved || savedSuccess ? <BookmarkCheck className="h-4 w-4 text-secondary" /> : <Bookmark className="h-4 w-4" />}
+          {loadingSave ? <Loader2 className="h-4 w-4 animate-spin" /> : plan.saved || savedSuccess ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4" />}
         </button>
       </div>
 

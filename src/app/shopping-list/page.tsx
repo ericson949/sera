@@ -102,7 +102,7 @@ export default function ShoppingListPage() {
             <p className="mt-2 text-sm text-muted">{activePlan.shop} - {checkedCount}/{totalCount} {copy.gathered}</p>
           </div>
           <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-surface-container-low">
-            <span className="font-serif text-xl text-secondary">{totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0}%</span>
+            <span className="font-serif text-xl text-primary">{totalCount > 0 ? Math.round((checkedCount / totalCount) * 100) : 0}%</span>
           </div>
         </div>
         <div className="mt-4 grid grid-cols-3 gap-2">
@@ -113,7 +113,7 @@ export default function ShoppingListPage() {
       </header>
 
       <div className="flex shrink-0 gap-2 px-5 pb-4">
-        <button onClick={handleExportList} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-foreground text-sm font-semibold text-background">
+        <button onClick={handleExportList} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-white shadow-md">
           {exportStatus === "done" ? <ClipboardCheck className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
           {exportStatus === "done" ? copy.exported : exportStatus === "error" ? copy.tryAgain : copy.export}
         </button>
@@ -142,7 +142,7 @@ export default function ShoppingListPage() {
                   {categoryItems.map((item) => (
                     <button key={item.id} onClick={() => toggleShoppingItem(item.id)} className="flex w-full items-center justify-between gap-4 py-3 text-left tap-highlight">
                       <span className="flex min-w-0 items-center gap-3">
-                        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${item.checked ? "border-secondary bg-secondary text-white" : "border-warm-stone"}`}>
+                        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${item.checked ? "border-primary bg-primary text-white" : "border-warm-stone"}`}>
                           {item.checked && <Check className="h-3.5 w-3.5" />}
                         </span>
                         <span>
@@ -165,9 +165,9 @@ export default function ShoppingListPage() {
 
 function TotalCell({ label, value, accent, dark }: { label: string; value: string; accent?: boolean; dark?: boolean }) {
   return (
-    <div className={`rounded-[1.1rem] px-3 py-2.5 ${dark ? "bg-secondary text-white" : accent ? "bg-card shadow-sm" : "bg-surface-container-low"}`}>
+    <div className={`rounded-[1.1rem] px-3 py-2.5 ${dark ? "bg-primary text-white" : accent ? "bg-card shadow-sm" : "bg-surface-container-low"}`}>
       <p className={`text-[10px] font-bold uppercase tracking-[0.14em] ${dark ? "text-white/70" : "text-muted"}`}>{label}</p>
-      <p className={`mt-1 font-serif text-xl leading-none ${dark ? "" : accent ? "text-secondary" : "text-foreground"}`}>{value}</p>
+      <p className={`mt-1 font-serif text-xl leading-none ${dark ? "" : accent ? "text-primary" : "text-foreground"}`}>{value}</p>
     </div>
   );
 }

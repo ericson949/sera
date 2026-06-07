@@ -44,7 +44,7 @@ export default function PaywallModal() {
         <div className="space-y-3">
           {copy.benefits.map((benefit) => (
             <div key={benefit} className="flex gap-3 text-sm leading-6 text-muted">
-              <Check className="mt-1 h-4 w-4 shrink-0 text-secondary" />
+              <Check className="mt-1 h-4 w-4 shrink-0 text-primary" />
               <span>{benefit}</span>
             </div>
           ))}

@@ -44,13 +44,13 @@ export default function PricingPage() {
               <p className="mt-2 font-serif text-5xl leading-none text-foreground">EUR 4.99</p>
               <p className="mt-2 text-sm text-muted">{copy.cancel}</p>
             </div>
-            <span className="rounded-full bg-secondary px-3 py-1.5 text-xs font-semibold text-white">{isMember ? copy.member : copy.pro}</span>
+            <span className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-white">{isMember ? copy.member : copy.pro}</span>
           </div>
 
           <div className="mt-6 space-y-3 border-t border-warm-stone/60 pt-5">
             {copy.features.map((feature) => (
               <div key={feature} className="flex gap-3 text-sm leading-6 text-muted">
-                <Check className="mt-1 h-4 w-4 shrink-0 text-secondary" />
+                <Check className="mt-1 h-4 w-4 shrink-0 text-primary" />
                 <span>{feature}</span>
               </div>
             ))}
@@ -75,7 +75,7 @@ export default function PricingPage() {
         </div>
 
         <p className="mx-auto mt-4 max-w-[320px] text-center text-xs leading-5 text-muted">{copy.stripe}</p>
-        <Link href="/legal" className="mt-2 block text-center text-xs font-semibold text-secondary underline underline-offset-4">
+        <Link href="/legal" className="mt-2 block text-center text-xs font-semibold text-primary underline underline-offset-4">
           {copy.links}
         </Link>
       </section>
