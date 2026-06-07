@@ -40,6 +40,7 @@ export class GenerateMealPlanUseCase {
       dietaryNeeds: preferences.dietaryNeeds,
       maxCookingTime: preferences.maxCookingTime,
       kitchenItems: preferences.kitchenItems,
+      batchCooking: preferences.batchCooking,
     });
 
     // 4. Map DTO to MealPlan Entity

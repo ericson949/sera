@@ -19,6 +19,7 @@ export class StartOnboardingUseCase {
       dietaryNeeds: ["None"],
       maxCookingTime: "30 min",
       kitchenItems: [],
+      batchCooking: false,
     };
     await this.userPrefsRepo.save(defaultPrefs);
     return defaultPrefs;

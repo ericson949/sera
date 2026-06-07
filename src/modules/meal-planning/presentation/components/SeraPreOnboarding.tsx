@@ -8,6 +8,7 @@ import { getCountryConfig, SERA_COUNTRIES } from "../hooks/useSeraLocaleDetectio
 import { Dictionary } from "@/shared/i18n";
 import { usePwaInstallPrompt } from "@/shared/presentation/hooks/usePwaInstallPrompt";
 import IosInstallBanner from "@/shared/presentation/components/IosInstallBanner";
+import Link from "next/link";
 
 const SAVINGS_STEPS = [0, 12, 28, 41, 57];
 const WELCOME_PAGE_STORAGE_KEY = "sera_welcome_page";
@@ -187,6 +188,11 @@ export default function SeraPreOnboarding({ appCountry, copy, setOnboardingField
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>
+      {welcomePage === 0 && (
+        <Link href="/profile" className="mt-2 block text-center text-xs font-semibold text-primary underline underline-offset-4">
+          {copy.welcome.existingAccount}
+        </Link>
+      )}
     </>
   );
 }

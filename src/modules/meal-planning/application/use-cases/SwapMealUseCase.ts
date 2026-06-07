@@ -52,6 +52,7 @@ export class SwapMealUseCase {
       dietaryNeeds: preferences.dietaryNeeds,
       maxCookingTime: preferences.maxCookingTime,
       kitchenItems: preferences.kitchenItems,
+      batchCooking: preferences.batchCooking,
       dayToSwap,
       excludeTitles,
     });

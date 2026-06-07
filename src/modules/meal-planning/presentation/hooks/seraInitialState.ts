@@ -18,6 +18,7 @@ export const SERA_INITIAL_STATE: Pick<
   | "onboardingDietaryNeeds"
   | "onboardingCookingTime"
   | "onboardingKitchenItems"
+  | "onboardingBatchCooking"
   | "activePlan"
   | "selectedMeal"
   | "dashboard"
@@ -43,6 +44,7 @@ export const SERA_INITIAL_STATE: Pick<
   onboardingDietaryNeeds: ["None"],
   onboardingCookingTime: "30 min",
   onboardingKitchenItems: [],
+  onboardingBatchCooking: false,
   activePlan: null,
   selectedMeal: null,
   dashboard: null,

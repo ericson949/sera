@@ -50,6 +50,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
         onboardingDietaryNeeds: onboardingDraft?.onboardingDietaryNeeds || prefs.dietaryNeeds,
         onboardingCookingTime: onboardingDraft?.onboardingCookingTime || prefs.maxCookingTime,
         onboardingKitchenItems: onboardingDraft?.onboardingKitchenItems || prefs.kitchenItems,
+        onboardingBatchCooking: onboardingDraft?.onboardingBatchCooking ?? prefs.batchCooking,
         hasHydrated: true,
         isInitializing: false,
       });
@@ -102,6 +103,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
       onboardingDietaryNeeds: ["None"],
       onboardingCookingTime: "30 min",
       onboardingKitchenItems: [],
+      onboardingBatchCooking: false,
       error: null,
     });
     saveOnboardingDraft(createOnboardingDraft(get()));
@@ -125,6 +127,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
         dietaryNeeds: get().onboardingDietaryNeeds,
         maxCookingTime: get().onboardingCookingTime,
         kitchenItems: get().onboardingKitchenItems,
+        batchCooking: get().onboardingBatchCooking,
       };
       await savePrefsUseCase.execute(prefData);
       const plan = await generatePlanUseCase.execute(uId);

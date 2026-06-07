@@ -48,6 +48,7 @@ const dictionaries: Record<AppLanguage, AppDictionary> = {
       listSubtitle: "Smart shopping lists generated automatically.",
       timeBadge: "Takes less than 1 minute",
       startPlanning: "Start Planning",
+      existingAccount: "I already have an account",
     },
     pwaInstall: {
       title: "Install Sera on your iPhone",
@@ -98,6 +99,7 @@ const dictionaries: Record<AppLanguage, AppDictionary> = {
       listSubtitle: "Des listes intelligentes generees automatiquement.",
       timeBadge: "Prend moins d'une minute",
       startPlanning: "Commencer",
+      existingAccount: "J'ai deja un compte",
     },
     pwaInstall: {
       title: "Installe Sera sur ton iPhone",
@@ -148,6 +150,7 @@ const dictionaries: Record<AppLanguage, AppDictionary> = {
       listSubtitle: "Liste intelligenti generate automaticamente.",
       timeBadge: "Richiede meno di 1 minuto",
       startPlanning: "Inizia",
+      existingAccount: "Ho gia un account",
     },
     pwaInstall: {
       title: "Installa Sera sul tuo iPhone",

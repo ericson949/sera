@@ -35,6 +35,7 @@ export class LocalUserPreferencesRepository implements UserPreferencesRepository
 
   async findByUserId(userId: string): Promise<UserPreferences | null> {
     const store = this.getStore();
-    return store[userId] || null;
+    const preferences = store[userId];
+    return preferences ? { batchCooking: false, ...preferences } : null;
   }
 }

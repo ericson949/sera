@@ -24,6 +24,7 @@ export class SupabaseUserPreferencesRepository implements UserPreferencesReposit
       dietary_needs: preferences.dietaryNeeds,
       max_cooking_time: preferences.maxCookingTime,
       kitchen_items: preferences.kitchenItems,
+      batch_cooking: preferences.batchCooking,
     });
     if (error) {
       console.error("Error saving user preferences in Supabase:", error);
@@ -55,6 +56,7 @@ export class SupabaseUserPreferencesRepository implements UserPreferencesReposit
       dietaryNeeds: data.dietary_needs,
       maxCookingTime: data.max_cooking_time,
       kitchenItems: data.kitchen_items,
+      batchCooking: data.batch_cooking ?? false,
     };
   }
 }

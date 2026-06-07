@@ -15,6 +15,7 @@ export type GenerateMealPlanInput = {
   dietaryNeeds: DietaryNeed[];
   maxCookingTime: CookingTime;
   kitchenItems: string[];
+  batchCooking: boolean;
 };
 
 export type GeneratedIngredientDTO = {
@@ -62,6 +63,7 @@ export type SwapMealInput = {
   dietaryNeeds: DietaryNeed[];
   maxCookingTime: CookingTime;
   kitchenItems: string[];
+  batchCooking: boolean;
   dayToSwap: WeekDay;
   excludeTitles: string[];
 };

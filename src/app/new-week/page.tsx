@@ -106,11 +106,16 @@ export default function NewWeekPage() {
           </OnboardingStepShell>
         )}
 
-        {step === 8 && (
-          <OnboardingStepShell icon={<Clock />} title={copy.timeTitle} body={copy.timeBody} kicker={copy.kicker}>
-            <CookingTimeCards times={COOKING_TIMES} selected={store.onboardingCookingTime} copy={copy.cookingTimeCards} onSelect={(time) => store.setOnboardingField("onboardingCookingTime", time)} />
-          </OnboardingStepShell>
-        )}
+          {step === 8 && (
+            <OnboardingStepShell icon={<Clock />} title={copy.timeTitle} body={copy.timeBody} kicker={copy.kicker}>
+            <div className="space-y-3">
+              <CookingTimeCards times={COOKING_TIMES} selected={store.onboardingCookingTime} copy={copy.cookingTimeCards} onSelect={(time) => store.setOnboardingField("onboardingCookingTime", time)} />
+              <button onClick={() => store.setOnboardingField("onboardingBatchCooking", !store.onboardingBatchCooking)} className={`w-full rounded-[1.4rem] border p-4 text-left text-sm font-semibold ${store.onboardingBatchCooking ? "border-primary bg-primary text-white" : "border-warm-stone/60 bg-card text-foreground"}`}>
+                {copy.batchCooking}
+              </button>
+            </div>
+            </OnboardingStepShell>
+          )}
 
         {step === 9 && (
           <OnboardingStepShell icon={<CookingPot />} title={copy.kitchenTitle} body={copy.kitchenBody} kicker={copy.kicker}>

@@ -29,6 +29,7 @@ export default function OnboardingPage() {
     onboardingDietaryNeeds,
     onboardingCookingTime,
     onboardingKitchenItems,
+    onboardingBatchCooking,
     error,
     setOnboardingField,
     nextStep,
@@ -98,7 +99,12 @@ export default function OnboardingPage() {
 
         {onboardingStep === 8 && (
           <OnboardingStepShell icon={<Clock />} title={onboardingCopy.timeTitle} body={onboardingCopy.timeBody} kicker={onboardingCopy.kicker}>
-            <CookingTimeCards times={COOKING_TIMES} selected={onboardingCookingTime} copy={onboardingCopy.cookingTimeCards} onSelect={(time) => setOnboardingField("onboardingCookingTime", time)} />
+            <div className="space-y-3">
+              <CookingTimeCards times={COOKING_TIMES} selected={onboardingCookingTime} copy={onboardingCopy.cookingTimeCards} onSelect={(time) => setOnboardingField("onboardingCookingTime", time)} />
+              <button onClick={() => setOnboardingField("onboardingBatchCooking", !onboardingBatchCooking)} className={`w-full rounded-[1.4rem] border p-4 text-left text-sm font-semibold ${onboardingBatchCooking ? "border-primary bg-primary text-white" : "border-warm-stone/60 bg-card text-foreground"}`}>
+                {onboardingCopy.batchCooking}
+              </button>
+            </div>
           </OnboardingStepShell>
         )}
 

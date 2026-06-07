@@ -17,6 +17,7 @@ export type OnboardingDraft = Partial<Pick<
   | "onboardingDietaryNeeds"
   | "onboardingCookingTime"
   | "onboardingKitchenItems"
+  | "onboardingBatchCooking"
   | "appLanguage"
   | "appCountry"
 >>;
@@ -64,6 +65,7 @@ export const createOnboardingDraft = (state: DinneroState): OnboardingDraft => (
   onboardingDietaryNeeds: state.onboardingDietaryNeeds,
   onboardingCookingTime: state.onboardingCookingTime,
   onboardingKitchenItems: state.onboardingKitchenItems,
+  onboardingBatchCooking: state.onboardingBatchCooking,
   appLanguage: state.appLanguage,
   appCountry: state.appCountry,
 });

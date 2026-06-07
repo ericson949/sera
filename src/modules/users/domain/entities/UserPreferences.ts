@@ -15,4 +15,5 @@ export type UserPreferences = {
   dietaryNeeds: DietaryNeed[];
   maxCookingTime: CookingTime;
   kitchenItems: string[];
+  batchCooking: boolean;
 };

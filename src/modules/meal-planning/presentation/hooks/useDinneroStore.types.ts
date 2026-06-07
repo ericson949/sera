@@ -29,6 +29,7 @@ export interface DinneroState {
   onboardingDietaryNeeds: DietaryNeed[];
   onboardingCookingTime: CookingTime;
   onboardingKitchenItems: string[];
+  onboardingBatchCooking: boolean;
   activePlan: MealPlan | null;
   selectedMeal: Meal | null;
   dashboard: DashboardDTO | null;
