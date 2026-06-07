@@ -1,4 +1,4 @@
-import { DinneroState } from "./useDinneroStore.types";
+import type { DinneroState } from "./useDinneroStore.types";
 
 export const DEFAULT_USER_ID = "guest_italy_user";
 export const LOCALE_STORAGE_KEY = "sera_locale";

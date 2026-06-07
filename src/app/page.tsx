@@ -9,13 +9,14 @@ export default function Home() {
   const router = useRouter();
   const activePlan = useDinneroStore((state) => state.activePlan);
   const user = useDinneroStore((state) => state.user);
+  const hasHydrated = useDinneroStore((state) => state.hasHydrated);
   const appLanguage = useDinneroStore((state) => state.appLanguage);
   const copy = getProductCopy(appLanguage).shell;
 
   useEffect(() => {
-    if (!user) return;
+    if (!hasHydrated || !user) return;
     router.replace(activePlan ? "/dashboard" : "/onboarding");
-  }, [user, activePlan, router]);
+  }, [hasHydrated, user, activePlan, router]);
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-background px-6 text-center">

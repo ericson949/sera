@@ -4,38 +4,19 @@ import { UserPreferences } from "@/modules/users/domain/entities/UserPreferences
 import { DinneroState, AppCountry, AppLanguage } from "./useDinneroStore.types";
 import { clearOnboardingDraft, createOnboardingDraft, DEFAULT_USER_ID, getOnboardingDraft, getSavedLocale, LOCALE_STORAGE_KEY, saveOnboardingDraft, USAGE_STORAGE_KEY } from "./seraStoreConfig";
 import { seraUseCases } from "./seraUseCases";
+import { SERA_INITIAL_STATE } from "./seraInitialState";
 
 export type { AppCountry, AppLanguage };
 
 const { userRepo, startOnboardingUseCase, savePrefsUseCase, generatePlanUseCase, regeneratePlanUseCase, swapMealUseCase, getCurrentPlanUseCase, toggleShoppingItemUseCase, saveMealPlanUseCase, getDashboardUseCase, createCheckoutUseCase } = seraUseCases;
 
 export const useDinneroStore = create<DinneroState>((set, get) => ({
-  user: null,
-  userId: DEFAULT_USER_ID,
-  preferences: null,
-  appLanguage: "it",
-  appCountry: "Italy",
-
-  onboardingStep: 1,
-  onboardingShop: "Lidl",
-  onboardingBudgetMin: 35,
-  onboardingBudgetMax: 50,
-  onboardingPeople: 2,
-  onboardingGoal: "Save money",
-  onboardingVibes: [],
-  onboardingDietaryNeeds: ["None"],
-  onboardingCookingTime: "30 min",
-  onboardingKitchenItems: [],
-
-  activePlan: null,
-  selectedMeal: null,
-  dashboard: null,
-  isGenerating: false,
-  isSwapping: false,
-  error: null,
-  showPaywall: false,
+  ...SERA_INITIAL_STATE,
 
   initStore: async () => {
+    if (get().isInitializing || get().hasHydrated) return;
+    set({ isInitializing: true });
+
     try {
       const uId = get().userId;
       const savedLocale = getSavedLocale();
@@ -69,11 +50,13 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
         onboardingDietaryNeeds: onboardingDraft?.onboardingDietaryNeeds || prefs.dietaryNeeds,
         onboardingCookingTime: onboardingDraft?.onboardingCookingTime || prefs.maxCookingTime,
         onboardingKitchenItems: onboardingDraft?.onboardingKitchenItems || prefs.kitchenItems,
+        hasHydrated: true,
+        isInitializing: false,
       });
 
       await get().loadDashboard();
     } catch (err: any) {
-      set({ error: err.message });
+      set({ error: err.message, hasHydrated: true, isInitializing: false });
     }
   },
 

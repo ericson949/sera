@@ -3,11 +3,13 @@
 import { useEffect } from "react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import { getProductCopy } from "@/shared/seraProductCopy";
+import { useDevtoolsPointerCaptureGuard } from "@/shared/presentation/hooks/useDevtoolsPointerCaptureGuard";
 
 const NOTIFICATION_OPT_IN_KEY = "sera_notifications_enabled";
 
 export default function ClientInitializer() {
   const initStore = useDinneroStore((state) => state.initStore);
+  useDevtoolsPointerCaptureGuard();
 
   useEffect(() => {
     initStore();

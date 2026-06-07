@@ -16,6 +16,15 @@ export const PRODUCT_COPY = {
       dietTitle: "Any dietary needs?", dietBody: "Sera will respect these boundaries.",
       timeTitle: "How much time do you have?", timeBody: "No elaborate recipes on rushed evenings.",
       kitchenTitle: "What is already in your kitchen?", kitchenBody: "Use what is there first.",
+      goalCards: {
+        "Save money": { title: "Save money", body: "A week built around value and reuse." },
+        "Eat healthier": { title: "Eat healthier", body: "Balanced dinners with fresher choices." },
+        "Lose weight": { title: "Lose weight", body: "Lighter meals without feeling clinical." },
+        "High protein": { title: "High protein", body: "More satisfying protein-led dinners." },
+        "Family meals": { title: "Family meals", body: "Comfortable plates for the whole table." },
+        "Quick dinners": { title: "Quick dinners", body: "Low-friction evenings, fewer steps." },
+        "Reduce food waste": { title: "Reduce waste", body: "Use what you buy across the week." },
+      },
       cookingTimeCards: {
         "15 min": ["15", "Fast pantry dinners"], "30 min": ["30", "Weeknight rhythm"], "45 min": ["45", "A little more care"], "60 min": ["60", "Slow evening cooking"], "No limit": ["No limit", "Let Sera choose freely"],
       },
@@ -77,6 +86,15 @@ export const PRODUCT_COPY = {
       dietTitle: "Des besoins alimentaires ?", dietBody: "Sera respectera ces limites.",
       timeTitle: "Combien de temps as-tu ?", timeBody: "Pas de recettes compliquees les soirs presses.",
       kitchenTitle: "Qu'as-tu deja en cuisine ?", kitchenBody: "On utilise d'abord ce qui est la.",
+      goalCards: {
+        "Save money": { title: "Economiser", body: "Une semaine pensee valeur et reutilisation." },
+        "Eat healthier": { title: "Manger plus sain", body: "Des diners equilibres et plus frais." },
+        "Lose weight": { title: "Alleger", body: "Des plats plus legers sans ton clinique." },
+        "High protein": { title: "Plus de proteines", body: "Des diners rassasiants et proteines." },
+        "Family meals": { title: "Repas famille", body: "Des assiettes simples pour toute la table." },
+        "Quick dinners": { title: "Diners rapides", body: "Moins d'etapes les soirs presses." },
+        "Reduce food waste": { title: "Moins gaspiller", body: "Reutiliser les achats sur la semaine." },
+      },
       cookingTimeCards: {
         "15 min": ["15", "Diners tres rapides"], "30 min": ["30", "Rythme de semaine"], "45 min": ["45", "Un peu plus soigne"], "60 min": ["60", "Cuisine plus lente"], "No limit": ["Sans limite", "Sera choisit librement"],
       },
@@ -138,6 +156,15 @@ export const PRODUCT_COPY = {
       dietTitle: "Esigenze alimentari?", dietBody: "Sera rispettera questi limiti.",
       timeTitle: "Quanto tempo hai?", timeBody: "Niente ricette elaborate nelle sere di corsa.",
       kitchenTitle: "Cosa hai gia in cucina?", kitchenBody: "Usiamo prima quello che c'e.",
+      goalCards: {
+        "Save money": { title: "Risparmiare", body: "Una settimana pensata per valore e riuso." },
+        "Eat healthier": { title: "Mangiare meglio", body: "Cene equilibrate e piu fresche." },
+        "Lose weight": { title: "Piu leggero", body: "Piatti leggeri senza tono clinico." },
+        "High protein": { title: "Piu proteine", body: "Cene sazianti guidate dalle proteine." },
+        "Family meals": { title: "Famiglia", body: "Piatti comodi per tutta la tavola." },
+        "Quick dinners": { title: "Cene rapide", body: "Sere piu semplici, meno passaggi." },
+        "Reduce food waste": { title: "Meno sprechi", body: "Riusa gli acquisti durante la settimana." },
+      },
       cookingTimeCards: {
         "15 min": ["15", "Cene molto rapide"], "30 min": ["30", "Ritmo settimanale"], "45 min": ["45", "Un po' piu cura"], "60 min": ["60", "Cucina lenta"], "No limit": ["Senza limite", "Sera sceglie libera"],
       },

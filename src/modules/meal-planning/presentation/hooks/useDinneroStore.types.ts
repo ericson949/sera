@@ -32,6 +32,8 @@ export interface DinneroState {
   activePlan: MealPlan | null;
   selectedMeal: Meal | null;
   dashboard: DashboardDTO | null;
+  hasHydrated: boolean;
+  isInitializing: boolean;
   isGenerating: boolean;
   isSwapping: boolean;
   error: string | null;
