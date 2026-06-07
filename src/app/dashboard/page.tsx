@@ -51,7 +51,7 @@ export default function DashboardPage() {
 
       <section className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-5 no-scrollbar">
         <div className="grid grid-cols-2 gap-3">
-          <Link href="/onboarding" className="rounded-[1.6rem] bg-primary p-5 text-white shadow-md">
+          <Link href="/new-week" className="rounded-[1.6rem] bg-primary p-5 text-white shadow-md">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">{copy.compose}</p>
             <h2 className="mt-8 font-serif text-[28px] leading-[30px]">{copy.newWeek}</h2>
             <ArrowRight className="mt-4 h-5 w-5 stroke-[1.5]" />

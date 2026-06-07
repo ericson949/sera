@@ -45,6 +45,8 @@ Initial countries:
    - User continues into meal planning.
 
 2. Onboarding
+   - Returning users who tap "New week" from the dashboard configure the next plan on a dedicated full-screen page, not inside a modal and not through the public welcome flow.
+   - Existing sessions should not access the welcome screen; direct `/onboarding` access with an active plan returns to the dashboard.
    - Select grocery shop.
    - Select weekly maximum dinner budget.
    - Select household size.

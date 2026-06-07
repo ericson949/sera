@@ -19,6 +19,8 @@ export function useOnboardingFlow() {
 
   const {
     onboardingStep,
+    activePlan,
+    hasHydrated,
     onboardingVibes,
     onboardingDietaryNeeds,
     onboardingKitchenItems,
@@ -29,6 +31,11 @@ export function useOnboardingFlow() {
   } = store;
 
   useSeraLocaleDetection(setOnboardingField);
+
+  useEffect(() => {
+    if (!hasHydrated || !activePlan || onboardingStep !== 1) return;
+    router.replace("/dashboard");
+  }, [activePlan, hasHydrated, onboardingStep, router]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;

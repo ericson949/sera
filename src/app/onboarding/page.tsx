@@ -38,12 +38,8 @@ export default function OnboardingPage() {
   return (
     <div className="flex h-svh flex-col justify-between overflow-hidden bg-background p-5">
       {onboardingStep > 1 && onboardingStep < 10 && (
-        <div className="flex shrink-0 items-center justify-between pt-2">
-          <button onClick={prevStep} className="flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-sm">
-            <ChevronLeft className="h-5 w-5" />
-          </button>
+        <div className="flex shrink-0 items-center justify-center pt-2">
           <span className="editorial-kicker">{onboardingCopy.progress} {onboardingStep - 1} / 8</span>
-          <div className="w-10" />
         </div>
       )}
 
@@ -116,10 +112,15 @@ export default function OnboardingPage() {
       </div>
 
       {onboardingStep > 1 && onboardingStep < 10 && (
-        <button onClick={nextStep} className="mt-4 flex h-14 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-base font-semibold text-white shadow-md">
-          <span>{onboardingStep === 9 ? onboardingCopy.compose : onboardingCopy.continue}</span>
-          <ChevronRight className="h-4 w-4" />
-        </button>
+        <div className="mt-4 flex shrink-0 gap-3">
+          <button onClick={prevStep} className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-sm" aria-label={copy.common.back}>
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button onClick={nextStep} className="flex h-14 flex-1 items-center justify-center gap-2 rounded-full bg-primary text-base font-semibold text-white shadow-md">
+            <span>{onboardingStep === 9 ? onboardingCopy.compose : onboardingCopy.continue}</span>
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       )}
     </div>
   );
