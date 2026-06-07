@@ -10,6 +10,7 @@ import { usePwaInstallPrompt } from "@/shared/presentation/hooks/usePwaInstallPr
 import IosInstallBanner from "@/shared/presentation/components/IosInstallBanner";
 
 const SAVINGS_STEPS = [0, 12, 28, 41, 57];
+const WELCOME_PAGE_STORAGE_KEY = "sera_welcome_page";
 const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const WEEKLY_MEALS = ["Pasta al pomodoro", "Chicken risotto", "Lentil soup", "Veggie frittata", "Pesto pasta", "Tuna salad", "Chickpea stew"];
 const SHOPPING_ITEMS = ["Pasta", "Tomatoes", "Eggs", "Olive oil", "Rice", "Chicken"];
@@ -40,6 +41,13 @@ export default function SeraPreOnboarding({ appCountry, copy, setOnboardingField
   const { canPromptInstall, promptInstall } = usePwaInstallPrompt();
 
   useEffect(() => {
+    const savedPage = Number(localStorage.getItem(WELCOME_PAGE_STORAGE_KEY));
+    if (!Number.isNaN(savedPage) && savedPage >= 0 && savedPage <= 2) {
+      setWelcomePage(savedPage);
+    }
+  }, []);
+
+  useEffect(() => {
     if (welcomePage !== 0) return;
     setSavingsValue(0);
     const timers = SAVINGS_STEPS.map((value, index) => setTimeout(() => setSavingsValue(value), index * 520));
@@ -57,7 +65,11 @@ export default function SeraPreOnboarding({ appCountry, copy, setOnboardingField
   const next = async () => {
     if (welcomePage < 2) {
       setCountryPickerOpen(false);
-      setWelcomePage((page) => page + 1);
+      setWelcomePage((page) => {
+        const nextPage = page + 1;
+        localStorage.setItem(WELCOME_PAGE_STORAGE_KEY, String(nextPage));
+        return nextPage;
+      });
       return;
     }
 
@@ -66,6 +78,7 @@ export default function SeraPreOnboarding({ appCountry, copy, setOnboardingField
     }
 
     onStart();
+    localStorage.removeItem(WELCOME_PAGE_STORAGE_KEY);
   };
 
   return (
@@ -161,7 +174,11 @@ export default function SeraPreOnboarding({ appCountry, copy, setOnboardingField
           </div>
         )}
         {welcomePage > 0 && (
-          <button onClick={() => setWelcomePage((page) => Math.max(0, page - 1))} className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-sm tap-highlight" aria-label={copy.common.back}>
+          <button onClick={() => setWelcomePage((page) => {
+            const nextPage = Math.max(0, page - 1);
+            localStorage.setItem(WELCOME_PAGE_STORAGE_KEY, String(nextPage));
+            return nextPage;
+          })} className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-sm tap-highlight" aria-label={copy.common.back}>
             <ChevronLeft className="h-5 w-5" />
           </button>
         )}

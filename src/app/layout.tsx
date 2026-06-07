@@ -7,7 +7,7 @@ import BottomNav from "@/modules/meal-planning/presentation/components/BottomNav
 export const metadata: Metadata = {
   title: "Sera - AI Dinner Planner",
   description: "Plan a full week of dinners and smart shopping lists in less than one minute.",
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
       { url: "/pwa-192.png", sizes: "192x192", type: "image/png" },

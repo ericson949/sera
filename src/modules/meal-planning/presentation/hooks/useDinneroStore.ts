@@ -2,24 +2,12 @@ import { create } from "zustand";
 import { WeekDay } from "../../domain/value-objects/WeekDay";
 import { UserPreferences } from "@/modules/users/domain/entities/UserPreferences";
 import { DinneroState, AppCountry, AppLanguage } from "./useDinneroStore.types";
-import { DEFAULT_USER_ID, getSavedLocale, LOCALE_STORAGE_KEY, USAGE_STORAGE_KEY } from "./seraStoreConfig";
+import { clearOnboardingDraft, createOnboardingDraft, DEFAULT_USER_ID, getOnboardingDraft, getSavedLocale, LOCALE_STORAGE_KEY, saveOnboardingDraft, USAGE_STORAGE_KEY } from "./seraStoreConfig";
 import { seraUseCases } from "./seraUseCases";
 
 export type { AppCountry, AppLanguage };
 
-const {
-  userRepo,
-  startOnboardingUseCase,
-  savePrefsUseCase,
-  generatePlanUseCase,
-  regeneratePlanUseCase,
-  swapMealUseCase,
-  getCurrentPlanUseCase,
-  toggleShoppingItemUseCase,
-  saveMealPlanUseCase,
-  getDashboardUseCase,
-  createCheckoutUseCase,
-} = seraUseCases;
+const { userRepo, startOnboardingUseCase, savePrefsUseCase, generatePlanUseCase, regeneratePlanUseCase, swapMealUseCase, getCurrentPlanUseCase, toggleShoppingItemUseCase, saveMealPlanUseCase, getDashboardUseCase, createCheckoutUseCase } = seraUseCases;
 
 export const useDinneroStore = create<DinneroState>((set, get) => ({
   user: null,
@@ -51,8 +39,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
     try {
       const uId = get().userId;
       const savedLocale = getSavedLocale();
-      
-      // Ensure user entity exists
+      const onboardingDraft = getOnboardingDraft();
       let userObj = await userRepo.findById(uId);
       if (!userObj) {
         userObj = {
@@ -63,28 +50,25 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
         };
         await userRepo.save(userObj);
       }
-
-      // Initialize default preferences if none exist
       const prefs = await startOnboardingUseCase.execute(uId);
-      
-      // Fetch current plan
       const currentPlan = await getCurrentPlanUseCase.execute(uId);
 
       set({
         user: userObj,
         preferences: prefs,
         activePlan: currentPlan,
-        appLanguage: savedLocale?.appLanguage || get().appLanguage,
-        appCountry: savedLocale?.appCountry || get().appCountry,
-        onboardingShop: prefs.shop,
-        onboardingBudgetMin: prefs.weeklyBudget.min,
-        onboardingBudgetMax: prefs.weeklyBudget.max,
-        onboardingPeople: prefs.numberOfPeople,
-        onboardingGoal: prefs.goal,
-        onboardingVibes: prefs.vibes,
-        onboardingDietaryNeeds: prefs.dietaryNeeds,
-        onboardingCookingTime: prefs.maxCookingTime,
-        onboardingKitchenItems: prefs.kitchenItems,
+        appLanguage: onboardingDraft?.appLanguage || savedLocale?.appLanguage || get().appLanguage,
+        appCountry: onboardingDraft?.appCountry || savedLocale?.appCountry || get().appCountry,
+        onboardingStep: currentPlan ? 1 : onboardingDraft?.onboardingStep || get().onboardingStep,
+        onboardingShop: onboardingDraft?.onboardingShop || prefs.shop,
+        onboardingBudgetMin: onboardingDraft?.onboardingBudgetMin || prefs.weeklyBudget.min,
+        onboardingBudgetMax: onboardingDraft?.onboardingBudgetMax || prefs.weeklyBudget.max,
+        onboardingPeople: onboardingDraft?.onboardingPeople || prefs.numberOfPeople,
+        onboardingGoal: onboardingDraft?.onboardingGoal || prefs.goal,
+        onboardingVibes: onboardingDraft?.onboardingVibes || prefs.vibes,
+        onboardingDietaryNeeds: onboardingDraft?.onboardingDietaryNeeds || prefs.dietaryNeeds,
+        onboardingCookingTime: onboardingDraft?.onboardingCookingTime || prefs.maxCookingTime,
+        onboardingKitchenItems: onboardingDraft?.onboardingKitchenItems || prefs.kitchenItems,
       });
 
       await get().loadDashboard();
@@ -103,14 +87,20 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
     }
 
     set({ [key]: value } as any);
+
+    if (key.startsWith("onboarding") || key === "appLanguage" || key === "appCountry") {
+      saveOnboardingDraft(createOnboardingDraft(get()));
+    }
   },
 
   nextStep: () => {
     set((state) => ({ onboardingStep: state.onboardingStep + 1 }));
+    saveOnboardingDraft(createOnboardingDraft(get()));
   },
 
   prevStep: () => {
     set((state) => ({ onboardingStep: Math.max(1, state.onboardingStep - 1) }));
+    saveOnboardingDraft(createOnboardingDraft(get()));
   },
 
   resetOnboarding: () => {
@@ -131,14 +121,13 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
       onboardingKitchenItems: [],
       error: null,
     });
+    saveOnboardingDraft(createOnboardingDraft(get()));
   },
 
   generatePlan: async () => {
     set({ isGenerating: true, error: null });
     try {
       const uId = get().userId;
-
-      // 1. Save preferences first
       const prefData: UserPreferences = {
         userId: uId,
         shop: get().onboardingShop,
@@ -154,13 +143,11 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
         maxCookingTime: get().onboardingCookingTime,
         kitchenItems: get().onboardingKitchenItems,
       };
-
       await savePrefsUseCase.execute(prefData);
-
-      // 2. Generate Plan
       const plan = await generatePlanUseCase.execute(uId);
 
       set({ activePlan: plan, isGenerating: false, preferences: prefData });
+      clearOnboardingDraft();
       await get().loadDashboard();
     } catch (err: any) {
       set({ isGenerating: false, error: err.message });
@@ -190,8 +177,6 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
     try {
       const uId = get().userId;
       const updatedPlan = await swapMealUseCase.execute(uId, day);
-      
-      // If a meal details drawer is open, update the selectedMeal reference
       const currentSelected = get().selectedMeal;
       if (currentSelected && currentSelected.day === day) {
         const newMeal = updatedPlan.days.find((m) => m.day === day);
@@ -224,7 +209,6 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
       const uId = get().userId;
       const active = get().activePlan;
       if (!active) return;
-      
       const updatedPlan = await saveMealPlanUseCase.execute(uId, active.id);
       set({ activePlan: updatedPlan });
       await get().loadDashboard();
@@ -271,7 +255,6 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
         userObj.subscriptionStatus = "free";
         await userRepo.save(userObj);
         set({ user: userObj });
-        // Reset local counters for demo testing
         localStorage.removeItem(USAGE_STORAGE_KEY);
         await get().loadDashboard();
       }

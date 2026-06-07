@@ -22,6 +22,9 @@ export default function ClientInitializer() {
     navigator.serviceWorker
       .register("/sw.js", { scope: "/", updateViaCache: "none" })
       .then((registration) => {
+        const worker = registration.active ?? registration.waiting ?? registration.installing ?? navigator.serviceWorker.controller;
+        worker?.postMessage({ type: "SERA_WARM_CACHE" });
+
         const publishOfflineState = () => {
           const plan = useDinneroStore.getState().activePlan;
           const worker = registration.active ?? navigator.serviceWorker.controller;

@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Sera - AI Dinner Planner",
     short_name: "Sera",
     description: "Premium weekly dinner planning and smart shopping lists.",
-    start_url: "/",
+    start_url: "/?source=pwa",
     scope: "/",
     display: "standalone",
     id: "/",

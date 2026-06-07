@@ -1,14 +1,18 @@
-const VERSION = "sera-v3";
+const VERSION = "sera-v4";
 const APP_CACHE = `${VERSION}-app`;
 const STATE_CACHE = `${VERSION}-state`;
 const APP_SHELL = [
   "/",
+  "/?source=pwa",
+  "/offline.html",
   "/dashboard",
   "/results",
   "/shopping-list",
   "/pricing",
+  "/manifest.webmanifest",
   "/pwa-192.png",
   "/pwa-512.png",
+  "/maskable-512.png",
   "/apple-touch-icon.png",
 ];
 const OFFLINE_STATE_URL = "/offline-state.json";
@@ -31,6 +35,11 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("message", (event) => {
+  if (event.data?.type === "SERA_WARM_CACHE") {
+    event.waitUntil(caches.open(APP_CACHE).then((cache) => cache.addAll(APP_SHELL)));
+    return;
+  }
+
   if (event.data?.type === "SERA_NOTIFICATION") {
     event.waitUntil(
       self.registration.showNotification(event.data.title ?? "Sera", {
@@ -104,9 +113,21 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  if (request.mode === "navigate") {
+    event.respondWith(
+      networkFirstNavigation(request).catch(() =>
+        caches.match(request).then((response) => response ?? caches.match("/") ?? caches.match("/offline.html"))
+      )
+    );
+    return;
+  }
+
   event.respondWith(
     fetch(request)
       .then((response) => {
+        if (!response || response.status !== 200) {
+          return response;
+        }
         const copy = response.clone();
         caches.open(APP_CACHE).then((cache) => cache.put(request, copy));
         return response;
@@ -114,3 +135,16 @@ self.addEventListener("fetch", (event) => {
       .catch(() => caches.match(request).then((response) => response ?? caches.match("/")))
   );
 });
+
+function networkFirstNavigation(request) {
+  return Promise.race([
+    fetch(request).then((response) => {
+      if (response && response.status === 200) {
+        const copy = response.clone();
+        caches.open(APP_CACHE).then((cache) => cache.put(request, copy));
+      }
+      return response;
+    }),
+    new Promise((_, reject) => setTimeout(() => reject(new Error("Navigation timeout")), 1800)),
+  ]);
+}
