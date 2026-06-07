@@ -102,7 +102,7 @@ export default function SeraPreOnboarding({ appCountry, copy, setOnboardingField
               <div className="space-y-2">
                 <button onClick={() => setCountryPickerOpen((open) => !open)} className="flex w-full items-center justify-between rounded-full bg-card px-5 py-3 text-left shadow-sm tap-highlight">
                   <span className="text-base font-black text-foreground">{selectedCountry.flag} {selectedCountry.label}</span>
-                  <span className="text-xs font-bold text-muted">{countryPickerOpen ? "Close" : "Change"}</span>
+                  <span className="text-xs font-bold text-muted">{countryPickerOpen ? copy.welcome.countryPickerClose : copy.welcome.countryPickerChange}</span>
                 </button>
                 <AnimatePresence>
                   {countryPickerOpen && (

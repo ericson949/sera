@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
+import { getProductCopy } from "@/shared/seraProductCopy";
 
 const NOTIFICATION_OPT_IN_KEY = "sera_notifications_enabled";
 
@@ -52,10 +53,11 @@ export default function ClientInitializer() {
               Notification.permission === "granted"
             ) {
               const worker = registration.active ?? navigator.serviceWorker.controller;
+              const copy = getProductCopy(state.appLanguage);
               worker?.postMessage({
                 type: "SERA_NOTIFICATION",
-                title: "Your Sera week is ready",
-                body: "Dinner is planned and your market guide is waiting.",
+                title: copy.shell.ready,
+                body: copy.notifications.body,
                 url: "/results",
               });
             }

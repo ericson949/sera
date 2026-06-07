@@ -3,11 +3,14 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
+import { getProductCopy } from "@/shared/seraProductCopy";
 
 export default function Home() {
   const router = useRouter();
   const activePlan = useDinneroStore((state) => state.activePlan);
   const user = useDinneroStore((state) => state.user);
+  const appLanguage = useDinneroStore((state) => state.appLanguage);
+  const copy = getProductCopy(appLanguage).shell;
 
   useEffect(() => {
     if (!user) return;
@@ -20,7 +23,7 @@ export default function Home() {
         S
       </div>
       <h1 className="mt-5 font-serif text-[42px] leading-[44px] text-foreground">Sera</h1>
-      <p className="mt-2 text-sm leading-6 text-muted">Planning your dinners.</p>
+      <p className="mt-2 text-sm leading-6 text-muted">{copy.loading}</p>
     </div>
   );
 }

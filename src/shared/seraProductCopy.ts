@@ -4,6 +4,20 @@ export const PRODUCT_COPY = {
   en: {
     nav: ["Casa", "Journal", "Market", "Pro"],
     common: { back: "Back", close: "Close", swap: "Swap", continue: "Continue with Sera" },
+    shell: { loading: "Planning your dinners.", offline: "Your meal plan is available offline. Reconnect to refresh the latest dinners.", ready: "Your meal plan is ready." },
+    onboarding: {
+      progress: "Sera", kicker: "Sera meal planner", continue: "Continue", compose: "Compose the week",
+      loadingTitle: "Composing the week.", loadingPhrases: ["Reading your market rhythm...", "Balancing budget and taste...", "Choosing dinners with restraint...", "Arranging a calm shopping guide...", "Preparing the week."],
+      shopTitle: "Where do you usually shop?", shopBody: "We tune prices around your real market, not a generic grocery guess.",
+      budgetTitle: "What is your dinner budget?", budgetBody: "A beautiful week still needs to respect the receipt.",
+      peopleTitle: "How many people eat at your table?", peopleBody: "Portions, leftovers and quantities follow the size of the table.", person: "person", people: "people",
+      goalTitle: "What should the week prioritize?", goalBody: "Pick the mood of the plan; Sera will curate around it.",
+      vibeTitle: "What style feels right?", vibeBody: "Choose up to 3. Selected: {count}/3",
+      dietTitle: "Any dietary needs?", dietBody: "Sera will respect these boundaries.",
+      timeTitle: "How much time do you have?", timeBody: "No elaborate recipes on rushed evenings.",
+      kitchenTitle: "What is already in your kitchen?", kitchenBody: "Use what is there first.",
+    },
+    marketSections: { Vegetables: ["Vegetables", "Market Fresh"], "Meat & Fish": ["Meat & Fish", "The Counter"], Dairy: ["Dairy", "From the Fridge"], Pantry: ["Pantry", "Kitchen Essentials"], Frozen: ["Frozen", "For Later"], Spices: ["Spices", "Aromatic Shelf"], Other: ["Other", "Last Details"] },
     dashboard: {
       statusFree: "Free", statusPro: "Pro", kicker: "Italian dinner journal",
       title: "A quieter way to plan the week.", compose: "Compose", newWeek: "New week",
@@ -28,15 +42,15 @@ export const PRODUCT_COPY = {
     },
     pricing: {
       kicker: "Sera membership", title: "A more graceful kitchen rhythm.", active: "Active", monthly: "Monthly",
-      cancel: "Cancel online whenever the season changes.", member: "Member", pro: "Pro", pause: "Sandbox: pause membership",
-      unlock: "Sandbox: unlock membership", stripe: "Payments are processed by Stripe. By continuing, you agree to the terms and cancellation policy.",
+      cancel: "Cancel online whenever the season changes.", member: "Member", pro: "Pro", pause: "Demo: pause membership",
+      unlock: "Demo: unlock membership", stripe: "Payments are processed by Stripe. By continuing, you agree to the terms and cancellation policy.",
       links: "Privacy, terms and cancellation", features: ["Unlimited weekly dinner journals", "Unlimited meal swaps", "Saved menus and favourite recipes", "Exportable market guide", "Budget history for calmer shopping", "Family portions and pantry-aware planning"],
     },
     meal: { time: "Time", energy: "Energy", cost: "Cost", why: "Why it belongs here", ingredients: "Ingredients", method: "Method" },
     paywall: {
       kicker: "Sera membership", title: "Keep the week beautifully planned.",
       body: "Designed for households that want a calmer table, a clearer market list, and fewer last-minute decisions.",
-      perMonth: "/ month", unlock: "Sandbox: unlock membership",
+      perMonth: "/ month", unlock: "Demo: unlock membership",
       benefits: ["Unlimited weekly dinner journals", "Unlimited refined meal swaps", "Saved menus for future Sundays", "Exportable market lists"],
     },
     notifications: {
@@ -48,6 +62,20 @@ export const PRODUCT_COPY = {
   fr: {
     nav: ["Casa", "Journal", "Marche", "Pro"],
     common: { back: "Retour", close: "Fermer", swap: "Remplacer", continue: "Continuer avec Sera" },
+    shell: { loading: "Planification de tes diners.", offline: "Ton plan repas est disponible hors ligne. Reconnecte-toi pour actualiser les derniers diners.", ready: "Ton plan repas est pret." },
+    onboarding: {
+      progress: "Sera", kicker: "Planificateur repas Sera", continue: "Continuer", compose: "Composer la semaine",
+      loadingTitle: "Composition de la semaine.", loadingPhrases: ["Lecture de ton rythme courses...", "Equilibre budget et envies...", "Selection de diners realistes...", "Organisation du guide courses...", "Preparation de la semaine."],
+      shopTitle: "Ou fais-tu tes courses ?", shopBody: "Nous ajustons les prix autour de ton vrai magasin, pas d'une estimation generique.",
+      budgetTitle: "Quel est ton budget diner ?", budgetBody: "Une belle semaine doit aussi respecter le ticket de caisse.",
+      peopleTitle: "Combien de personnes mangent a table ?", peopleBody: "Portions, restes et quantites suivent la taille de la table.", person: "personne", people: "personnes",
+      goalTitle: "Quelle priorite pour la semaine ?", goalBody: "Choisis l'intention du plan; Sera compose autour.",
+      vibeTitle: "Quel style te parle ?", vibeBody: "Choisis jusqu'a 3. Selection: {count}/3",
+      dietTitle: "Des besoins alimentaires ?", dietBody: "Sera respectera ces limites.",
+      timeTitle: "Combien de temps as-tu ?", timeBody: "Pas de recettes compliquees les soirs presses.",
+      kitchenTitle: "Qu'as-tu deja en cuisine ?", kitchenBody: "On utilise d'abord ce qui est la.",
+    },
+    marketSections: { Vegetables: ["Legumes", "Frais du marche"], "Meat & Fish": ["Viande & poisson", "Le comptoir"], Dairy: ["Frais", "Du refrigerateur"], Pantry: ["Epicerie", "Essentiels cuisine"], Frozen: ["Surgeles", "Pour plus tard"], Spices: ["Epices", "Etagere aromatique"], Other: ["Autres", "Derniers details"] },
     dashboard: {
       statusFree: "Gratuit", statusPro: "Pro", kicker: "Journal de diners italien",
       title: "Une facon plus calme de planifier la semaine.", compose: "Composer", newWeek: "Nouvelle semaine",
@@ -72,15 +100,15 @@ export const PRODUCT_COPY = {
     },
     pricing: {
       kicker: "Abonnement Sera", title: "Un rythme cuisine plus elegant.", active: "Actif", monthly: "Mensuel",
-      cancel: "Annule en ligne a tout moment.", member: "Membre", pro: "Pro", pause: "Sandbox: suspendre",
-      unlock: "Sandbox: debloquer", stripe: "Paiements traites par Stripe. En continuant, tu acceptes les conditions et la politique d'annulation.",
+      cancel: "Annule en ligne a tout moment.", member: "Membre", pro: "Pro", pause: "Demo : suspendre",
+      unlock: "Demo : debloquer", stripe: "Paiements traites par Stripe. En continuant, tu acceptes les conditions et la politique d'annulation.",
       links: "Confidentialite, conditions et annulation", features: ["Semaines de diners illimitees", "Remplacements illimites", "Menus sauvegardes", "Guide courses exportable", "Historique budget", "Portions famille et placard pris en compte"],
     },
     meal: { time: "Temps", energy: "Energie", cost: "Cout", why: "Pourquoi ce plat", ingredients: "Ingredients", method: "Methode" },
     paywall: {
       kicker: "Abonnement Sera", title: "Garde la semaine joliment planifiee.",
       body: "Pour les foyers qui veulent une table plus calme, une liste plus claire et moins de decisions de derniere minute.",
-      perMonth: "/ mois", unlock: "Sandbox: debloquer",
+      perMonth: "/ mois", unlock: "Demo : debloquer",
       benefits: ["Semaines de diners illimitees", "Remplacements raffines illimites", "Menus sauvegardes", "Listes courses exportables"],
     },
     notifications: {
@@ -92,6 +120,20 @@ export const PRODUCT_COPY = {
   it: {
     nav: ["Casa", "Diario", "Mercato", "Pro"],
     common: { back: "Indietro", close: "Chiudi", swap: "Cambia", continue: "Continua con Sera" },
+    shell: { loading: "Pianificazione delle cene.", offline: "Il tuo piano pasti e disponibile offline. Riconnettiti per aggiornare le ultime cene.", ready: "Il tuo piano pasti e pronto." },
+    onboarding: {
+      progress: "Sera", kicker: "Pianificatore pasti Sera", continue: "Continua", compose: "Componi la settimana",
+      loadingTitle: "Composizione della settimana.", loadingPhrases: ["Lettura del tuo ritmo spesa...", "Equilibrio tra budget e gusto...", "Scelta di cene realistiche...", "Organizzazione della guida spesa...", "Preparazione della settimana."],
+      shopTitle: "Dove fai di solito la spesa?", shopBody: "Adattiamo i prezzi al tuo vero supermercato, non a una stima generica.",
+      budgetTitle: "Qual e il budget per le cene?", budgetBody: "Una bella settimana deve rispettare anche lo scontrino.",
+      peopleTitle: "Quante persone mangiano a tavola?", peopleBody: "Porzioni, avanzi e quantita seguono la dimensione della tavola.", person: "persona", people: "persone",
+      goalTitle: "Quale priorita per la settimana?", goalBody: "Scegli l'intenzione del piano; Sera curera il resto.",
+      vibeTitle: "Che stile preferisci?", vibeBody: "Scegli fino a 3. Selezionati: {count}/3",
+      dietTitle: "Esigenze alimentari?", dietBody: "Sera rispettera questi limiti.",
+      timeTitle: "Quanto tempo hai?", timeBody: "Niente ricette elaborate nelle sere di corsa.",
+      kitchenTitle: "Cosa hai gia in cucina?", kitchenBody: "Usiamo prima quello che c'e.",
+    },
+    marketSections: { Vegetables: ["Verdure", "Fresco di mercato"], "Meat & Fish": ["Carne & pesce", "Il banco"], Dairy: ["Frigo", "Dal fresco"], Pantry: ["Dispensa", "Essenziali cucina"], Frozen: ["Surgelati", "Per dopo"], Spices: ["Spezie", "Mensola aromatica"], Other: ["Altro", "Ultimi dettagli"] },
     dashboard: {
       statusFree: "Gratis", statusPro: "Pro", kicker: "Diario italiano della cena",
       title: "Un modo piu calmo per pianificare la settimana.", compose: "Componi", newWeek: "Nuova settimana",
@@ -116,15 +158,15 @@ export const PRODUCT_COPY = {
     },
     pricing: {
       kicker: "Abbonamento Sera", title: "Un ritmo in cucina piu elegante.", active: "Attivo", monthly: "Mensile",
-      cancel: "Annulla online quando vuoi.", member: "Membro", pro: "Pro", pause: "Sandbox: sospendi",
-      unlock: "Sandbox: sblocca", stripe: "Pagamenti gestiti da Stripe. Continuando accetti termini e cancellazione.",
+      cancel: "Annulla online quando vuoi.", member: "Membro", pro: "Pro", pause: "Demo: sospendi",
+      unlock: "Demo: sblocca", stripe: "Pagamenti gestiti da Stripe. Continuando accetti termini e cancellazione.",
       links: "Privacy, termini e cancellazione", features: ["Diari settimanali illimitati", "Cambi pasto illimitati", "Menu salvati", "Guida spesa esportabile", "Storico budget", "Porzioni famiglia e dispensa"],
     },
     meal: { time: "Tempo", energy: "Energia", cost: "Costo", why: "Perche questo piatto", ingredients: "Ingredienti", method: "Metodo" },
     paywall: {
       kicker: "Abbonamento Sera", title: "Mantieni la settimana ben pianificata.",
       body: "Per famiglie che vogliono una tavola piu calma, una lista piu chiara e meno decisioni all'ultimo minuto.",
-      perMonth: "/ mese", unlock: "Sandbox: sblocca",
+      perMonth: "/ mese", unlock: "Demo: sblocca",
       benefits: ["Diari settimanali illimitati", "Cambi raffinati illimitati", "Menu salvati", "Liste spesa esportabili"],
     },
     notifications: {

@@ -55,7 +55,19 @@
     <main>
       <div class="mark">S</div>
       <h1>Sera</h1>
-      <p>Your meal plan is available offline. Reconnect to refresh the latest dinners.</p>
+      <p id="offline-copy">Sera</p>
     </main>
+    <script>
+      try {
+        const stored = localStorage.getItem("sera_locale") || localStorage.getItem("dinnero_locale");
+        const lang = stored ? JSON.parse(stored).appLanguage : (navigator.language || "en").slice(0, 2);
+        const copy = {
+          fr: "Ton plan repas est disponible hors ligne. Reconnecte-toi pour actualiser les derniers diners.",
+          it: "Il tuo piano pasti e disponibile offline. Riconnettiti per aggiornare le ultime cene.",
+          en: "Your meal plan is available offline. Reconnect to refresh the latest dinners."
+        };
+        document.getElementById("offline-copy").textContent = copy[lang] || copy.en;
+      } catch {}
+    </script>
   </body>
 </html>

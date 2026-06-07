@@ -43,7 +43,7 @@ self.addEventListener("message", (event) => {
   if (event.data?.type === "SERA_NOTIFICATION") {
     event.waitUntil(
       self.registration.showNotification(event.data.title ?? "Sera", {
-        body: event.data.body ?? "Your meal plan is ready.",
+        body: event.data.body ?? "Sera",
         icon: "/pwa-192.png",
         badge: "/pwa-192.png",
         data: { url: event.data.url ?? "/dashboard" },

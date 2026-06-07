@@ -9,6 +9,7 @@ import SeraPreOnboarding from "@/modules/meal-planning/presentation/components/S
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import { useSeraLocaleDetection } from "@/modules/meal-planning/presentation/hooks/useSeraLocaleDetection";
 import { getCopy } from "@/shared/i18n";
+import { getProductCopy } from "@/shared/seraProductCopy";
 import { GROCERY_SHOPS } from "@/modules/meal-planning/domain/value-objects/GroceryShop";
 import { MEAL_GOALS } from "@/modules/meal-planning/domain/value-objects/MealGoal";
 import { FOOD_VIBES, FoodVibe } from "@/modules/meal-planning/domain/value-objects/FoodVibe";
@@ -16,12 +17,13 @@ import { DIETARY_NEEDS, DietaryNeed } from "@/modules/meal-planning/domain/value
 import { COOKING_TIMES } from "@/modules/meal-planning/domain/value-objects/CookingTime";
 
 const KITCHEN_ITEMS = ["Pasta", "Rice", "Eggs", "Chicken", "Tuna", "Tomatoes", "Cheese", "Potatoes", "Beans", "Lentils", "Olive oil", "Onion", "Garlic", "Frozen vegetables", "Spices", "Milk", "Yogurt", "Bread", "Oats"];
-const LOADING_PHRASES = ["Reading your market rhythm...", "Balancing budget and taste...", "Choosing dinners with restraint...", "Arranging a calm shopping guide...", "Preparing the week."];
 
 export default function OnboardingPage() {
   const router = useRouter();
   const store = useDinneroStore();
   const copy = getCopy(store.appLanguage);
+  const productCopy = getProductCopy(store.appLanguage);
+  const onboardingCopy = productCopy.onboarding;
   const [loadingStepIdx, setLoadingStepIdx] = useState(0);
   const {
     onboardingStep,
@@ -47,14 +49,14 @@ export default function OnboardingPage() {
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
     if (onboardingStep === 10) {
-      interval = setInterval(() => setLoadingStepIdx((prev) => Math.min(prev + 1, LOADING_PHRASES.length - 1)), 700);
+      interval = setInterval(() => setLoadingStepIdx((prev) => Math.min(prev + 1, onboardingCopy.loadingPhrases.length - 1)), 700);
     } else {
       setLoadingStepIdx(0);
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [onboardingStep]);
+  }, [onboardingCopy.loadingPhrases.length, onboardingStep]);
 
   useEffect(() => {
     if (onboardingStep !== 10) return;
@@ -109,7 +111,7 @@ export default function OnboardingPage() {
           <button onClick={prevStep} className="flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-sm">
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <span className="editorial-kicker">Sera {onboardingStep - 1} / 8</span>
+          <span className="editorial-kicker">{onboardingCopy.progress} {onboardingStep - 1} / 8</span>
           <div className="w-10" />
         </div>
       )}
@@ -122,13 +124,13 @@ export default function OnboardingPage() {
         )}
 
         {onboardingStep === 2 && (
-          <StepShell icon={<Store />} title="Where do you usually shop?" body="We tune prices around your real market, not a generic grocery guess.">
+          <StepShell icon={<Store />} title={onboardingCopy.shopTitle} body={onboardingCopy.shopBody} kicker={onboardingCopy.kicker}>
             <OptionGrid values={GROCERY_SHOPS} selected={[onboardingShop]} onSelect={(shop) => setOnboardingField("onboardingShop", shop)} iconFor={getOptionIcon} />
           </StepShell>
         )}
 
         {onboardingStep === 3 && (
-          <StepShell icon={<Wallet />} title="What is your dinner budget?" body="A beautiful week still needs to respect the receipt.">
+          <StepShell icon={<Wallet />} title={onboardingCopy.budgetTitle} body={onboardingCopy.budgetBody} kicker={onboardingCopy.kicker}>
             <div className="rounded-[1.8rem] border border-warm-stone/60 bg-card p-6 shadow-md">
               <BudgetSlider
                 min={onboardingBudgetMin}
@@ -143,37 +145,37 @@ export default function OnboardingPage() {
         )}
 
         {onboardingStep === 4 && (
-          <StepShell icon={<Users />} title="How many people eat at your table?" body="Portions, leftovers and quantities follow the size of the table.">
-            <OptionList values={[1, 2, 3, 4, 5]} selected={onboardingPeople} label={(num) => (num === 5 ? "5+ people" : `${num} ${num === 1 ? "person" : "people"}`)} onSelect={(num) => setOnboardingField("onboardingPeople", num)} iconFor={getOptionIcon} />
+          <StepShell icon={<Users />} title={onboardingCopy.peopleTitle} body={onboardingCopy.peopleBody} kicker={onboardingCopy.kicker}>
+            <OptionList values={[1, 2, 3, 4, 5]} selected={onboardingPeople} label={(num) => (num === 5 ? `5+ ${onboardingCopy.people}` : `${num} ${num === 1 ? onboardingCopy.person : onboardingCopy.people}`)} onSelect={(num) => setOnboardingField("onboardingPeople", num)} iconFor={getOptionIcon} />
           </StepShell>
         )}
 
         {onboardingStep === 5 && (
-          <StepShell icon={<Target />} title="What should the week prioritize?" body="Pick the mood of the plan; Sera will curate around it.">
+          <StepShell icon={<Target />} title={onboardingCopy.goalTitle} body={onboardingCopy.goalBody} kicker={onboardingCopy.kicker}>
             <OptionList values={MEAL_GOALS} selected={onboardingGoal} onSelect={(goal) => setOnboardingField("onboardingGoal", goal)} iconFor={getOptionIcon} />
           </StepShell>
         )}
 
         {onboardingStep === 6 && (
-          <StepShell icon={<Compass />} title="What style feels right?" body={`Choose up to 3. Selected: ${onboardingVibes.length}/3`}>
+          <StepShell icon={<Compass />} title={onboardingCopy.vibeTitle} body={onboardingCopy.vibeBody.replace("{count}", String(onboardingVibes.length))} kicker={onboardingCopy.kicker}>
             <OptionGrid values={FOOD_VIBES} selected={onboardingVibes} onSelect={toggleVibe} disabled={(vibe) => onboardingVibes.length >= 3 && !onboardingVibes.includes(vibe)} iconFor={getOptionIcon} />
           </StepShell>
         )}
 
         {onboardingStep === 7 && (
-          <StepShell icon={<Heart />} title="Any dietary needs?" body="Sera will respect these boundaries.">
+          <StepShell icon={<Heart />} title={onboardingCopy.dietTitle} body={onboardingCopy.dietBody} kicker={onboardingCopy.kicker}>
             <OptionGrid values={DIETARY_NEEDS} selected={onboardingDietaryNeeds} onSelect={toggleDiet} iconFor={getOptionIcon} />
           </StepShell>
         )}
 
         {onboardingStep === 8 && (
-          <StepShell icon={<Clock />} title="How much time do you have?" body="No elaborate recipes on rushed evenings.">
+          <StepShell icon={<Clock />} title={onboardingCopy.timeTitle} body={onboardingCopy.timeBody} kicker={onboardingCopy.kicker}>
             <OptionList values={COOKING_TIMES} selected={onboardingCookingTime} onSelect={(time) => setOnboardingField("onboardingCookingTime", time)} iconFor={getOptionIcon} />
           </StepShell>
         )}
 
         {onboardingStep === 9 && (
-          <StepShell icon={<CookingPot />} title="What is already in your kitchen?" body="Use what is there first.">
+          <StepShell icon={<CookingPot />} title={onboardingCopy.kitchenTitle} body={onboardingCopy.kitchenBody} kicker={onboardingCopy.kicker}>
             <OptionGrid values={KITCHEN_ITEMS} selected={onboardingKitchenItems} onSelect={toggleKitchenItem} iconFor={getOptionIcon} compact />
           </StepShell>
         )}
@@ -182,9 +184,9 @@ export default function OnboardingPage() {
           <div className="flex flex-col items-center gap-8 text-center">
             <div className="h-20 w-20 rounded-full border border-warm-stone border-t-primary animate-spin" />
             <div>
-              <h2 className="font-serif text-[36px] leading-[39px] text-foreground">Composing the week.</h2>
+              <h2 className="font-serif text-[36px] leading-[39px] text-foreground">{onboardingCopy.loadingTitle}</h2>
               <div className="mt-6 space-y-2 text-left">
-                {LOADING_PHRASES.map((phrase, idx) => (
+                {onboardingCopy.loadingPhrases.map((phrase, idx) => (
                   <p key={phrase} className={`text-sm ${idx <= loadingStepIdx ? "text-foreground" : "text-muted/45"}`}>{phrase}</p>
                 ))}
               </div>
@@ -196,7 +198,7 @@ export default function OnboardingPage() {
 
       {onboardingStep > 1 && onboardingStep < 10 && (
         <button onClick={nextStep} className="mt-4 flex h-14 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-base font-semibold text-white shadow-md">
-          <span>{onboardingStep === 9 ? "Compose the week" : "Continue"}</span>
+          <span>{onboardingStep === 9 ? onboardingCopy.compose : onboardingCopy.continue}</span>
           <ChevronRight className="h-4 w-4" />
         </button>
       )}
@@ -204,7 +206,7 @@ export default function OnboardingPage() {
   );
 }
 
-function StepShell({ icon, title, body, children }: { icon: React.ReactNode; title: string; body: string; children: React.ReactNode }) {
+function StepShell({ icon, title, body, kicker, children }: { icon: React.ReactNode; title: string; body: string; kicker: string; children: React.ReactNode }) {
   return (
     <motion.div key={title} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.38 }} className="flex min-h-0 flex-1 flex-col">
       <div className="relative mb-5 overflow-hidden rounded-[2rem] border border-warm-stone/60 bg-card p-5 shadow-md">
@@ -212,7 +214,7 @@ function StepShell({ icon, title, body, children }: { icon: React.ReactNode; tit
         <div className="flex h-14 w-14 items-center justify-center rounded-[1.3rem] bg-primary text-white shadow-md [&_svg]:h-6 [&_svg]:w-6 [&_svg]:stroke-[1.5]">
           {icon}
         </div>
-        <p className="editorial-kicker mt-7">Sera meal planner</p>
+        <p className="editorial-kicker mt-7">{kicker}</p>
         <h2 className="mt-2 font-serif text-[36px] leading-[38px] text-foreground">{title}</h2>
         <p className="mt-3 max-w-[330px] text-sm leading-6 text-muted">{body}</p>
       </div>

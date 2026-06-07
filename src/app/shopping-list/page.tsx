@@ -7,7 +7,6 @@ import { ArrowLeft, ArrowRight, Check, Clipboard, ClipboardCheck, ShoppingBag, T
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import { ShoppingCategory } from "@/modules/meal-planning/domain/value-objects/ShoppingCategory";
 import { createMoney, formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
-import { SERA_MARKET_SECTION_LABELS } from "@/shared/seraVisuals";
 import { getProductCopy } from "@/shared/seraProductCopy";
 
 const categories: ShoppingCategory[] = ["Vegetables", "Meat & Fish", "Dairy", "Pantry", "Frozen", "Spices", "Other"];
@@ -16,7 +15,8 @@ export default function ShoppingListPage() {
   const router = useRouter();
   const { activePlan, toggleShoppingItem, appLanguage } = useDinneroStore();
   const [exportStatus, setExportStatus] = useState<"idle" | "done" | "error">("idle");
-  const copy = getProductCopy(appLanguage).shopping;
+  const productCopy = getProductCopy(appLanguage);
+  const copy = productCopy.shopping;
 
   if (!activePlan) {
     return (
@@ -46,8 +46,8 @@ export default function ShoppingListPage() {
     categories.forEach((category) => {
       const categoryItems = items.filter((item) => item.category === category);
       if (categoryItems.length === 0) return;
-      const labels = SERA_MARKET_SECTION_LABELS[category];
-      text += `${labels.title} / ${labels.subtitle}\n`;
+      const labels = productCopy.marketSections[category];
+      text += `${labels[0]} / ${labels[1]}\n`;
       categoryItems.forEach((item) => {
         text += `${item.checked ? "[x]" : "[ ]"} ${item.name} (${item.quantity}) - ${formatMoney(item.estimatedPrice)}\n`;
       });
@@ -128,13 +128,13 @@ export default function ShoppingListPage() {
           {categories.map((category) => {
             const categoryItems = items.filter((item) => item.category === category);
             if (categoryItems.length === 0) return null;
-            const labels = SERA_MARKET_SECTION_LABELS[category];
+            const labels = productCopy.marketSections[category];
             return (
               <section key={category} className="border-t border-warm-stone/70 pt-4">
                 <div className="mb-3 flex items-end justify-between">
                   <div>
-                    <h2 className="font-serif text-[28px] leading-[30px] text-foreground">{labels.title}</h2>
-                    <p className="editorial-kicker mt-1">{labels.subtitle}</p>
+                    <h2 className="font-serif text-[28px] leading-[30px] text-foreground">{labels[0]}</h2>
+                    <p className="editorial-kicker mt-1">{labels[1]}</p>
                   </div>
                   <span className="text-xs font-semibold text-muted">{categoryItems.length} {copy.items}</span>
                 </div>
