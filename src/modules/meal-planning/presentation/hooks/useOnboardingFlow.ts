@@ -51,7 +51,7 @@ export function useOnboardingFlow() {
 
   useEffect(() => {
     if (onboardingStep !== 10) return;
-    generatePlan().then(() => router.push("/week"));
+    generatePlan().then(() => router.push("/plan-preview"));
   }, [onboardingStep, generatePlan, router]);
 
   const startQuestions = () => {

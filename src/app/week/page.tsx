@@ -5,15 +5,17 @@ import Link from "next/link";
 import { Check, GripVertical, Plus, ShoppingBag, X } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import MealDetailModal from "@/modules/meal-planning/presentation/components/MealDetailModal";
+import PaywallModal from "@/modules/meal-planning/presentation/components/PaywallModal";
 import { useWeeklyMealState } from "@/modules/meal-planning/presentation/hooks/useWeeklyMealState";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getProductCopy } from "@/shared/seraProductCopy";
 
 export default function WeekPage() {
   const [draggedMealId, setDraggedMealId] = useState<string | null>(null);
-  const { activePlan, dashboard, userId, selectMeal, swapPlannedMeals, activatePlan, appLanguage } = useDinneroStore();
+  const { activePlan, dashboard, user, userId, selectMeal, openPaywall, swapPlannedMeals, activatePlan, appLanguage } = useDinneroStore();
   const copy = getProductCopy(appLanguage).weekView;
   const weekState = useWeeklyMealState(activePlan, userId);
+  const openMeal = (meal: NonNullable<typeof activePlan>["days"][number]) => (user?.subscriptionStatus === "pro" ? selectMeal(meal) : openPaywall());
 
   useEffect(() => {
     if (!draggedMealId) return;
@@ -85,7 +87,7 @@ export default function WeekPage() {
                 data-meal-id={meal.id}
                 className={`rounded-[1.6rem] p-4 shadow-sm transition ${item.isToday ? "border border-primary bg-card" : "bg-card"} ${draggedMealId === meal.id ? "opacity-55" : ""} ${!item.canDrag ? "cursor-not-allowed" : ""}`}
               >
-                <button onClick={() => selectMeal(meal)} className="w-full text-left">
+                <button onClick={() => openMeal(meal)} className="w-full text-left">
                   <div className="flex items-start justify-between gap-3">
                     <span>
                       <p className="editorial-kicker">{item.isToday ? `${copy.today} - ${item.dateLabel}` : item.dateLabel}</p>
@@ -140,6 +142,7 @@ export default function WeekPage() {
       </section>
 
       <MealDetailModal />
+      <PaywallModal />
     </div>
   );
 }

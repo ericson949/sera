@@ -17,6 +17,7 @@ const inputSchema = z.object({
   dietaryNeeds: z.array(z.string()).default([]),
   maxCookingTime: z.string(),
   kitchenItems: z.array(z.string()).default([]),
+  batchCooking: z.boolean().default(false),
   appCountry: z.string().default("Italy"),
   appLanguage: z.enum(["en", "fr", "it"]).default("it"),
   action: z.enum(["swap"]).optional(),
@@ -106,6 +107,7 @@ async function runMock(input: z.infer<typeof inputSchema>) {
       dietaryNeeds: input.dietaryNeeds as any,
       maxCookingTime: input.maxCookingTime as any,
       kitchenItems: input.kitchenItems,
+      batchCooking: input.batchCooking,
       dayToSwap: input.dayToSwap ?? "Monday",
       excludeTitles: input.excludeTitles,
     });
@@ -121,6 +123,7 @@ async function runMock(input: z.infer<typeof inputSchema>) {
     dietaryNeeds: input.dietaryNeeds as any,
     maxCookingTime: input.maxCookingTime as any,
     kitchenItems: input.kitchenItems,
+    batchCooking: input.batchCooking,
   });
 }
 
@@ -133,11 +136,11 @@ function buildPrompt(input: z.infer<typeof inputSchema>) {
 
   return input.action === "swap"
     ? `You are Sera, a premium Mediterranean dinner planner. Reply in ${language}. Create one replacement dinner for ${country}.
-Context: shop ${input.shop}; budget ${input.budgetMin}-${input.budgetMax} EUR; people ${input.numberOfPeople}; goal ${input.goal}; vibes ${input.vibes.join(", ")}; dietary ${input.dietaryNeeds.join(", ")}; max time ${input.maxCookingTime}; pantry ${input.kitchenItems.join(", ")}; day ${input.dayToSwap}; avoid ${input.excludeTitles.join(", ")}.
+Context: shop ${input.shop}; budget ${input.budgetMin}-${input.budgetMax} EUR; people ${input.numberOfPeople}; goal ${input.goal}; vibes ${input.vibes.join(", ")}; dietary ${input.dietaryNeeds.join(", ")}; max time ${input.maxCookingTime}; batch cooking ${input.batchCooking ? "yes" : "no"}; pantry ${input.kitchenItems.join(", ")}; day ${input.dayToSwap}; avoid ${input.excludeTitles.join(", ")}.
 Rules: strict dietary compliance, realistic local supermarket ingredients, no luxury items, JSON only.
 Schema: {"title":"","description":"","estimatedCost":4.5,"calories":520,"prepTimeMinutes":25,"ingredients":[{"name":"","quantity":"","estimatedPrice":1.2}],"recipeSteps":[""],"whyThisMeal":[""]}`
     : `You are Sera, a premium Mediterranean dinner planner. Reply in ${language}. Create a seven dinner plan for ${country}.
-Context: shop ${input.shop}; budget ${input.budgetMin}-${input.budgetMax} EUR; people ${input.numberOfPeople}; goal ${input.goal}; vibes ${input.vibes.join(", ")}; dietary ${input.dietaryNeeds.join(", ")}; max time ${input.maxCookingTime}; pantry ${input.kitchenItems.join(", ")}.
+Context: shop ${input.shop}; budget ${input.budgetMin}-${input.budgetMax} EUR; people ${input.numberOfPeople}; goal ${input.goal}; vibes ${input.vibes.join(", ")}; dietary ${input.dietaryNeeds.join(", ")}; max time ${input.maxCookingTime}; batch cooking ${input.batchCooking ? "yes, favor recipes that reheat and prep well in one session" : "no"}; pantry ${input.kitchenItems.join(", ")}.
 Country rules: use common shops, ingredients and dinner habits from ${country}. France should feel French, Italy Italian, UK British, US American.
 Budget rules: ${budgetNote} Reuse ingredients and reduce waste.
 Return JSON only with exactly seven meals Monday-Sunday and shopping categories only from: ${SHOPPING_CATEGORIES.join(", ")}.

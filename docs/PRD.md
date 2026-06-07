@@ -43,6 +43,7 @@ Initial countries:
 1. Pre-onboarding welcome
    - User sees premium Sera storytelling.
    - User confirms country.
+   - Existing users can choose an account path without replaying onboarding.
    - User continues into meal planning.
 
 2. Onboarding
@@ -55,14 +56,21 @@ Initial countries:
    - Select up to three food vibes.
    - Select dietary needs.
    - Select cooking time.
+   - Choose whether they batch cook the full week in one session.
    - Select existing kitchen items.
 
-3. Tonight
+3. Post-onboarding conversion
+   - First generated plan opens in a personalized preview.
+   - User validates the plan before entering the app.
+   - A soft paywall/account prompt appears but is not blocking.
+   - Notification opt-in appears immediately after this conversion step.
+
+4. Tonight
    - User opens the app and sees the next practical dinner.
    - User can start cooking, mark the meal cooked, open a quick backup, or access the shopping list.
    - This screen is optimized for low cognitive load after work.
 
-4. Week
+5. Week
    - The week is scheduled from the meal plan creation date, so the current day's meal can be identified clearly.
    - User sees the active week with cooked/planned/skipped statuses.
    - User can drag meals to swap dinners between days.
@@ -71,23 +79,26 @@ Initial countries:
    - User can open recipes, access the shopping list, or start a new week.
    - Previous saved weeks are clickable so a user can reopen an older plan.
 
-5. Shopping list
+6. Shopping list
    - User sees grouped market sections.
    - User checks purchased items.
    - User sees collected, remaining, and total cost.
    - User can export the list.
+   - In free mode, this is a contextual Pro upsell.
 
-6. Profile
+7. Profile
    - User sees demo/account state, can change language/country, and sees default budget, household size, notifications, subscription and legal links.
    - Pro is managed from profile, not as a primary navigation tab.
 
-7. PWA install
+8. PWA install
    - Android/Chromium users receive install prompt when supported.
    - iOS users receive localized install guidance.
    - Installed app opens quickly with cached shell and offline fallback.
 
-8. Premium
+9. Premium
    - Free users hit clear upgrade moments.
+   - Creating a new week is a hard Pro gate in the MVP.
+   - Full meal details and shopping list are contextual upsells for free users.
    - Stripe checkout handles production subscriptions.
    - Legal pages are available before payment.
 

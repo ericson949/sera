@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Clock, Compass, CookingPot, Heart, Store, Target, Users, Wallet } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Compass, CookingPot, Crown, Heart, Store, Target, Users, Wallet } from "lucide-react";
+import Link from "next/link";
 import BudgetSlider from "@/modules/meal-planning/presentation/components/BudgetSlider";
 import CookingTimeCards from "@/modules/meal-planning/presentation/components/CookingTimeCards";
 import GoalSelector from "@/modules/meal-planning/presentation/components/GoalSelector";
@@ -26,11 +27,30 @@ export default function NewWeekPage() {
   const [step, setStep] = useState(FIRST_STEP);
   const store = useDinneroStore();
   const copy = getProductCopy(store.appLanguage).onboarding;
+  const productCopy = getProductCopy(store.appLanguage);
+  const isPro = store.user?.subscriptionStatus === "pro";
 
   useEffect(() => {
     if (!store.hasHydrated) return;
     if (!store.user && !store.activePlan) router.replace("/onboarding");
   }, [router, store.activePlan, store.hasHydrated, store.user]);
+
+  if (store.hasHydrated && !isPro) {
+    return (
+      <div className="flex h-svh flex-col justify-center bg-background p-6 text-center">
+        <Crown className="mx-auto h-8 w-8 text-primary" />
+        <p className="editorial-kicker mt-5">{productCopy.paywall.kicker}</p>
+        <h1 className="mt-3 font-serif text-[42px] leading-[44px] text-foreground">{productCopy.paywall.title}</h1>
+        <p className="mx-auto mt-4 max-w-[320px] text-sm leading-6 text-muted">{productCopy.paywall.body}</p>
+        <Link href="/pricing" className="mt-8 flex h-14 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white shadow-md">
+          {productCopy.common.continue}
+        </Link>
+        <Link href="/dashboard" className="mt-3 flex h-12 items-center justify-center rounded-full bg-card text-sm font-semibold text-foreground shadow-sm">
+          {productCopy.common.back}
+        </Link>
+      </div>
+    );
+  }
 
   const goBack = () => {
     if (step === FIRST_STEP) {

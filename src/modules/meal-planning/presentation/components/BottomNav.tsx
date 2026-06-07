@@ -12,7 +12,7 @@ export default function BottomNav() {
   const copy = getProductCopy(useDinneroStore((state) => state.appLanguage));
 
   // Hide nav on onboarding pages
-  if (pathname === "/onboarding" || pathname === "/" || pathname?.includes("/onboarding") || pathname?.startsWith("/new-week")) {
+  if (pathname === "/onboarding" || pathname === "/" || pathname?.includes("/onboarding") || pathname?.startsWith("/new-week") || pathname?.startsWith("/plan-preview") || pathname?.startsWith("/post-onboarding")) {
     return null;
   }
 

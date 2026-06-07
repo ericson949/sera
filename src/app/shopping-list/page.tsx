@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, Clipboard, ClipboardCheck, ShoppingBag, Trash2 } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
+import PaywallModal from "@/modules/meal-planning/presentation/components/PaywallModal";
 import { ShoppingCategory } from "@/modules/meal-planning/domain/value-objects/ShoppingCategory";
 import { createMoney, formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getProductCopy } from "@/shared/seraProductCopy";
@@ -13,10 +14,15 @@ const categories: ShoppingCategory[] = ["Vegetables", "Meat & Fish", "Dairy", "P
 
 export default function ShoppingListPage() {
   const router = useRouter();
-  const { activePlan, toggleShoppingItem, appLanguage } = useDinneroStore();
+  const { activePlan, user, openPaywall, toggleShoppingItem, appLanguage } = useDinneroStore();
   const [exportStatus, setExportStatus] = useState<"idle" | "done" | "error">("idle");
   const productCopy = getProductCopy(appLanguage);
   const copy = productCopy.shopping;
+  const isPro = user?.subscriptionStatus === "pro";
+
+  useEffect(() => {
+    if (activePlan && !isPro) openPaywall();
+  }, [activePlan, isPro, openPaywall]);
 
   if (!activePlan) {
     return (
@@ -28,6 +34,18 @@ export default function ShoppingListPage() {
           {copy.compose}
           <ArrowRight className="h-4 w-4" />
         </Link>
+      </div>
+    );
+  }
+
+  if (!isPro) {
+    return (
+      <div className="flex h-[calc(100svh-5rem)] flex-col justify-center bg-background px-6 text-center">
+        <ShoppingBag className="mx-auto h-10 w-10 text-primary" />
+        <p className="editorial-kicker mt-5">{productCopy.paywall.kicker}</p>
+        <h1 className="mt-3 font-serif text-[40px] leading-[43px] text-foreground">{productCopy.paywall.title}</h1>
+        <p className="mx-auto mt-4 max-w-[300px] text-sm leading-6 text-muted">{productCopy.paywall.body}</p>
+        <PaywallModal />
       </div>
     );
   }

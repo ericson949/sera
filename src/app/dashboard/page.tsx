@@ -4,12 +4,13 @@ import Link from "next/link";
 import { ArrowRight, Check, ChefHat, Clock3, Shuffle, ShoppingBag } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import MealDetailModal from "@/modules/meal-planning/presentation/components/MealDetailModal";
+import PaywallModal from "@/modules/meal-planning/presentation/components/PaywallModal";
 import { useWeeklyMealState } from "@/modules/meal-planning/presentation/hooks/useWeeklyMealState";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getProductCopy } from "@/shared/seraProductCopy";
 
 export default function DashboardPage() {
-  const { activePlan, userId, selectMeal, appLanguage } = useDinneroStore();
+  const { activePlan, user, userId, selectMeal, openPaywall, appLanguage } = useDinneroStore();
   const copy = getProductCopy(appLanguage).tonight;
   const weekState = useWeeklyMealState(activePlan, userId);
   const meal = weekState.todayMeal;
@@ -29,13 +30,14 @@ export default function DashboardPage() {
   const mealState = weekState.getState(meal);
   const status = mealState?.status ?? "planned";
   const quickMeal = weekState.scheduledMeals.filter((item) => item.canSwap).map((item) => item.meal).sort((a, b) => a.prepTimeMinutes - b.prepTimeMinutes)[0];
+  const openMeal = (targetMeal: typeof meal) => (user?.subscriptionStatus === "pro" ? selectMeal(targetMeal) : openPaywall());
 
   return (
     <div className="flex h-[calc(100svh-5rem)] flex-col bg-background">
       <section className="mx-5 mt-5 rounded-[2.25rem] bg-card p-5 shadow-md">
         <p className="editorial-kicker">{copy.kicker}</p>
         <h1 className="mt-3 font-serif text-[48px] leading-[49px] text-foreground">{copy.title}</h1>
-        <button onClick={() => selectMeal(meal)} className="mt-6 w-full text-left">
+        <button onClick={() => openMeal(meal)} className="mt-6 w-full text-left">
           <p className="font-serif text-[34px] leading-[36px] text-primary">{meal.title}</p>
           {mealState && <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted">{mealState.dateLabel}</p>}
           <p className="mt-3 text-sm leading-6 text-muted">{meal.description}</p>
@@ -49,7 +51,7 @@ export default function DashboardPage() {
 
       <section className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-5 no-scrollbar">
         <div className="grid grid-cols-2 gap-3">
-          <button onClick={() => selectMeal(meal)} className="rounded-[1.6rem] bg-primary p-5 text-left text-white shadow-md">
+          <button onClick={() => openMeal(meal)} className="rounded-[1.6rem] bg-primary p-5 text-left text-white shadow-md">
             <ChefHat className="h-5 w-5" />
             <p className="mt-8 font-serif text-[28px] leading-[30px]">{copy.start}</p>
           </button>
@@ -60,7 +62,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <button onClick={() => quickMeal && selectMeal(quickMeal)} className="rounded-[1.6rem] border border-warm-stone/70 p-5 text-left">
+          <button onClick={() => quickMeal && openMeal(quickMeal)} className="rounded-[1.6rem] border border-warm-stone/70 p-5 text-left">
             <Shuffle className="h-5 w-5 text-primary" />
             <p className="mt-6 font-serif text-[25px] leading-[27px] text-foreground">{copy.tired}</p>
             <p className="mt-2 text-xs leading-5 text-muted">{copy.backupBody}</p>
@@ -78,6 +80,7 @@ export default function DashboardPage() {
       </section>
 
       <MealDetailModal />
+      <PaywallModal />
     </div>
   );
 }
