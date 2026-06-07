@@ -108,7 +108,7 @@ export default function ResultsPage() {
         </div>
       </header>
 
-      <section className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 no-scrollbar">
+      <section data-drag-scroll className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 no-scrollbar">
         <p className="editorial-kicker mb-5">{copy.evenings}</p>
         {dragAndDropV2 && <p className="-mt-2 mb-4 text-center text-xs font-semibold text-muted">{weekCopy.dragHint}</p>}
         <div className="space-y-3">

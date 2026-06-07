@@ -51,8 +51,8 @@ export default function MealDetailModal() {
           <section className="mt-6">
             <h3 className="font-serif text-[28px] leading-[30px] text-foreground">{copy.why}</h3>
             <div className="mt-3 space-y-2">
-              {selectedMeal.whyThisMeal.map((reason) => (
-                <div key={reason} className="flex gap-3 text-sm leading-6 text-muted">
+              {selectedMeal.whyThisMeal.map((reason, index) => (
+                <div key={`${selectedMeal.id}-reason-${index}`} className="flex gap-3 text-sm leading-6 text-muted">
                   <Check className="mt-1 h-4 w-4 shrink-0 text-primary" />
                   <span>{reason}</span>
                 </div>
@@ -63,8 +63,8 @@ export default function MealDetailModal() {
           <section className="mt-7">
             <h3 className="font-serif text-[28px] leading-[30px] text-foreground">{copy.ingredients}</h3>
             <div className="mt-3 divide-y divide-warm-stone/50">
-              {selectedMeal.ingredients.map((ingredient) => (
-                <div key={`${ingredient.name}-${ingredient.quantity}`} className="flex justify-between gap-4 py-3 text-sm">
+              {selectedMeal.ingredients.map((ingredient, index) => (
+                <div key={`${selectedMeal.id}-ingredient-${index}`} className="flex justify-between gap-4 py-3 text-sm">
                   <span className="font-medium text-foreground">{ingredient.name}</span>
                   <span className="text-right text-muted">{ingredient.quantity} - {formatMoney(ingredient.estimatedPrice)}</span>
                 </div>
@@ -76,7 +76,7 @@ export default function MealDetailModal() {
             <h3 className="font-serif text-[28px] leading-[30px] text-foreground">{copy.method}</h3>
             <div className="mt-4 space-y-4">
               {selectedMeal.recipeSteps.map((step, index) => (
-                <div key={step} className="grid grid-cols-[2rem_1fr] gap-3">
+                <div key={`${selectedMeal.id}-step-${index}`} className="grid grid-cols-[2rem_1fr] gap-3">
                   <span className="font-serif text-xl text-primary">{index + 1}</span>
                   <p className="text-sm leading-6 text-muted">{step}</p>
                 </div>
