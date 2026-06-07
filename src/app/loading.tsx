@@ -5,7 +5,7 @@ export default function Loading() {
         S
       </div>
       <h1 className="mt-5 font-serif text-[42px] leading-[44px] text-foreground">Sera</h1>
-      <p className="mt-2 text-sm leading-6 text-muted">Preparing your table.</p>
+      <p className="mt-2 text-sm leading-6 text-muted">Planning your dinners.</p>
     </div>
   );
 }

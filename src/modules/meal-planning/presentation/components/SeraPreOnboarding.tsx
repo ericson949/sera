@@ -101,14 +101,14 @@ export default function SeraPreOnboarding({ appCountry, copy, setOnboardingField
               </div>
               <div className="space-y-2">
                 <button onClick={() => setCountryPickerOpen((open) => !open)} className="flex w-full items-center justify-between rounded-full bg-card px-5 py-3 text-left shadow-sm tap-highlight">
-                  <span className="text-base font-black text-foreground">{selectedCountry.label}</span>
+                  <span className="text-base font-black text-foreground">{selectedCountry.flag} {selectedCountry.label}</span>
                   <span className="text-xs font-bold text-muted">{countryPickerOpen ? "Close" : "Change"}</span>
                 </button>
                 <AnimatePresence>
                   {countryPickerOpen && (
                     <motion.div initial={{ opacity: 0, y: 10, height: 0 }} animate={{ opacity: 1, y: 0, height: "auto" }} exit={{ opacity: 0, y: 10, height: 0 }} className="grid grid-cols-2 gap-2 overflow-hidden">
                       {SERA_COUNTRIES.map((country) => (
-                        <button key={country.value} onClick={() => selectCountry(country.value)} className={`rounded-2xl px-4 py-2.5 text-left text-sm font-black shadow-sm tap-highlight ${appCountry === country.value ? "bg-secondary text-white" : "bg-card text-foreground"}`}>{country.label}</button>
+                        <button key={country.value} onClick={() => selectCountry(country.value)} className={`rounded-2xl px-4 py-2.5 text-left text-sm font-black shadow-sm tap-highlight ${appCountry === country.value ? "bg-secondary text-white" : "bg-card text-foreground"}`}>{country.flag} {country.label}</button>
                       ))}
                     </motion.div>
                   )}
