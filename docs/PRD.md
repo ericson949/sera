@@ -86,7 +86,7 @@ Initial countries:
    - User checks purchased items.
    - User sees collected, remaining, and total cost.
    - User can export the list.
-   - In free mode, this is a contextual Pro upsell.
+   - A generated plan can open its shopping list without a Pro gate.
 
 7. Profile
    - User sees demo/account state, can change language/country, and sees default budget, household size, notifications, subscription and legal links.
@@ -100,7 +100,7 @@ Initial countries:
 9. Premium
    - Free users hit clear upgrade moments.
    - Creating a new week is a hard Pro gate in the MVP.
-   - Full meal details and shopping list are contextual upsells for free users.
+   - Saving a plan, preserving previous weeks, and advanced continuity are contextual upsells for free users.
    - Stripe checkout handles production subscriptions.
    - Legal pages are available before payment.
 

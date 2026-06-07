@@ -22,15 +22,15 @@ export default function GoalSelector({ goals, selected, copy, onSelect }: GoalSe
           <button
             key={goal}
             onClick={() => onSelect(goal)}
-            className={`group flex w-full items-center gap-4 rounded-[1.45rem] border p-3.5 text-left shadow-sm transition ${
+            className={`group flex w-full items-center gap-3 rounded-[1.2rem] border p-3 text-left shadow-sm transition ${
               active ? "border-primary bg-primary text-white" : "border-warm-stone/50 bg-card text-foreground"
             }`}
           >
-            <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[1rem] ${active ? "bg-white/20" : "bg-primary/10 text-primary"}`}>
-              <Icon className="h-5 w-5 stroke-[1.6]" />
+            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.9rem] ${active ? "bg-white/20" : "bg-primary/10 text-primary"}`}>
+              <Icon className="h-4 w-4 stroke-[1.6]" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block font-serif text-[23px] leading-[25px]">{goalCopy.title}</span>
+              <span className="block font-serif text-[21px] leading-[23px]">{goalCopy.title}</span>
               <span className={`mt-1 block text-xs leading-5 ${active ? "text-white/78" : "text-muted"}`}>{goalCopy.body}</span>
             </span>
             <span className={`font-serif text-xl ${active ? "text-white" : "text-warm-stone"}`}>{String(index + 1).padStart(2, "0")}</span>

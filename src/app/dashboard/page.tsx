@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowRight, Check, ChefHat, Clock3, Shuffle, ShoppingBag } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import MealDetailModal from "@/modules/meal-planning/presentation/components/MealDetailModal";
@@ -10,10 +12,17 @@ import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money"
 import { getProductCopy } from "@/shared/seraProductCopy";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { activePlan, user, userId, selectMeal, openPaywall, appLanguage } = useDinneroStore();
   const copy = getProductCopy(appLanguage).tonight;
   const weekState = useWeeklyMealState(activePlan, userId);
   const meal = weekState.todayMeal;
+
+  useEffect(() => {
+    if (!activePlan) return;
+    const acceptedPlanId = localStorage.getItem("sera_preview_accepted_plan_id");
+    if (acceptedPlanId !== activePlan.id) router.replace("/plan-preview");
+  }, [activePlan, router]);
 
   if (!activePlan || !meal) {
     return (

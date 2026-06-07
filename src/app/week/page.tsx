@@ -1,12 +1,12 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, GripVertical, Plus, ShoppingBag, X } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import MealDetailModal from "@/modules/meal-planning/presentation/components/MealDetailModal";
 import PaywallModal from "@/modules/meal-planning/presentation/components/PaywallModal";
+import { useMealPlanDragSwap } from "@/modules/meal-planning/presentation/hooks/useMealPlanDragSwap";
 import { useWeeklyMealState } from "@/modules/meal-planning/presentation/hooks/useWeeklyMealState";
 import { useFeatureFlag } from "@/shared/presentation/hooks/useFeatureFlag";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
@@ -14,37 +14,12 @@ import { getProductCopy } from "@/shared/seraProductCopy";
 import { getSeraMealImagePosition, getSeraMealImageUrl } from "@/shared/seraVisuals";
 
 export default function WeekPage() {
-  const [draggedMealId, setDraggedMealId] = useState<string | null>(null);
   const { activePlan, dashboard, user, userId, selectMeal, openPaywall, swapPlannedMeals, activatePlan, appLanguage } = useDinneroStore();
   const copy = getProductCopy(appLanguage).weekView;
   const weekState = useWeeklyMealState(activePlan, userId);
   const dragAndDropV2 = useFeatureFlag("flag-drag-and-drop-v2", true);
+  const { draggedMealId, startDrag } = useMealPlanDragSwap({ enabled: dragAndDropV2, canSwapPair: weekState.canSwapPair, swapMeals: swapPlannedMeals });
   const openMeal = (meal: NonNullable<typeof activePlan>["days"][number]) => (user?.subscriptionStatus === "pro" ? selectMeal(meal) : openPaywall());
-
-  useEffect(() => {
-    if (!draggedMealId) return;
-
-    const finishDrag = (event: PointerEvent) => {
-      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-meal-id]");
-      const targetMealId = target?.dataset.mealId;
-
-      if (dragAndDropV2 && targetMealId && weekState.canSwapPair(draggedMealId, targetMealId)) {
-        void swapPlannedMeals(draggedMealId, targetMealId);
-      }
-
-      setDraggedMealId(null);
-    };
-
-    const cancelDrag = () => setDraggedMealId(null);
-
-    window.addEventListener("pointerup", finishDrag);
-    window.addEventListener("pointercancel", cancelDrag);
-
-    return () => {
-      window.removeEventListener("pointerup", finishDrag);
-      window.removeEventListener("pointercancel", cancelDrag);
-    };
-  }, [dragAndDropV2, draggedMealId, swapPlannedMeals, weekState]);
 
   if (!activePlan) {
     return (
@@ -108,11 +83,7 @@ export default function WeekPage() {
                       <p className="mt-2 text-xs text-muted">{meal.prepTimeMinutes} min - {formatMoney(meal.estimatedCost)} - {status === "cooked" ? copy.cooked : status === "skipped" ? copy.skipped : copy.planned}</p>
                     </span>
                     <span
-                      onPointerDown={(event) => {
-                        if (!item.canDrag || !dragAndDropV2) return;
-                        event.preventDefault();
-                        setDraggedMealId(meal.id);
-                      }}
+                      onPointerDown={(event) => startDrag(event, meal.id, item.canDrag)}
                       className={`mt-1 flex h-9 w-9 shrink-0 touch-none items-center justify-center rounded-full ${item.canDrag && dragAndDropV2 ? "bg-surface-container-low text-muted" : "bg-surface-container-low/50 text-muted/35"}`}
                       role="button"
                       aria-label={copy.dragHint}
@@ -126,10 +97,12 @@ export default function WeekPage() {
                     <Check className="h-3.5 w-3.5" />
                     {copy.done}
                   </button>
-                  <button disabled={!item.canSkip} onClick={() => weekState.setMealStatus(meal, "skipped")} className="flex h-10 flex-1 items-center justify-center gap-2 rounded-full bg-surface-container-low text-xs font-semibold text-foreground disabled:opacity-40">
-                    <X className="h-3.5 w-3.5" />
-                    {item.isToday ? copy.skip : copy.onlyToday}
-                  </button>
+                  {item.isToday && (
+                    <button disabled={!item.canSkip} onClick={() => weekState.setMealStatus(meal, "skipped")} className="flex h-10 flex-1 items-center justify-center gap-2 rounded-full bg-surface-container-low text-xs font-semibold text-foreground disabled:opacity-40">
+                      <X className="h-3.5 w-3.5" />
+                      {copy.skip}
+                    </button>
+                  )}
                 </div>
               </article>
             );

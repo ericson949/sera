@@ -37,7 +37,7 @@ export default function OnboardingPage() {
   } = store;
 
   return (
-    <div className="flex h-svh flex-col justify-between overflow-hidden bg-background p-5">
+    <div className="flex h-svh flex-col justify-between overflow-hidden bg-background p-4">
       {onboardingStep > 1 && onboardingStep < 10 && (
         <div className="flex shrink-0 items-center justify-center pt-2">
           <span className="editorial-kicker">{onboardingCopy.progress} {onboardingStep - 1} / 8</span>
@@ -59,7 +59,7 @@ export default function OnboardingPage() {
 
         {onboardingStep === 3 && (
           <OnboardingStepShell icon={<Wallet />} title={onboardingCopy.budgetTitle} body={onboardingCopy.budgetBody} kicker={onboardingCopy.kicker}>
-            <div className="rounded-[1.8rem] border border-warm-stone/60 bg-card p-6 shadow-md">
+            <div className="rounded-[1.5rem] border border-warm-stone/60 bg-card p-4 shadow-md">
               <BudgetSlider
                 max={onboardingBudgetMax}
                 label={onboardingCopy.budgetLabel}
@@ -119,10 +119,10 @@ export default function OnboardingPage() {
 
       {onboardingStep > 1 && onboardingStep < 10 && (
         <div className="mt-4 flex shrink-0 gap-3">
-          <button onClick={prevStep} className="flex h-14 w-14 items-center justify-center rounded-full bg-card text-foreground shadow-sm" aria-label={copy.common.back}>
+          <button onClick={prevStep} className="flex h-12 w-12 items-center justify-center rounded-full bg-card text-foreground shadow-sm" aria-label={copy.common.back}>
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <button onClick={nextStep} className="flex h-14 flex-1 items-center justify-center gap-2 rounded-full bg-primary text-base font-semibold text-white shadow-md">
+          <button onClick={nextStep} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-white shadow-md">
             <span>{onboardingStep === 9 ? onboardingCopy.compose : onboardingCopy.continue}</span>
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -135,7 +135,7 @@ export default function OnboardingPage() {
 function OnboardingProgress({ step }: { step: number }) {
   if (step === 1 || step === 10) return null;
   return (
-    <div className="mb-4 flex w-full gap-1.5 px-6 pt-4">
+    <div className="mb-3 flex w-full gap-1.5 px-5 pt-3">
       {Array.from({ length: 8 }).map((_, idx) => (
         <div key={idx} className={`h-1 flex-1 rounded-full ${idx < step - 1 ? "bg-primary" : "bg-border"}`} />
       ))}
@@ -146,9 +146,9 @@ function OnboardingProgress({ step }: { step: number }) {
 function LoadingStep({ phrases, title, activeIndex, error }: { phrases: readonly string[]; title: string; activeIndex: number; error?: string | null }) {
   return (
     <div className="flex flex-col items-center gap-8 text-center">
-      <div className="h-20 w-20 rounded-full border border-warm-stone border-t-primary animate-spin" />
+      <div className="h-16 w-16 animate-spin rounded-full border border-warm-stone border-t-primary" />
       <div>
-        <h2 className="font-serif text-[36px] leading-[39px] text-foreground">{title}</h2>
+        <h2 className="font-serif text-[31px] leading-[33px] text-foreground">{title}</h2>
         <div className="mt-6 space-y-2 text-left">
           {phrases.map((phrase, idx) => (
             <p key={phrase} className={`text-sm ${idx <= activeIndex ? "text-foreground" : "text-muted/45"}`}>{phrase}</p>

@@ -33,7 +33,7 @@ Existing local preferences are normalized with `batchCooking: false` when missin
 - `/plan-preview` may show a compact estimated shopping total and a "market list" conversion CTA, but it must not deep-link into the full shopping list for anonymous/free pre-conversion users.
 - `/post-onboarding` shows a soft, non-blocking paywall and notification opt-in.
 - `/new-week` is a hard Pro gate in this MVP.
-- Shopping list and full meal details are contextual Pro upsells for free users.
+- The shopping list is accessible from a generated plan; saving plans and keeping previous weeks are contextual Pro upsells.
 
 ## Implementation Notes
 

@@ -27,10 +27,10 @@ function OptionButton({ active, disabled, onClick, children, icon, compact }: { 
     <button
       disabled={disabled}
       onClick={onClick}
-      className={`flex items-center justify-between gap-3 rounded-[1.2rem] border px-3 text-left text-sm font-semibold shadow-sm transition disabled:opacity-35 ${compact ? "min-h-12 py-2.5" : "min-h-14 py-3.5"} ${active ? "border-primary bg-primary text-white" : "border-warm-stone/45 bg-card text-foreground"}`}
+      className={`flex items-center justify-between gap-2 rounded-[1rem] border px-2.5 text-left text-[13px] font-semibold shadow-sm transition disabled:opacity-35 ${compact ? "min-h-11 py-2" : "min-h-12 py-2.5"} ${active ? "border-primary bg-primary text-white" : "border-warm-stone/45 bg-card text-foreground"}`}
     >
       <span className="flex min-w-0 items-center gap-2.5">
-        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full [&_svg]:h-4 [&_svg]:w-4 ${active ? "bg-white/20 text-white" : "bg-surface-container-low text-primary"}`}>{icon}</span>
+        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full [&_svg]:h-3.5 [&_svg]:w-3.5 ${active ? "bg-white/20 text-white" : "bg-surface-container-low text-primary"}`}>{icon}</span>
         <span className="min-w-0 leading-5">{children}</span>
       </span>
       {active && <Check className="h-4 w-4" />}
