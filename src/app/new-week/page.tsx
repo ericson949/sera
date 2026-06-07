@@ -48,7 +48,7 @@ export default function NewWeekPage() {
 
     setStep(10);
     await store.generatePlan();
-    router.push("/results");
+    router.push("/week");
   };
 
   return (

@@ -64,6 +64,15 @@ The onboarding route was split so that:
 - `KITCHEN_ITEMS` lives in shared constants;
 - goal and cooking time copy live in shared product copy.
 
+The first family-focused navigation refactor establishes:
+
+- `/dashboard` as the Tonight surface for immediate low-friction dinner decisions;
+- `/week` as the weekly planning and meal execution surface;
+- `/profile` as the account, preferences, notification and subscription surface;
+- `/shopping-list` as a secondary flow reachable from Tonight and Week;
+- local meal execution tracking as an MVP hook before adding durable backend persistence.
+- weekly meal day swaps as an application use case so drag/drop UI still persists through the meal plan repository.
+
 ## Verification
 
 Every relevant change should pass:

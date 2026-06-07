@@ -2,7 +2,7 @@ import { AppLanguage } from "@/modules/meal-planning/presentation/hooks/useDinne
 
 export const PRODUCT_COPY = {
   en: {
-    nav: ["Casa", "Journal", "Market", "Pro"],
+    nav: ["Tonight", "Week", "Me"],
     common: { back: "Back", close: "Close", swap: "Swap", continue: "Continue with Sera" },
     shell: { loading: "Planning your dinners.", offline: "Your meal plan is available offline. Reconnect to refresh the latest dinners.", ready: "Your meal plan is ready." },
     onboarding: {
@@ -37,6 +37,9 @@ export const PRODUCT_COPY = {
       market: "market", saved: "saved", empty: "Start with a few preferences. Sera will turn them into a full dinner week.",
       marketKicker: "Market", shoppingGuide: "Shopping guide",
     },
+    tonight: { kicker: "Tonight", title: "One clear dinner.", noPlan: "No dinner planned yet.", startWeek: "Plan the week", start: "Start", tired: "Too tired", cooked: "I cooked it", skipped: "Skip tonight", week: "Week", market: "Shopping list", backupTitle: "Plan B", backupBody: "Choose the quickest dinner this week and move the rest forward." },
+    weekView: { kicker: "This week", title: "The week, gently held.", empty: "Plan a week first.", newWeek: "New week", market: "Shopping list", cooked: "cooked", planned: "planned", skipped: "skipped", done: "Cooked", skip: "Skip", previous: "Previous weeks", dragHint: "Drag meals to swap days", open: "Open" },
+    profile: { kicker: "Sera profile", title: "Your kitchen settings.", demo: "Demo session", account: "Create profile", accountBody: "Sync history, preferences and reminders when account creation is enabled.", language: "Language", country: "Country", budget: "Default budget", people: "Table size", subscription: "Subscription", manage: "Manage membership", legal: "Legal pages", notifications: "Notifications" },
     results: {
       emptyKicker: "Sera Journal", emptyTitle: "Your table is still empty.",
       emptyBody: "Begin with your tastes and budget. Sera will compose the week.", start: "Start planning",
@@ -72,7 +75,7 @@ export const PRODUCT_COPY = {
     },
   },
   fr: {
-    nav: ["Casa", "Journal", "Marche", "Pro"],
+    nav: ["Ce soir", "Semaine", "Moi"],
     common: { back: "Retour", close: "Fermer", swap: "Remplacer", continue: "Continuer avec Sera" },
     shell: { loading: "Planification de tes diners.", offline: "Ton plan repas est disponible hors ligne. Reconnecte-toi pour actualiser les derniers diners.", ready: "Ton plan repas est pret." },
     onboarding: {
@@ -107,6 +110,9 @@ export const PRODUCT_COPY = {
       market: "courses", saved: "sauves", empty: "Commence par quelques preferences. Sera les transforme en semaine de diners.",
       marketKicker: "Marche", shoppingGuide: "Guide courses",
     },
+    tonight: { kicker: "Ce soir", title: "Un diner clair.", noPlan: "Aucun diner planifie.", startWeek: "Planifier la semaine", start: "Commencer", tired: "Trop fatiguee", cooked: "Je l'ai cuisine", skipped: "Sauter ce soir", week: "Semaine", market: "Liste courses", backupTitle: "Plan B", backupBody: "Choisis le diner le plus rapide de la semaine et garde le reste pour plus tard." },
+    weekView: { kicker: "Cette semaine", title: "La semaine, sans pression.", empty: "Planifie d'abord une semaine.", newWeek: "Nouvelle semaine", market: "Liste courses", cooked: "cuisines", planned: "prevu", skipped: "saute", done: "Cuisine", skip: "Sauter", previous: "Semaines precedentes", dragHint: "Glisse les repas pour echanger les jours", open: "Ouvrir" },
+    profile: { kicker: "Profil Sera", title: "Tes reglages cuisine.", demo: "Session demo", account: "Creer un profil", accountBody: "Synchronise historique, preferences et rappels quand la creation de compte sera active.", language: "Langue", country: "Pays", budget: "Budget par defaut", people: "Taille de table", subscription: "Abonnement", manage: "Gerer l'abonnement", legal: "Pages legales", notifications: "Notifications" },
     results: {
       emptyKicker: "Journal Sera", emptyTitle: "Ta table est encore vide.",
       emptyBody: "Commence par tes gouts et ton budget. Sera compose la semaine.", start: "Commencer",
@@ -142,7 +148,7 @@ export const PRODUCT_COPY = {
     },
   },
   it: {
-    nav: ["Casa", "Diario", "Mercato", "Pro"],
+    nav: ["Stasera", "Settimana", "Io"],
     common: { back: "Indietro", close: "Chiudi", swap: "Cambia", continue: "Continua con Sera" },
     shell: { loading: "Pianificazione delle cene.", offline: "Il tuo piano pasti e disponibile offline. Riconnettiti per aggiornare le ultime cene.", ready: "Il tuo piano pasti e pronto." },
     onboarding: {
@@ -177,6 +183,9 @@ export const PRODUCT_COPY = {
       market: "spesa", saved: "salvati", empty: "Inizia con poche preferenze. Sera le trasforma in una settimana di cene.",
       marketKicker: "Mercato", shoppingGuide: "Guida spesa",
     },
+    tonight: { kicker: "Stasera", title: "Una cena chiara.", noPlan: "Nessuna cena pianificata.", startWeek: "Pianifica la settimana", start: "Inizia", tired: "Troppo stanca", cooked: "L'ho cucinato", skipped: "Salta stasera", week: "Settimana", market: "Lista spesa", backupTitle: "Piano B", backupBody: "Scegli la cena piu rapida della settimana e sposta il resto." },
+    weekView: { kicker: "Questa settimana", title: "La settimana, con calma.", empty: "Pianifica prima una settimana.", newWeek: "Nuova settimana", market: "Lista spesa", cooked: "cucinate", planned: "previsto", skipped: "saltato", done: "Cucinato", skip: "Salta", previous: "Settimane precedenti", dragHint: "Trascina le cene per scambiare i giorni", open: "Apri" },
+    profile: { kicker: "Profilo Sera", title: "Le tue impostazioni cucina.", demo: "Sessione demo", account: "Crea profilo", accountBody: "Sincronizza storico, preferenze e promemoria quando l'account sara attivo.", language: "Lingua", country: "Paese", budget: "Budget predefinito", people: "Persone a tavola", subscription: "Abbonamento", manage: "Gestisci abbonamento", legal: "Pagine legali", notifications: "Notifiche" },
     results: {
       emptyKicker: "Diario Sera", emptyTitle: "La tua tavola e ancora vuota.",
       emptyBody: "Parti da gusti e budget. Sera compone la settimana.", start: "Inizia",

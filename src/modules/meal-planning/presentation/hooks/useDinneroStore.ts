@@ -8,7 +8,7 @@ import { SERA_INITIAL_STATE } from "./seraInitialState";
 
 export type { AppCountry, AppLanguage };
 
-const { userRepo, startOnboardingUseCase, savePrefsUseCase, generatePlanUseCase, regeneratePlanUseCase, swapMealUseCase, getCurrentPlanUseCase, toggleShoppingItemUseCase, saveMealPlanUseCase, getDashboardUseCase, createCheckoutUseCase } = seraUseCases;
+const { userRepo, startOnboardingUseCase, savePrefsUseCase, generatePlanUseCase, regeneratePlanUseCase, swapMealUseCase, getCurrentPlanUseCase, toggleShoppingItemUseCase, saveMealPlanUseCase, getDashboardUseCase, swapPlannedMealsUseCase, createCheckoutUseCase } = seraUseCases;
 
 export const useDinneroStore = create<DinneroState>((set, get) => ({
   ...SERA_INITIAL_STATE,
@@ -202,6 +202,20 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
       }
     }
   },
+
+  swapPlannedMeals: async (sourceMealId, targetMealId) => {
+    try {
+      const active = get().activePlan;
+      if (!active || sourceMealId === targetMealId) return;
+      const updatedPlan = await swapPlannedMealsUseCase.execute(active.id, sourceMealId, targetMealId);
+      set({ activePlan: updatedPlan });
+      await get().loadDashboard();
+    } catch (err: any) {
+      set({ error: err.message });
+    }
+  },
+
+  activatePlan: (plan) => set({ activePlan: plan }),
 
   loadDashboard: async () => {
     try {

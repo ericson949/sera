@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Calendar, ShoppingBag, Crown } from "lucide-react";
+import { Home, CalendarDays, UserRound } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import { useDinneroStore } from "../hooks/useDinneroStore";
 import { getProductCopy } from "@/shared/seraProductCopy";
@@ -24,19 +24,13 @@ export default function BottomNav() {
     },
     {
       label: copy.nav[1],
-      href: "/results",
-      icon: Calendar,
+      href: "/week",
+      icon: CalendarDays,
     },
     {
       label: copy.nav[2],
-      href: "/shopping-list",
-      icon: ShoppingBag,
-    },
-    {
-      label: copy.nav[3],
-      href: "/pricing",
-      icon: Crown,
-      highlight: true,
+      href: "/profile",
+      icon: UserRound,
     },
   ];
 
@@ -56,20 +50,15 @@ export default function BottomNav() {
               className={cn(
                 "h-5 w-5 stroke-[1.6] transition-all",
                 isActive
-                  ? item.highlight
-                    ? "scale-110 text-primary"
-                    : "scale-110 text-primary"
+                  ? "scale-110 text-primary"
                   : "text-muted hover:text-foreground",
-                item.highlight && !isActive && "text-tertiary"
               )}
             />
             <span
               className={cn(
                 "mt-1 text-[10px] font-medium transition-colors",
                 isActive
-                  ? item.highlight
-                    ? "font-semibold text-primary"
-                    : "font-semibold text-primary"
+                  ? "font-semibold text-primary"
                   : "text-muted"
               )}
             >

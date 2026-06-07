@@ -60,7 +60,7 @@ export default function ClientInitializer() {
                 type: "SERA_NOTIFICATION",
                 title: copy.shell.ready,
                 body: copy.notifications.body,
-                url: "/results",
+                url: "/dashboard",
               });
             }
           }

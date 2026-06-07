@@ -1,108 +1,81 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import Link from "next/link";
+import { ArrowRight, Check, ChefHat, Clock3, Shuffle, ShoppingBag } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
+import MealDetailModal from "@/modules/meal-planning/presentation/components/MealDetailModal";
+import { useMealExecutions } from "@/modules/meal-planning/presentation/hooks/useMealExecutions";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
-import { SERA_IMAGES } from "@/shared/seraVisuals";
-import SeraNotificationCard from "@/shared/presentation/components/SeraNotificationCard";
 import { getProductCopy } from "@/shared/seraProductCopy";
-import { ArrowRight, Calendar, Crown, ShoppingBag } from "lucide-react";
 
 export default function DashboardPage() {
-  const { user, activePlan, dashboard, simulateProUpgrade, simulateProDowngrade } = useDinneroStore();
-  const copy = getProductCopy(useDinneroStore((state) => state.appLanguage)).dashboard;
-  const isPro = user?.subscriptionStatus === "pro";
-  const savedCount = dashboard?.savedPlans.length ?? 0;
+  const { activePlan, userId, selectMeal, swapMeal, appLanguage } = useDinneroStore();
+  const copy = getProductCopy(appLanguage).tonight;
+  const meal = activePlan?.days[0];
+  const executions = useMealExecutions(activePlan?.id, userId);
 
-  const handleToggleSub = async () => {
-    if (isPro) {
-      await simulateProDowngrade();
-      return;
-    }
+  if (!activePlan || !meal) {
+    return (
+      <div className="flex h-[calc(100svh-5rem)] flex-col justify-center bg-background px-6 text-center">
+        <p className="editorial-kicker">{copy.kicker}</p>
+        <h1 className="mt-3 font-serif text-[44px] leading-[46px] text-foreground">{copy.noPlan}</h1>
+        <Link href="/onboarding" className="mt-8 flex h-14 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white shadow-md">
+          {copy.startWeek}
+        </Link>
+      </div>
+    );
+  }
 
-    await simulateProUpgrade();
-  };
+  const status = executions.getMealStatus(meal.id);
+  const quickMeal = activePlan.days.slice().sort((a, b) => a.prepTimeMinutes - b.prepTimeMinutes)[0];
 
   return (
     <div className="flex h-[calc(100svh-5rem)] flex-col bg-background">
-      <section
-        className="editorial-photo mx-5 mt-5 flex h-[42svh] min-h-[300px] shrink-0 flex-col justify-between rounded-[2.25rem] p-5 shadow-md"
-        style={{ "--editorial-image": `url(${SERA_IMAGES.table})` } as CSSProperties}
-      >
-        <div className="flex justify-between">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white">Sera</p>
-          <button
-            onClick={handleToggleSub}
-            className="flex items-center gap-1 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-foreground"
-          >
-            <Crown className="h-3.5 w-3.5 stroke-[1.6]" />
-            {isPro ? copy.statusPro : copy.statusFree}
-          </button>
-        </div>
-
-        <div className="text-white">
-          <p className="text-xs uppercase tracking-[0.18em] text-white/80">{copy.kicker}</p>
-          <h1 className="mt-2 font-serif text-[44px] leading-[45px] tracking-tight">
-            {copy.title}
-          </h1>
+      <section className="mx-5 mt-5 rounded-[2.25rem] bg-card p-5 shadow-md">
+        <p className="editorial-kicker">{copy.kicker}</p>
+        <h1 className="mt-3 font-serif text-[48px] leading-[49px] text-foreground">{copy.title}</h1>
+        <button onClick={() => selectMeal(meal)} className="mt-6 w-full text-left">
+          <p className="font-serif text-[34px] leading-[36px] text-primary">{meal.title}</p>
+          <p className="mt-3 text-sm leading-6 text-muted">{meal.description}</p>
+        </button>
+        <div className="mt-5 flex gap-3 text-sm font-semibold text-muted">
+          <span className="flex items-center gap-1.5"><Clock3 className="h-4 w-4" />{meal.prepTimeMinutes} min</span>
+          <span>{formatMoney(meal.estimatedCost)}</span>
+          <span>{status === "cooked" ? copy.cooked : status === "skipped" ? copy.skipped : ""}</span>
         </div>
       </section>
 
       <section className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-5 no-scrollbar">
         <div className="grid grid-cols-2 gap-3">
-          <Link href="/new-week" className="rounded-[1.6rem] bg-primary p-5 text-white shadow-md">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/75">{copy.compose}</p>
-            <h2 className="mt-8 font-serif text-[28px] leading-[30px]">{copy.newWeek}</h2>
-            <ArrowRight className="mt-4 h-5 w-5 stroke-[1.5]" />
-          </Link>
+          <button onClick={() => selectMeal(meal)} className="rounded-[1.6rem] bg-primary p-5 text-left text-white shadow-md">
+            <ChefHat className="h-5 w-5" />
+            <p className="mt-8 font-serif text-[28px] leading-[30px]">{copy.start}</p>
+          </button>
+          <button onClick={() => executions.setMealStatus(meal, "cooked")} className="rounded-[1.6rem] bg-card p-5 text-left shadow-sm">
+            <Check className="h-5 w-5 text-primary" />
+            <p className="mt-8 font-serif text-[28px] leading-[30px] text-foreground">{copy.cooked}</p>
+          </button>
+        </div>
 
-          <Link href="/results" className="rounded-[1.6rem] bg-card p-5 shadow-sm">
-            <Calendar className="h-5 w-5 stroke-[1.5] text-primary" />
-            <p className="mt-8 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{copy.current}</p>
-            <h2 className="mt-1 font-serif text-[26px] leading-[28px] text-foreground">
-              {activePlan ? activePlan.shop : copy.noPlan}
-            </h2>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <button onClick={() => quickMeal && selectMeal(quickMeal)} className="rounded-[1.6rem] border border-warm-stone/70 p-5 text-left">
+            <Shuffle className="h-5 w-5 text-primary" />
+            <p className="mt-6 font-serif text-[25px] leading-[27px] text-foreground">{copy.tired}</p>
+            <p className="mt-2 text-xs leading-5 text-muted">{copy.backupBody}</p>
+          </button>
+          <Link href="/shopping-list" className="rounded-[1.6rem] border border-warm-stone/70 p-5 text-left">
+            <ShoppingBag className="h-5 w-5 text-primary" />
+            <p className="mt-6 font-serif text-[25px] leading-[27px] text-foreground">{copy.market}</p>
           </Link>
         </div>
 
-        <div className="mt-5 rounded-[1.8rem] bg-surface-container-low p-5">
-          <p className="editorial-kicker">{copy.week}</p>
-          {activePlan ? (
-            <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-              <div>
-                <p className="font-serif text-2xl text-foreground">{activePlan.days.length}</p>
-                <p className="mt-1 text-[11px] text-muted">{copy.dinners}</p>
-              </div>
-              <div>
-                <p className="font-serif text-2xl text-foreground">{formatMoney(activePlan.estimatedTotal)}</p>
-                <p className="mt-1 text-[11px] text-muted">{copy.market}</p>
-              </div>
-              <div>
-                <p className="font-serif text-2xl text-foreground">{savedCount}</p>
-                <p className="mt-1 text-[11px] text-muted">{copy.saved}</p>
-              </div>
-            </div>
-          ) : (
-            <p className="mt-3 text-sm leading-6 text-muted">
-              {copy.empty}
-            </p>
-          )}
-        </div>
-
-        <Link
-          href="/shopping-list"
-          className="mt-4 flex items-center justify-between rounded-[1.8rem] border border-warm-stone/70 p-5"
-        >
-          <span>
-            <span className="editorial-kicker">{copy.marketKicker}</span>
-            <span className="mt-1 block font-serif text-[28px] leading-[30px] text-foreground">{copy.shoppingGuide}</span>
-          </span>
-          <ShoppingBag className="h-5 w-5 stroke-[1.5] text-primary" />
+        <Link href="/week" className="mt-4 flex h-14 items-center justify-center gap-2 rounded-full bg-surface-container-low text-sm font-semibold text-foreground">
+          {copy.week}
+          <ArrowRight className="h-4 w-4" />
         </Link>
-
-        <SeraNotificationCard />
       </section>
+
+      <MealDetailModal />
     </div>
   );
 }

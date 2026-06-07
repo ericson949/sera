@@ -21,6 +21,7 @@ Sera turns a few preferences into:
 - recipe details and meal swaps;
 - a market-style shopping list;
 - offline access to the last useful plan.
+- a calmer "what do I do tonight?" experience for tired households.
 
 ## Supported Locales
 
@@ -56,23 +57,33 @@ Initial countries:
    - Select cooking time.
    - Select existing kitchen items.
 
-3. Results
-   - User sees weekly dinner plan.
-   - User sees estimated total and budget status.
-   - User can open meal details, swap meals, save plan, regenerate, or open market list.
+3. Tonight
+   - User opens the app and sees the next practical dinner.
+   - User can start cooking, mark the meal cooked, open a quick backup, or access the shopping list.
+   - This screen is optimized for low cognitive load after work.
 
-4. Shopping list
+4. Week
+   - User sees the active week with cooked/planned/skipped statuses.
+   - User can drag meals to swap dinners between days.
+   - User can mark meals cooked, skip meals, open recipes, access the shopping list, or start a new week.
+   - Previous saved weeks are clickable so a user can reopen an older plan.
+
+5. Shopping list
    - User sees grouped market sections.
    - User checks purchased items.
    - User sees collected, remaining, and total cost.
    - User can export the list.
 
-5. PWA install
+6. Profile
+   - User sees demo/account state, can change language/country, and sees default budget, household size, notifications, subscription and legal links.
+   - Pro is managed from profile, not as a primary navigation tab.
+
+7. PWA install
    - Android/Chromium users receive install prompt when supported.
    - iOS users receive localized install guidance.
    - Installed app opens quickly with cached shell and offline fallback.
 
-6. Premium
+8. Premium
    - Free users hit clear upgrade moments.
    - Stripe checkout handles production subscriptions.
    - Legal pages are available before payment.
@@ -86,6 +97,8 @@ Initial countries:
 - Motion should feel elegant, not bouncy.
 - No generic dashboard feel.
 - No AI chatbot framing.
+- Primary navigation should stay simple for tired users: Tonight, Week, Me.
+- Shopping list is a secondary flow reachable from Tonight and Week, not a bottom navigation tab.
 
 ## Technical Requirements
 
@@ -97,6 +110,7 @@ Initial countries:
 - Preserve anonymous local session data.
 - Wait for local session hydration before routing users away from the app shell.
 - Cache app shell and last useful plan for offline use.
+- Track cooked/skipped meal execution locally in the MVP.
 - Verify TypeScript before release.
 
 ## Production Readiness Checklist

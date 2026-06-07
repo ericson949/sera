@@ -39,7 +39,7 @@ export default function ShoppingListPage() {
   const listTotal = items.reduce((sum, item) => sum + item.estimatedPrice.amount, 0);
   const remainingTotal = Math.max(0, listTotal - checkedTotal);
 
-  const handleBack = () => (window.history.length > 1 ? router.back() : router.push("/results"));
+  const handleBack = () => (window.history.length > 1 ? router.back() : router.push("/week"));
 
   const buildExportText = () => {
     let text = `${copy.exportTitle} - ${activePlan.shop}\n\n`;

@@ -12,6 +12,7 @@ import { GetCurrentMealPlanUseCase } from "../../application/use-cases/GetCurren
 import { ToggleShoppingItemUseCase } from "../../application/use-cases/ToggleShoppingItemUseCase";
 import { SaveMealPlanUseCase } from "../../application/use-cases/SaveMealPlanUseCase";
 import { GetDashboardUseCase } from "../../application/use-cases/GetDashboardUseCase";
+import { SwapPlannedMealsUseCase } from "../../application/use-cases/SwapPlannedMealsUseCase";
 import { CreateCheckoutSessionUseCase } from "@/modules/subscriptions/application/use-cases/CreateCheckoutSessionUseCase";
 
 const userRepo = new LocalUserRepository();
@@ -31,5 +32,6 @@ export const seraUseCases = {
   toggleShoppingItemUseCase: new ToggleShoppingItemUseCase(mealPlanRepo),
   saveMealPlanUseCase: new SaveMealPlanUseCase(mealPlanRepo, subService),
   getDashboardUseCase: new GetDashboardUseCase(mealPlanRepo, prefsRepo),
+  swapPlannedMealsUseCase: new SwapPlannedMealsUseCase(mealPlanRepo),
   createCheckoutUseCase: new CreateCheckoutSessionUseCase(subService),
 };

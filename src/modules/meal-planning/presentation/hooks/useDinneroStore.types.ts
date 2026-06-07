@@ -48,6 +48,8 @@ export interface DinneroState {
   swapMeal: (day: WeekDay) => Promise<void>;
   toggleShoppingItem: (itemId: string) => Promise<void>;
   saveCurrentPlan: () => Promise<void>;
+  swapPlannedMeals: (sourceMealId: string, targetMealId: string) => Promise<void>;
+  activatePlan: (plan: MealPlan) => void;
   loadDashboard: () => Promise<void>;
   simulateProUpgrade: () => Promise<void>;
   simulateProDowngrade: () => Promise<void>;
