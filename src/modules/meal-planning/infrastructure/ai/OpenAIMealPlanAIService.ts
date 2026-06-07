@@ -8,10 +8,11 @@ import {
 
 export class OpenAIMealPlanAIService implements MealPlanAIService {
   async generateMealPlan(input: GenerateMealPlanInput): Promise<GeneratedMealPlanDTO> {
+    const locale = getStoredLocale();
     const res = await fetch("/api/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
+      body: JSON.stringify({ ...input, ...locale }),
     });
 
     if (!res.ok) {
@@ -23,10 +24,11 @@ export class OpenAIMealPlanAIService implements MealPlanAIService {
   }
 
   async swapMeal(input: SwapMealInput): Promise<GeneratedMealDTO> {
+    const locale = getStoredLocale();
     const res = await fetch("/api/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...input, action: "swap" }),
+      body: JSON.stringify({ ...input, ...locale, action: "swap" }),
     });
 
     if (!res.ok) {
@@ -35,5 +37,16 @@ export class OpenAIMealPlanAIService implements MealPlanAIService {
     }
 
     return res.json();
+  }
+}
+
+function getStoredLocale() {
+  if (typeof window === "undefined") return {};
+
+  try {
+    const stored = localStorage.getItem("sera_locale") ?? localStorage.getItem("dinnero_locale");
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
   }
 }

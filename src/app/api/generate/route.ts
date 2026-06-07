@@ -1,193 +1,145 @@
 import { NextResponse } from "next/server";
-import { MockMealPlanAIService } from "@/modules/meal-planning/infrastructure/ai/MockMealPlanAIService";
 import OpenAI from "openai";
+import { z } from "zod";
+import { MockMealPlanAIService } from "@/modules/meal-planning/infrastructure/ai/MockMealPlanAIService";
+import { SHOPPING_CATEGORIES } from "@/modules/meal-planning/domain/value-objects/ShoppingCategory";
 
 const mockAIService = new MockMealPlanAIService();
+const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
+
+const inputSchema = z.object({
+  shop: z.string(),
+  budgetMin: z.number(),
+  budgetMax: z.number(),
+  numberOfPeople: z.number(),
+  goal: z.string(),
+  vibes: z.array(z.string()).default([]),
+  dietaryNeeds: z.array(z.string()).default([]),
+  maxCookingTime: z.string(),
+  kitchenItems: z.array(z.string()).default([]),
+  appCountry: z.string().default("Italy"),
+  appLanguage: z.enum(["en", "fr", "it"]).default("it"),
+  action: z.enum(["swap"]).optional(),
+  dayToSwap: z.enum(weekdays).optional(),
+  excludeTitles: z.array(z.string()).default([]),
+});
+
+const ingredientSchema = z.object({
+  name: z.string().min(1),
+  quantity: z.string().min(1),
+  estimatedPrice: z.number().nonnegative(),
+});
+
+const mealSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().min(1),
+  estimatedCost: z.number().nonnegative(),
+  calories: z.number().int().positive(),
+  prepTimeMinutes: z.number().int().positive(),
+  ingredients: z.array(ingredientSchema).min(1),
+  recipeSteps: z.array(z.string().min(1)).min(2),
+  whyThisMeal: z.array(z.string().min(1)).min(1),
+});
+
+const planSchema = z.object({
+  estimatedTotal: z.number().nonnegative(),
+  estimatedMin: z.number().nonnegative(),
+  estimatedMax: z.number().nonnegative(),
+  budgetConfidence: z.number().min(0).max(100),
+  budgetMessage: z.string().min(1),
+  meals: z.array(mealSchema.extend({ day: z.enum(weekdays) })).length(7),
+  shoppingList: z.array(z.object({
+    name: z.string().min(1),
+    category: z.enum(SHOPPING_CATEGORIES),
+    quantity: z.string().min(1),
+    estimatedPrice: z.number().nonnegative(),
+    usedInMeals: z.array(z.enum(weekdays)).min(1),
+  })).min(1),
+});
 
 export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { shop, budgetMin, budgetMax, numberOfPeople, goal, vibes, dietaryNeeds, maxCookingTime, kitchenItems, action, dayToSwap, excludeTitles } = body;
+  const input = inputSchema.parse(await request.json());
 
-    const apiKey = process.env.OPENAI_API_KEY;
-
-    if (!apiKey) {
-      console.warn("OPENAI_API_KEY is not defined. Using MockMealPlanAIService fallback.");
-      if (action === "swap") {
-        const result = await mockAIService.swapMeal({
-          shop,
-          budgetMin,
-          budgetMax,
-          numberOfPeople,
-          goal,
-          vibes,
-          dietaryNeeds,
-          maxCookingTime,
-          kitchenItems,
-          dayToSwap,
-          excludeTitles,
-        });
-        return NextResponse.json(result);
-      } else {
-        const result = await mockAIService.generateMealPlan({
-          shop,
-          budgetMin,
-          budgetMax,
-          numberOfPeople,
-          goal,
-          vibes,
-          dietaryNeeds,
-          maxCookingTime,
-          kitchenItems,
-        });
-        return NextResponse.json(result);
-      }
-    }
-
-    const openai = new OpenAI({ apiKey });
-
-    // ACTION 1: SWAP SINGLE MEAL
-    if (action === "swap") {
-      const prompt = `You are Sera, a premium Italian lifestyle dinner planning assistant for grocery shoppers.
-Create a realistic swapped dinner recipe.
-
-User context:
-- Grocery shop: ${shop}
-- Weekly dinner budget range: ${budgetMin} EUR to ${budgetMax} EUR
-- Number of people: ${numberOfPeople}
-- Main goal: ${goal}
-- Food vibes: ${vibes.join(", ")}
-- Dietary needs: ${dietaryNeeds.join(", ")}
-- Max cooking time: ${maxCookingTime}
-- Kitchen inventory: ${kitchenItems.join(", ")}
-- Day to swap: ${dayToSwap}
-- Avoid these recipes (already in menu): ${excludeTitles.join(", ")}
-
-Important rules:
-- Generate exactly ONE dinner recipe.
-- Make it fit the Italian supermarket style and respect dietary needs strictly.
-- Return JSON only. No explanation.
-Expected JSON format:
-{
-  "title": "Recipe Title",
-  "description": "Short description",
-  "estimatedCost": 4.5,
-  "calories": 520,
-  "prepTimeMinutes": 25,
-  "ingredients": [
-    {
-      "name": "Ingredient Name",
-      "quantity": "200g",
-      "estimatedPrice": 1.2
-    }
-  ],
-  "recipeSteps": [
-    "Step 1",
-    "Step 2"
-  ],
-  "whyThisMeal": [
-    "Reason 1",
-    "Reason 2"
-  ]
-}`;
-
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
-        response_format: { type: "json_object" },
-      });
-
-      const responseText = response.choices[0]?.message?.content || "{}";
-      const data = JSON.parse(responseText);
-      return NextResponse.json(data);
-    } 
-    
-    // ACTION 2: GENERATE FULL WEEKLY PLAN
-    else {
-      const prompt = `You are Sera, a premium Italian lifestyle dinner planning assistant for grocery shoppers.
-Create a realistic 7-day dinner meal plan.
-
-User context:
-- Grocery shop: ${shop}
-- Weekly dinner budget range: ${budgetMin} EUR to ${budgetMax} EUR
-- Number of people: ${numberOfPeople}
-- Main goal: ${goal}
-- Food vibes: ${vibes.join(", ")}
-- Dietary needs: ${dietaryNeeds.join(", ")}
-- Max cooking time: ${maxCookingTime}
-- Kitchen inventory: ${kitchenItems.join(", ")}
-
-Important rules:
-- Generate dinner only.
-- Generate exactly 7 meals from Monday to Sunday.
-- Keep the estimated total under ${budgetMax} EUR if possible.
-- If the budget is too low, create the cheapest realistic plan and explain the budget confidence.
-- Prefer simple Italian supermarket ingredients.
-- Reuse ingredients across multiple meals to reduce waste.
-- Do not include rare or luxury ingredients.
-- Respect dietary needs strictly.
-- Respect max cooking time.
-- Include why each meal was selected.
-- Return JSON only. No explanations.
-
-Expected JSON format:
-{
-  "estimatedTotal": 42,
-  "estimatedMin": 39,
-  "estimatedMax": 47,
-  "budgetConfidence": 86,
-  "budgetMessage": "This plan should stay within your selected budget range.",
-  "meals": [
-    {
-      "day": "Monday",
-      "title": "Tomato Tuna Pasta",
-      "description": "A quick budget-friendly pasta using pantry ingredients.",
-      "estimatedCost": 4.2,
-      "calories": 620,
-      "prepTimeMinutes": 20,
-      "ingredients": [
-        {
-          "name": "Pasta",
-          "quantity": "200g",
-          "estimatedPrice": 0.6
-        }
-      ],
-      "recipeSteps": [
-        "Boil the pasta.",
-        "Cook onion with olive oil.",
-        "Add tomato sauce and tuna.",
-        "Mix with pasta and serve."
-      ],
-      "whyThisMeal": [
-        "Uses ingredients already in your kitchen",
-        "Ready in under 20 minutes",
-        "Keeps the weekly plan affordable"
-      ]
-    }
-  ],
-  "shoppingList": [
-    {
-      "name": "Pasta",
-      "category": "Pantry",
-      "quantity": "1kg",
-      "estimatedPrice": 1.4,
-      "usedInMeals": ["Monday", "Friday"]
-    }
-  ]
-}`;
-
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }],
-        response_format: { type: "json_object" },
-      });
-
-      const responseText = response.choices[0]?.message?.content || "{}";
-      const data = JSON.parse(responseText);
-      return NextResponse.json(data);
-    }
-  } catch (error: any) {
-    console.error("Error in AI generate route:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!process.env.OPENAI_API_KEY && !process.env.OPENROUTER_API_KEY) {
+    return NextResponse.json(await runMock(input));
   }
+
+  try {
+    const client = createAIClient();
+    const response = await client.chat.completions.create({
+      model: process.env.OPENROUTER_MODEL ?? process.env.OPENAI_MODEL ?? "gpt-4o-mini",
+      messages: [{ role: "user", content: buildPrompt(input) }],
+      response_format: { type: "json_object" },
+    });
+    const data = JSON.parse(response.choices[0]?.message?.content || "{}");
+    return NextResponse.json(input.action === "swap" ? mealSchema.parse(data) : planSchema.parse(data));
+  } catch (error) {
+    console.error("AI generation failed, using validated mock fallback:", error);
+    return NextResponse.json(await runMock(input));
+  }
+}
+
+function createAIClient() {
+  if (process.env.OPENROUTER_API_KEY) {
+    return new OpenAI({
+      apiKey: process.env.OPENROUTER_API_KEY,
+      baseURL: "https://openrouter.ai/api/v1",
+      defaultHeaders: {
+        "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "https://sera.menu",
+        "X-Title": "Sera",
+      },
+    });
+  }
+
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+}
+
+async function runMock(input: z.infer<typeof inputSchema>) {
+  if (input.action === "swap") {
+    return mockAIService.swapMeal({
+      shop: input.shop as any,
+      budgetMin: input.budgetMin,
+      budgetMax: input.budgetMax,
+      numberOfPeople: input.numberOfPeople,
+      goal: input.goal as any,
+      vibes: input.vibes as any,
+      dietaryNeeds: input.dietaryNeeds as any,
+      maxCookingTime: input.maxCookingTime as any,
+      kitchenItems: input.kitchenItems,
+      dayToSwap: input.dayToSwap ?? "Monday",
+      excludeTitles: input.excludeTitles,
+    });
+  }
+
+  return mockAIService.generateMealPlan({
+    shop: input.shop as any,
+    budgetMin: input.budgetMin,
+    budgetMax: input.budgetMax,
+    numberOfPeople: input.numberOfPeople,
+    goal: input.goal as any,
+    vibes: input.vibes as any,
+    dietaryNeeds: input.dietaryNeeds as any,
+    maxCookingTime: input.maxCookingTime as any,
+    kitchenItems: input.kitchenItems,
+  });
+}
+
+function buildPrompt(input: z.infer<typeof inputSchema>) {
+  const language = input.appLanguage === "fr" ? "French" : input.appLanguage === "it" ? "Italian" : "English";
+  const country = input.appCountry;
+  const budgetNote = input.budgetMax < input.numberOfPeople * 12
+    ? "The budget is very tight. Use pantry staples, legumes, eggs or seasonal vegetables, and be transparent in budgetMessage."
+    : "Keep total cost inside the selected budget whenever realistic.";
+
+  return input.action === "swap"
+    ? `You are Sera, a premium Mediterranean dinner planner. Reply in ${language}. Create one replacement dinner for ${country}.
+Context: shop ${input.shop}; budget ${input.budgetMin}-${input.budgetMax} EUR; people ${input.numberOfPeople}; goal ${input.goal}; vibes ${input.vibes.join(", ")}; dietary ${input.dietaryNeeds.join(", ")}; max time ${input.maxCookingTime}; pantry ${input.kitchenItems.join(", ")}; day ${input.dayToSwap}; avoid ${input.excludeTitles.join(", ")}.
+Rules: strict dietary compliance, realistic local supermarket ingredients, no luxury items, JSON only.
+Schema: {"title":"","description":"","estimatedCost":4.5,"calories":520,"prepTimeMinutes":25,"ingredients":[{"name":"","quantity":"","estimatedPrice":1.2}],"recipeSteps":[""],"whyThisMeal":[""]}`
+    : `You are Sera, a premium Mediterranean dinner planner. Reply in ${language}. Create a seven dinner plan for ${country}.
+Context: shop ${input.shop}; budget ${input.budgetMin}-${input.budgetMax} EUR; people ${input.numberOfPeople}; goal ${input.goal}; vibes ${input.vibes.join(", ")}; dietary ${input.dietaryNeeds.join(", ")}; max time ${input.maxCookingTime}; pantry ${input.kitchenItems.join(", ")}.
+Country rules: use common shops, ingredients and dinner habits from ${country}. France should feel French, Italy Italian, UK British, US American.
+Budget rules: ${budgetNote} Reuse ingredients and reduce waste.
+Return JSON only with exactly seven meals Monday-Sunday and shopping categories only from: ${SHOPPING_CATEGORIES.join(", ")}.
+Schema: {"estimatedTotal":42,"estimatedMin":39,"estimatedMax":47,"budgetConfidence":86,"budgetMessage":"","meals":[{"day":"Monday","title":"","description":"","estimatedCost":4.2,"calories":620,"prepTimeMinutes":20,"ingredients":[{"name":"","quantity":"","estimatedPrice":0.6}],"recipeSteps":[""],"whyThisMeal":[""]}],"shoppingList":[{"name":"","category":"Pantry","quantity":"","estimatedPrice":1.4,"usedInMeals":["Monday"]}]}`;
 }
