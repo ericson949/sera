@@ -40,6 +40,13 @@ Shared constants and product copy should live in:
 - `src/shared/onboardingConstants.ts` for reusable onboarding constants;
 - domain value objects when the values are true domain concepts.
 
+Payment integrations must depend on a domain port:
+
+- `PaymentProvider` owns checkout creation and webhook parsing.
+- `SubscriptionService` owns entitlement decisions such as generate, swap, and save limits.
+- API routes and use cases depend on these ports, not on Lemon Squeezy, Stripe, or another concrete provider directly.
+- `paymentProviderFactory.ts` is the only backend composition point that chooses the concrete provider for the current deployment.
+
 ## Consequences
 
 Positive:

@@ -52,6 +52,7 @@ This version has breaking changes. APIs, conventions, and file structure may dif
 - Avoid broad refactors unless needed for the requested product change.
 - Keep components mobile-first and PWA-friendly.
 - Preserve Sera's warm premium design system and motion-first onboarding style.
+- Keep external billing providers behind the `PaymentProvider` port. UI, store, and use cases must not depend directly on Lemon Squeezy, Stripe, or another concrete payment SDK.
 - Before finishing a change, run `npx tsc --noEmit` and check that no `src` file exceeds 300 lines.
 - For UI changes, verify the mobile viewport mentally from the code at minimum; use browser QA when a dev server is available.
 

@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "crypto";
-import { SubscriptionService } from "../../domain/services/SubscriptionService";
+import { PaymentProvider } from "../../domain/services/PaymentProvider";
 
 type LemonCheckoutResponse = {
   data?: {
@@ -25,25 +25,13 @@ type LemonWebhookPayload = {
   };
 };
 
-export class LemonSqueezySubscriptionService implements SubscriptionService {
+export class LemonSqueezySubscriptionService implements PaymentProvider {
   constructor(
     private apiKey: string,
     private storeId: string,
     private variantId: string,
     private webhookSecret: string
   ) {}
-
-  async canGenerateMealPlan(): Promise<boolean> {
-    return true;
-  }
-
-  async canSwapMeal(): Promise<boolean> {
-    return true;
-  }
-
-  async canSavePlan(): Promise<boolean> {
-    return true;
-  }
 
   async createCheckoutSession(userId: string, email: string, origin: string): Promise<{ url: string | null }> {
     const response = await fetch("https://api.lemonsqueezy.com/v1/checkouts", {

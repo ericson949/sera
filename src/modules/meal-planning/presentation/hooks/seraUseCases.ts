@@ -3,6 +3,7 @@ import { LocalUserPreferencesRepository } from "@/modules/users/infrastructure/p
 import { LocalMealPlanRepository } from "@/modules/meal-planning/infrastructure/persistence/LocalMealPlanRepository";
 import { OpenAIMealPlanAIService } from "@/modules/meal-planning/infrastructure/ai/OpenAIMealPlanAIService";
 import { ClientSubscriptionService } from "@/modules/subscriptions/infrastructure/payments/ClientSubscriptionService";
+import { HttpPaymentProvider } from "@/modules/subscriptions/infrastructure/payments/HttpPaymentProvider";
 import { StartOnboardingUseCase } from "@/modules/users/application/use-cases/StartOnboardingUseCase";
 import { SaveUserPreferencesUseCase } from "@/modules/users/application/use-cases/SaveUserPreferencesUseCase";
 import { GenerateMealPlanUseCase } from "../../application/use-cases/GenerateMealPlanUseCase";
@@ -20,6 +21,7 @@ const prefsRepo = new LocalUserPreferencesRepository();
 const mealPlanRepo = new LocalMealPlanRepository();
 const aiService = new OpenAIMealPlanAIService();
 const subService = new ClientSubscriptionService(userRepo);
+const paymentProvider = new HttpPaymentProvider();
 
 export const seraUseCases = {
   userRepo,
@@ -33,5 +35,5 @@ export const seraUseCases = {
   saveMealPlanUseCase: new SaveMealPlanUseCase(mealPlanRepo, subService),
   getDashboardUseCase: new GetDashboardUseCase(mealPlanRepo, prefsRepo),
   swapPlannedMealsUseCase: new SwapPlannedMealsUseCase(mealPlanRepo),
-  createCheckoutUseCase: new CreateCheckoutSessionUseCase(subService),
+  createCheckoutUseCase: new CreateCheckoutSessionUseCase(paymentProvider),
 };

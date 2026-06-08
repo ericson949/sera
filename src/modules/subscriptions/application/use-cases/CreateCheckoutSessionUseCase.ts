@@ -1,9 +1,9 @@
-import { SubscriptionService } from "../../domain/services/SubscriptionService";
+import { PaymentProvider } from "../../domain/services/PaymentProvider";
 
 export class CreateCheckoutSessionUseCase {
-  constructor(private subService: SubscriptionService) {}
+  constructor(private paymentProvider: PaymentProvider) {}
 
   async execute(userId: string, email: string, origin: string): Promise<{ url: string | null }> {
-    return this.subService.createCheckoutSession(userId, email, origin);
+    return this.paymentProvider.createCheckoutSession(userId, email, origin);
   }
 }
