@@ -45,9 +45,9 @@ export default function DashboardPage() {
     <div className="flex h-[calc(100svh-5rem)] flex-col bg-background">
       <section className="mx-5 mt-5 rounded-[2.25rem] bg-card p-5 shadow-md">
         <p className="editorial-kicker">{copy.kicker}</p>
-        <h1 className="mt-3 font-serif text-[48px] leading-[49px] text-foreground">{copy.title}</h1>
+        <h1 className="mt-3 font-serif text-[36px] leading-[40px] text-foreground">{copy.title}</h1>
         <button onClick={() => openMeal(meal)} className="mt-6 w-full text-left">
-          <p className="font-serif text-[34px] leading-[36px] text-primary">{meal.title}</p>
+          <p className="font-serif text-[26px] leading-[30px] text-primary">{meal.title}</p>
           {mealState && <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted">{mealState.dateLabel}</p>}
           <p className="mt-3 text-sm leading-6 text-muted">{meal.description}</p>
         </button>
@@ -62,30 +62,26 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-3">
           <button onClick={() => openMeal(meal)} className="rounded-[1.6rem] bg-primary p-5 text-left text-white shadow-md">
             <ChefHat className="h-5 w-5" />
-            <p className="mt-8 font-serif text-[28px] leading-[30px]">{copy.start}</p>
+            <p className="mt-8 font-serif text-[22px] leading-[26px]">{copy.start}</p>
           </button>
-          <button disabled={!mealState?.canCook} onClick={() => weekState.setMealStatus(meal, "cooked")} className="rounded-[1.6rem] bg-card p-5 text-left shadow-sm disabled:opacity-45">
-            <Check className="h-5 w-5 text-primary" />
-            <p className="mt-8 font-serif text-[28px] leading-[30px] text-foreground">{copy.cooked}</p>
-          </button>
-        </div>
-
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <button onClick={() => quickMeal && openMeal(quickMeal)} className="rounded-[1.6rem] border border-warm-stone/70 p-5 text-left">
-            <Shuffle className="h-5 w-5 text-primary" />
-            <p className="mt-6 font-serif text-[25px] leading-[27px] text-foreground">{copy.tired}</p>
-            <p className="mt-2 text-xs leading-5 text-muted">{copy.backupBody}</p>
-          </button>
-          <Link href="/shopping-list" className="rounded-[1.6rem] border border-warm-stone/70 p-5 text-left">
-            <ShoppingBag className="h-5 w-5 text-primary" />
-            <p className="mt-6 font-serif text-[25px] leading-[27px] text-foreground">{copy.market}</p>
+          <Link href="/week" className="rounded-[1.6rem] bg-card p-5 text-left shadow-sm block transition-colors hover:bg-surface-container-low">
+            <ArrowRight className="h-5 w-5 text-primary" />
+            <p className="mt-8 font-serif text-[22px] leading-[26px] text-foreground">{copy.week}</p>
           </Link>
         </div>
 
-        <Link href="/week" className="mt-4 flex h-14 items-center justify-center gap-2 rounded-full bg-surface-container-low text-sm font-semibold text-foreground">
-          {copy.week}
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <button onClick={() => quickMeal && openMeal(quickMeal)} className="rounded-[1.6rem] border border-warm-stone/70 p-5 text-left transition-colors hover:bg-card">
+            <Shuffle className="h-5 w-5 text-primary" />
+            <p className="mt-6 font-serif text-[20px] leading-[24px] text-foreground">{copy.tired}</p>
+            <p className="mt-2 text-xs leading-5 text-muted">{copy.backupBody}</p>
+          </button>
+          <Link href="/shopping-list" className="rounded-[1.6rem] border border-warm-stone/70 p-5 text-left transition-colors hover:bg-card block">
+            <ShoppingBag className="h-5 w-5 text-primary" />
+            <p className="mt-6 font-serif text-[20px] leading-[24px] text-foreground">{copy.market}</p>
+            <p className="mt-2 text-xs leading-5 text-muted">{copy.marketBody}</p>
+          </Link>
+        </div>
       </section>
 
       <MealDetailModal />
