@@ -32,7 +32,7 @@ export default function BetaFeedbackWidget() {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} className="fixed bottom-20 right-4 z-40 flex h-11 items-center gap-2 rounded-full bg-foreground px-4 text-xs font-semibold text-white shadow-lg">
+      <button onClick={() => setOpen(true)} className="fixed top-2 right-4 z-40 flex h-11 items-center gap-2 rounded-full bg-foreground px-4 text-xs font-semibold text-white shadow-lg">
         <MessageCircle className="h-4 w-4" />
         Un avis / Un bug ?
       </button>

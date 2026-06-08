@@ -67,6 +67,8 @@ export const PRODUCT_COPY = {
       kicker: "Sera membership", title: "Save this week for later.",
       body: "Keep your dinner journal, reopen past weeks, and build a calmer rhythm Sunday after Sunday.",
       perMonth: "/ month", unlock: "Demo: unlock membership",
+      subscribe: "Start Membership",
+      trial: "Continue with 7-day trial",
       benefits: ["Saved dinner journals", "Previous weeks always available", "Unlimited new weekly plans", "Unlimited refined meal swaps"],
     },
     notifications: {
@@ -141,6 +143,8 @@ export const PRODUCT_COPY = {
       kicker: "Abonnement Sera", title: "Sauvegarde cette semaine.",
       body: "Garde ton journal de diners, retrouve les semaines passees et construis un rythme plus calme dimanche apres dimanche.",
       perMonth: "/ mois", unlock: "Demo : debloquer",
+      subscribe: "S'abonner à Sera",
+      trial: "Continuer avec l'essai de 7 jours",
       benefits: ["Journaux de diners sauvegardes", "Semaines precedentes toujours accessibles", "Nouvelles semaines illimitees", "Remplacements raffines illimites"],
     },
     notifications: {
@@ -215,6 +219,8 @@ export const PRODUCT_COPY = {
       kicker: "Abbonamento Sera", title: "Salva questa settimana.",
       body: "Conserva il tuo diario delle cene, riapri le settimane passate e costruisci un ritmo piu calmo domenica dopo domenica.",
       perMonth: "/ mese", unlock: "Demo: sblocca",
+      subscribe: "Abbonati a Sera",
+      trial: "Continua con la prova di 7 giorni",
       benefits: ["Diari cena salvati", "Settimane precedenti sempre disponibili", "Nuove settimane illimitate", "Cambi pasto raffinati illimitati"],
     },
     notifications: {
