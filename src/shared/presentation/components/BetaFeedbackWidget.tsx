@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { MessageCircle, Send, X } from "lucide-react";
-import { isBetaLikeEnv } from "@/shared/env";
+// import { isBetaLikeEnv } from "@/shared/env";
 import { capturePostHog } from "@/shared/observability/posthogClient";
 
 const FEEDBACK_TYPES = ["Bug", "Suggestion", "Question"] as const;
@@ -13,7 +13,7 @@ export default function BetaFeedbackWidget() {
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
 
-  if (!isBetaLikeEnv()) return null;
+  // if (!isBetaLikeEnv()) return null;
 
   const submit = () => {
     if (!message.trim()) return;
