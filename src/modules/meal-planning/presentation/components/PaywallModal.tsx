@@ -25,7 +25,7 @@ export default function PaywallModal() {
     closePaywall();
   };
 
-  const handleStripeCheckout = async () => {
+  const handleCheckout = async () => {
     if (isStaging) {
       await handleSimulateUpgrade();
       return;
@@ -79,7 +79,7 @@ export default function PaywallModal() {
           </div>
 
           <div className="mt-5 space-y-2">
-          <button onClick={handleStripeCheckout} disabled={loadingCheckout || loadingSim} className="flex h-14 w-full items-center justify-center rounded-full bg-primary text-sm font-semibold text-white shadow-md disabled:opacity-60">
+            <button onClick={handleCheckout} disabled={loadingCheckout || loadingSim} className="flex h-14 w-full items-center justify-center rounded-full bg-primary text-sm font-semibold text-white shadow-md disabled:opacity-60">
             {loadingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : productCopy.common.continue}
           </button>
           {isStaging && (

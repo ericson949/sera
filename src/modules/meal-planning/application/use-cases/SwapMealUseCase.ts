@@ -43,6 +43,7 @@ export class SwapMealUseCase {
     // 4. Call AI to swap
     const excludeTitles = currentPlan.days.map((d) => d.title);
     const dto = await this.aiService.swapMeal({
+      userId,
       shop: currentPlan.shop,
       budgetMin: currentPlan.budget.min,
       budgetMax: currentPlan.budget.max,
@@ -63,6 +64,7 @@ export class SwapMealUseCase {
       day: dayToSwap,
       title: dto.title,
       description: dto.description,
+      imageUrl: dto.imageUrl,
       estimatedCost: createMoney(dto.estimatedCost),
       calories: dto.calories,
       prepTimeMinutes: dto.prepTimeMinutes,

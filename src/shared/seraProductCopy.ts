@@ -59,7 +59,7 @@ export const PRODUCT_COPY = {
     pricing: {
       kicker: "Sera membership", title: "A more graceful kitchen rhythm.", active: "Active", monthly: "Monthly",
       cancel: "Cancel online whenever the season changes.", member: "Member", pro: "Pro", pause: "Demo: pause membership",
-      unlock: "Demo: unlock membership", stripe: "Payments are processed by Stripe. By continuing, you agree to the terms and cancellation policy.",
+      unlock: "Demo: unlock membership", payments: "Payments are processed by Lemon Squeezy. By continuing, you agree to the terms and cancellation policy.",
       links: "Privacy, terms and cancellation", features: ["Unlimited weekly dinner journals", "Unlimited meal swaps", "Saved menus and favourite recipes", "Exportable market guide", "Budget history for calmer shopping", "Family portions and pantry-aware planning"],
     },
     meal: { time: "Time", energy: "Energy", cost: "Cost", why: "Why it belongs here", ingredients: "Ingredients", method: "Method", cookedLocked: "Cooked meals cannot be replaced." },
@@ -133,7 +133,7 @@ export const PRODUCT_COPY = {
     pricing: {
       kicker: "Abonnement Sera", title: "Un rythme cuisine plus elegant.", active: "Actif", monthly: "Mensuel",
       cancel: "Annule en ligne a tout moment.", member: "Membre", pro: "Pro", pause: "Demo : suspendre",
-      unlock: "Demo : debloquer", stripe: "Paiements traites par Stripe. En continuant, tu acceptes les conditions et la politique d'annulation.",
+      unlock: "Demo : debloquer", payments: "Paiements traites par Lemon Squeezy. En continuant, tu acceptes les conditions et la politique d'annulation.",
       links: "Confidentialite, conditions et annulation", features: ["Semaines de diners illimitees", "Remplacements illimites", "Menus sauvegardes", "Guide courses exportable", "Historique budget", "Portions famille et placard pris en compte"],
     },
     meal: { time: "Temps", energy: "Energie", cost: "Cout", why: "Pourquoi ce plat", ingredients: "Ingredients", method: "Methode", cookedLocked: "Un plat deja cuisine ne peut pas etre remplace." },
@@ -207,7 +207,7 @@ export const PRODUCT_COPY = {
     pricing: {
       kicker: "Abbonamento Sera", title: "Un ritmo in cucina piu elegante.", active: "Attivo", monthly: "Mensile",
       cancel: "Annulla online quando vuoi.", member: "Membro", pro: "Pro", pause: "Demo: sospendi",
-      unlock: "Demo: sblocca", stripe: "Pagamenti gestiti da Stripe. Continuando accetti termini e cancellazione.",
+      unlock: "Demo: sblocca", payments: "Pagamenti gestiti da Lemon Squeezy. Continuando accetti termini e cancellazione.",
       links: "Privacy, termini e cancellazione", features: ["Diari settimanali illimitati", "Cambi pasto illimitati", "Menu salvati", "Guida spesa esportabile", "Storico budget", "Porzioni famiglia e dispensa"],
     },
     meal: { time: "Tempo", energy: "Energia", cost: "Costo", why: "Perche questo piatto", ingredients: "Ingredienti", method: "Metodo", cookedLocked: "Una cena gia cucinata non puo essere sostituita." },

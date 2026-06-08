@@ -2,7 +2,7 @@ import { LocalUserRepository } from "@/modules/users/infrastructure/persistence/
 import { LocalUserPreferencesRepository } from "@/modules/users/infrastructure/persistence/LocalUserPreferencesRepository";
 import { LocalMealPlanRepository } from "@/modules/meal-planning/infrastructure/persistence/LocalMealPlanRepository";
 import { OpenAIMealPlanAIService } from "@/modules/meal-planning/infrastructure/ai/OpenAIMealPlanAIService";
-import { MockSubscriptionService } from "@/modules/subscriptions/infrastructure/payments/MockSubscriptionService";
+import { ClientSubscriptionService } from "@/modules/subscriptions/infrastructure/payments/ClientSubscriptionService";
 import { StartOnboardingUseCase } from "@/modules/users/application/use-cases/StartOnboardingUseCase";
 import { SaveUserPreferencesUseCase } from "@/modules/users/application/use-cases/SaveUserPreferencesUseCase";
 import { GenerateMealPlanUseCase } from "../../application/use-cases/GenerateMealPlanUseCase";
@@ -19,7 +19,7 @@ const userRepo = new LocalUserRepository();
 const prefsRepo = new LocalUserPreferencesRepository();
 const mealPlanRepo = new LocalMealPlanRepository();
 const aiService = new OpenAIMealPlanAIService();
-const subService = new MockSubscriptionService(userRepo);
+const subService = new ClientSubscriptionService(userRepo);
 
 export const seraUseCases = {
   userRepo,

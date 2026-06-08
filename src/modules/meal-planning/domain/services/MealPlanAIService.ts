@@ -6,6 +6,7 @@ import { CookingTime } from "../value-objects/CookingTime";
 import { WeekDay } from "../value-objects/WeekDay";
 
 export type GenerateMealPlanInput = {
+  userId?: string;
   shop: GroceryShop;
   budgetMin: number;
   budgetMax: number;
@@ -27,6 +28,7 @@ export type GeneratedIngredientDTO = {
 export type GeneratedMealDTO = {
   title: string;
   description: string;
+  imageUrl?: string;
   estimatedCost: number;
   calories: number;
   prepTimeMinutes: number;
@@ -54,6 +56,7 @@ export type GeneratedMealPlanDTO = {
 };
 
 export type SwapMealInput = {
+  userId?: string;
   shop: GroceryShop;
   budgetMin: number;
   budgetMax: number;

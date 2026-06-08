@@ -16,7 +16,7 @@ export default function PricingPage() {
   const copy = getProductCopy(appLanguage).pricing;
   const isMember = user?.subscriptionStatus === "pro";
 
-  const handleStripeCheckout = async () => {
+  const handleCheckout = async () => {
     if (isStagingEnv()) {
       await handleSandboxToggle();
       return;
@@ -69,7 +69,7 @@ export default function PricingPage() {
               </button>
             ) : (
               <>
-                <button onClick={handleStripeCheckout} disabled={loadingCheckout || loadingSim} className="flex h-14 w-full items-center justify-center rounded-full bg-primary text-sm font-semibold text-white shadow-md disabled:opacity-60">
+                <button onClick={handleCheckout} disabled={loadingCheckout || loadingSim} className="flex h-14 w-full items-center justify-center rounded-full bg-primary text-sm font-semibold text-white shadow-md disabled:opacity-60">
                   {loadingCheckout ? <Loader2 className="h-4 w-4 animate-spin" /> : getProductCopy(appLanguage).common.continue}
                 </button>
                 <button onClick={handleSandboxToggle} disabled={loadingCheckout || loadingSim} className="flex h-12 w-full items-center justify-center rounded-full bg-surface-container-low text-xs font-semibold text-foreground disabled:opacity-60">
@@ -80,7 +80,7 @@ export default function PricingPage() {
           </div>
         </div>
 
-        <p className="mx-auto mt-4 max-w-[320px] text-center text-xs leading-5 text-muted">{copy.stripe}</p>
+        <p className="mx-auto mt-4 max-w-[320px] text-center text-xs leading-5 text-muted">{copy.payments}</p>
         <Link href="/legal" className="mt-2 block text-center text-xs font-semibold text-primary underline underline-offset-4">
           {copy.links}
         </Link>

@@ -31,6 +31,7 @@ export class GenerateMealPlanUseCase {
 
     // 3. Call AI Service
     const dto = await this.aiService.generateMealPlan({
+      userId,
       shop: preferences.shop,
       budgetMin: preferences.weeklyBudget.min,
       budgetMax: preferences.weeklyBudget.max,
@@ -49,6 +50,7 @@ export class GenerateMealPlanUseCase {
       day: m.day,
       title: m.title,
       description: m.description,
+      imageUrl: m.imageUrl,
       estimatedCost: createMoney(m.estimatedCost),
       calories: m.calories,
       prepTimeMinutes: m.prepTimeMinutes,

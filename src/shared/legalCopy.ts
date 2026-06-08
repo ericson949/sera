@@ -9,7 +9,7 @@ export const LEGAL_COPY: Record<AppLanguage, Record<"privacy" | "terms" | "cance
       intro: "Sera keeps the product simple: we collect only what is needed to plan meals, manage accounts and process payments.",
       sections: [
         { title: "Data we use", body: "Preferences, generated meal plans, shopping lists, email, subscription status and basic device information for PWA reliability." },
-        { title: "Payments", body: "Stripe processes payment details. Sera does not store card numbers." },
+        { title: "Payments", body: "Lemon Squeezy processes payment details. Sera does not store card numbers." },
         { title: "AI generation", body: "Meal planning inputs can be sent to our AI provider to generate recipes and shopping lists." },
         { title: "Your choices", body: "You can request deletion or correction of your account data by contacting support." },
       ],
@@ -20,7 +20,7 @@ export const LEGAL_COPY: Record<AppLanguage, Record<"privacy" | "terms" | "cance
       sections: [
         { title: "Service", body: "Sera provides dinner plans, recipe suggestions, estimated grocery costs and shopping lists." },
         { title: "Estimates", body: "Prices and nutrition are estimates. Always verify labels, allergens and store prices before purchasing or cooking." },
-        { title: "Subscription", body: "Premium access unlocks higher limits and paid features billed through Stripe." },
+        { title: "Subscription", body: "Premium access unlocks higher limits and paid features billed through Lemon Squeezy." },
         { title: "Availability", body: "We may change, pause or improve features as the product evolves." },
       ],
     },
@@ -40,7 +40,7 @@ export const LEGAL_COPY: Record<AppLanguage, Record<"privacy" | "terms" | "cance
       intro: "Sera collecte uniquement ce qui est necessaire pour planifier les repas, gerer le compte et traiter les paiements.",
       sections: [
         { title: "Donnees utilisees", body: "Preferences, plans generes, listes de courses, email, statut d'abonnement et donnees techniques utiles a la PWA." },
-        { title: "Paiements", body: "Stripe traite les donnees de paiement. Sera ne stocke pas les numeros de carte." },
+        { title: "Paiements", body: "Lemon Squeezy traite les donnees de paiement. Sera ne stocke pas les numeros de carte." },
         { title: "Generation IA", body: "Les preferences de planification peuvent etre envoyees a notre fournisseur IA pour generer recettes et listes." },
         { title: "Tes choix", body: "Tu peux demander la suppression ou correction de tes donnees en contactant le support." },
       ],
@@ -51,7 +51,7 @@ export const LEGAL_COPY: Record<AppLanguage, Record<"privacy" | "terms" | "cance
       sections: [
         { title: "Service", body: "Sera fournit des menus, suggestions de recettes, estimations de courses et listes d'achat." },
         { title: "Estimations", body: "Prix et nutrition sont indicatifs. Verifie toujours etiquettes, allergenes et prix magasin." },
-        { title: "Abonnement", body: "L'acces Premium debloque plus de limites et fonctions payantes facturees par Stripe." },
+        { title: "Abonnement", body: "L'acces Premium debloque plus de limites et fonctions payantes facturees par Lemon Squeezy." },
         { title: "Disponibilite", body: "Les fonctionnalites peuvent evoluer, etre suspendues ou ameliorees." },
       ],
     },
@@ -71,7 +71,7 @@ export const LEGAL_COPY: Record<AppLanguage, Record<"privacy" | "terms" | "cance
       intro: "Sera raccoglie solo cio che serve per pianificare i pasti, gestire l'account e trattare i pagamenti.",
       sections: [
         { title: "Dati usati", body: "Preferenze, piani generati, liste spesa, email, stato abbonamento e dati tecnici per la PWA." },
-        { title: "Pagamenti", body: "Stripe gestisce i dati di pagamento. Sera non conserva numeri di carta." },
+        { title: "Pagamenti", body: "Lemon Squeezy gestisce i dati di pagamento. Sera non conserva numeri di carta." },
         { title: "Generazione AI", body: "Gli input di pianificazione possono essere inviati al provider AI per generare ricette e liste." },
         { title: "Le tue scelte", body: "Puoi richiedere eliminazione o correzione dei dati contattando il supporto." },
       ],
@@ -82,7 +82,7 @@ export const LEGAL_COPY: Record<AppLanguage, Record<"privacy" | "terms" | "cance
       sections: [
         { title: "Servizio", body: "Sera offre menu, ricette, stime di spesa e liste acquisti." },
         { title: "Stime", body: "Prezzi e nutrizione sono stime. Verifica sempre etichette, allergeni e prezzi del negozio." },
-        { title: "Abbonamento", body: "Premium sblocca limiti maggiori e funzioni a pagamento gestite da Stripe." },
+        { title: "Abbonamento", body: "Premium sblocca limiti maggiori e funzioni a pagamento gestite da Lemon Squeezy." },
         { title: "Disponibilita", body: "Le funzionalita possono cambiare, essere sospese o migliorate." },
       ],
     },

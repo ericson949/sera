@@ -101,7 +101,7 @@ Initial countries:
    - Free users hit clear upgrade moments.
    - Creating a new week is a hard Pro gate in the MVP.
    - Saving a plan, preserving previous weeks, and advanced continuity are contextual upsells for free users.
-   - Stripe checkout handles production subscriptions.
+   - Lemon Squeezy checkout handles production subscriptions.
    - Legal pages are available before payment.
 
 ## UX Requirements
@@ -136,8 +136,8 @@ Initial countries:
 - Real OpenAI/OpenRouter generation tested for each country/language.
 - Bad JSON repair flow tested.
 - Extreme budget values tested.
-- Stripe production env configured.
-- Stripe webhook writes to durable persistence.
+- Lemon Squeezy production env configured.
+- Lemon Squeezy webhook writes to durable persistence.
 - Legal pages reviewed.
 - Mobile QA completed on iPhone and Android.
 - PWA install and offline launch tested on real devices.

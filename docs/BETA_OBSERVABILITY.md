@@ -46,7 +46,7 @@ The PostHog client is configured with masked inputs for session replay.
 
 In staging/beta:
 
-- Paywall primary CTA simulates Pro instead of opening Stripe.
+- Paywall primary CTA simulates Pro instead of opening Lemon Squeezy.
 - The beta feedback floating widget is visible.
 - Profile shows "Reinitialiser mon compte de test".
 - Reset clears local beta data client-side and logs a server event.
