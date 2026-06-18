@@ -5,7 +5,7 @@ import { Check, Loader2, RefreshCw, X } from "lucide-react";
 import { useDinneroStore } from "../hooks/useDinneroStore";
 import { useWeeklyMealState } from "../hooks/useWeeklyMealState";
 import { formatMoney } from "../../domain/value-objects/Money";
-import { SERA_IMAGES } from "@/shared/seraVisuals";
+import { getSeraMealImageUrl } from "@/shared/seraVisuals";
 import { getProductCopy } from "@/shared/seraProductCopy";
 
 export default function MealDetailModal() {
@@ -16,6 +16,8 @@ export default function MealDetailModal() {
 
   if (!selectedMeal) return null;
   const canSwap = weekState.canSwapMeal(selectedMeal);
+  const detailsReady = selectedMeal.enrichmentStatus === "ready";
+  const detailsMessage = selectedMeal.enrichmentStatus === "failed" ? copy.unavailable : copy.preparing;
 
   const handleSwap = async () => {
     if (!canSwap) return;
@@ -26,7 +28,7 @@ export default function MealDetailModal() {
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#1E1E1E]/55">
       <button className="absolute inset-0 cursor-default" onClick={() => selectMeal(null)} aria-label={productCopy.common.close} />
       <article className="relative z-10 flex max-h-[92svh] w-full max-w-[480px] flex-col overflow-hidden rounded-t-[2.25rem] bg-background shadow-lg">
-        <div className="editorial-photo h-52 shrink-0 px-5 py-4" style={{ "--editorial-image": `url(${SERA_IMAGES.table})` } as CSSProperties}>
+        <div className="editorial-photo h-52 shrink-0 px-5 py-4" style={{ "--editorial-image": `url(${getSeraMealImageUrl(selectedMeal.imageUrl)})` } as CSSProperties}>
           <div className="flex h-full flex-col justify-between text-white">
             <div className="flex justify-end">
               <button onClick={() => selectMeal(null)} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-foreground" aria-label={productCopy.common.close}>
@@ -62,26 +64,26 @@ export default function MealDetailModal() {
 
           <section className="mt-7">
             <h3 className="font-serif text-[28px] leading-[30px] text-foreground">{copy.ingredients}</h3>
-            <div className="mt-3 divide-y divide-warm-stone/50">
+            {!detailsReady ? <EnrichmentNotice message={detailsMessage} /> : <div className="mt-3 divide-y divide-warm-stone/50">
               {selectedMeal.ingredients.map((ingredient, index) => (
                 <div key={`${selectedMeal.id}-ingredient-${index}`} className="flex justify-between gap-4 py-3 text-sm">
                   <span className="font-medium text-foreground">{ingredient.name}</span>
                   <span className="text-right text-muted">{ingredient.quantity} - {formatMoney(ingredient.estimatedPrice)}</span>
                 </div>
               ))}
-            </div>
+            </div>}
           </section>
 
           <section className="mt-7 pb-24">
             <h3 className="font-serif text-[28px] leading-[30px] text-foreground">{copy.method}</h3>
-            <div className="mt-4 space-y-4">
+            {!detailsReady ? <EnrichmentNotice message={detailsMessage} /> : <div className="mt-4 space-y-4">
               {selectedMeal.recipeSteps.map((step, index) => (
                 <div key={`${selectedMeal.id}-step-${index}`} className="grid grid-cols-[2rem_1fr] gap-3">
                   <span className="font-serif text-xl text-primary">{index + 1}</span>
                   <p className="text-sm leading-6 text-muted">{step}</p>
                 </div>
               ))}
-            </div>
+            </div>}
           </section>
         </div>
 
@@ -95,6 +97,15 @@ export default function MealDetailModal() {
           </button>
         </div>
       </article>
+    </div>
+  );
+}
+
+function EnrichmentNotice({ message }: { message: string }) {
+  return (
+    <div className="mt-4 flex items-center gap-3 rounded-2xl bg-surface-container-low px-4 py-4 text-sm text-muted">
+      <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
+      <span>{message}</span>
     </div>
   );
 }

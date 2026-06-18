@@ -1,5 +1,6 @@
 import { MealPlanRepository } from "../../domain/repositories/MealPlanRepository";
 import { MealPlan } from "../../domain/entities/MealPlan";
+import { buildShoppingList } from "../../domain/services/buildShoppingList";
 
 export class LocalMealPlanRepository implements MealPlanRepository {
   private memoryStore = new Map<string, MealPlan>();
@@ -62,5 +63,17 @@ export class LocalMealPlanRepository implements MealPlanRepository {
       .filter((p) => p.userId === userId && p.saved === true)
       .map((p) => ({ ...p, createdAt: new Date(p.createdAt) }))
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async updateMeal(planId: string, mealId: string, update: Partial<MealPlan["days"][number]>): Promise<MealPlan> {
+    const store = this.getStore();
+    const plan = store[planId];
+    if (!plan) throw new Error("Meal plan not found.");
+
+    const days = plan.days.map((meal) => meal.id === mealId ? { ...meal, ...update } : meal);
+    const updated = { ...plan, days, shoppingList: buildShoppingList(days, plan.shoppingList), createdAt: new Date(plan.createdAt) };
+    store[planId] = updated;
+    this.saveStore(store);
+    return updated;
   }
 }

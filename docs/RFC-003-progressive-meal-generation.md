@@ -1,0 +1,42 @@
+# RFC 003: Progressive Meal Generation
+
+## Status
+
+Accepted
+
+## Context
+
+Generating seven complete recipes in one AI response makes the user wait for ingredients, long cooking methods, and images before seeing any useful menu. Images also have a different latency and failure profile from text generation.
+
+## Decision
+
+Sera splits generation into two phases:
+
+1. The foreground request returns only the seven meal overviews, weekly budget estimate, and short reasons for each choice.
+2. One background job per meal requests recipe details and the image concurrently, then persists a single meal update.
+
+The client-side job queue runs at most five jobs concurrently. Additional jobs remain FIFO in memory. Each meal persists an enrichment status (`pending`, `processing`, `ready`, or `failed`), so non-ready meals are queued again when the local session is restored.
+
+The application use case owns orchestration. AI calls remain behind `MealPlanAIService`, persistence remains behind `MealPlanRepository`, and presentation only observes progressively updated plans.
+
+The shopping guide is rebuilt from every ingredient set persisted so far. It therefore becomes useful progressively rather than delaying the initial menu.
+
+## Failure and deployment behavior
+
+- A failed image does not discard successfully generated ingredients and cooking steps.
+- A failed recipe job is marked and retried on the next app launch.
+- The queue limit is per active browser session in the current local-first MVP.
+- A production multi-instance worker must use a durable external queue with the same concurrency contract; a Next.js Route Handler must not be treated as a durable background worker.
+- Generated image data should move to object storage before durable Supabase rollout; the meal record should store only a stable URL.
+
+## Consequences
+
+The menu becomes visible after a much smaller AI response. Recipe details arrive independently, and two queued meals wait while five are processed. The tradeoff is temporary partial data, which the UI communicates explicitly.
+
+## Verification
+
+- The overview response contains seven meals without recipe steps or ingredients.
+- No more than five enrichment jobs are active at once.
+- Remaining jobs start as active jobs finish.
+- Reloading resumes meals whose status is not `ready`.
+- `npx tsc --noEmit` passes and no source file exceeds 300 effective lines.

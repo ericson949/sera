@@ -5,7 +5,10 @@ export type Ingredient = {
   name: string;
   quantity: string;
   estimatedPrice: Money;
+  category?: string;
 };
+
+export type EnrichmentStatus = "pending" | "processing" | "ready" | "failed";
 
 export type Meal = {
   id: string;
@@ -19,4 +22,5 @@ export type Meal = {
   recipeSteps: string[];
   whyThisMeal: string[];
   imageUrl?: string;
+  enrichmentStatus?: EnrichmentStatus;
 };

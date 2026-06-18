@@ -41,8 +41,8 @@ const mealSchema = z.object({
   estimatedCost: z.number().nonnegative(),
   calories: z.number().int().positive(),
   prepTimeMinutes: z.number().int().positive(),
-  ingredients: z.array(ingredientSchema).min(1),
-  recipeSteps: z.array(z.string().min(1)).min(2),
+  ingredients: z.array(ingredientSchema).default([]),
+  recipeSteps: z.array(z.string().min(1)).default([]),
   whyThisMeal: z.array(z.string().min(1)).min(1),
 });
 
@@ -59,7 +59,7 @@ const planSchema = z.object({
     quantity: z.string().min(1),
     estimatedPrice: z.number().nonnegative(),
     usedInMeals: z.array(z.enum(weekdays)).min(1),
-  })).min(1),
+  })).default([]),
 });
 
 export async function POST(request: Request) {
@@ -68,7 +68,18 @@ export async function POST(request: Request) {
 
   try {
     const supabaseResult = await runSupabaseAI(input);
-    if (supabaseResult) return NextResponse.json(validator.parse(supabaseResult));
+    if (supabaseResult) {
+      if (supabaseResult && typeof supabaseResult === "object") {
+        if (input.action === "swap") {
+          supabaseResult.imageUrl = "";
+        } else if (Array.isArray(supabaseResult.meals)) {
+          supabaseResult.meals.forEach((meal: any) => {
+            meal.imageUrl = "";
+          });
+        }
+      }
+      return NextResponse.json(validator.parse(supabaseResult));
+    }
   } catch (error) {
     await captureServerException(error, { route: "/api/generate", provider: "supabase-edge", fallback: "next" });
   }
@@ -77,6 +88,15 @@ export async function POST(request: Request) {
 
   try {
     const data = await runNextAI(input);
+    if (data && typeof data === "object") {
+      if (input.action === "swap") {
+        data.imageUrl = "";
+      } else if (Array.isArray(data.meals)) {
+        data.meals.forEach((meal: any) => {
+          meal.imageUrl = "";
+        });
+      }
+    }
     return NextResponse.json(validator.parse(data));
   } catch (error) {
     console.error("AI generation failed, using validated mock fallback:", error);
@@ -123,7 +143,6 @@ async function callLocalAI(client: OpenAI, prompt: string) {
     }),
     AI_TIMEOUT_MS
   );
-
   return response.choices[0]?.message?.content || "{}";
 }
 
@@ -185,14 +204,14 @@ function buildPrompt(input: z.infer<typeof inputSchema>) {
   return input.action === "swap"
     ? `You are Sera, a premium Mediterranean dinner planner. Reply in ${language}. Create one replacement dinner for ${country}.
 Context: shop ${input.shop}; budget ${input.budgetMin}-${input.budgetMax} EUR; people ${input.numberOfPeople}; goal ${input.goal}; vibes ${input.vibes.join(", ")}; dietary ${input.dietaryNeeds.join(", ")}; max time ${input.maxCookingTime}; batch cooking ${input.batchCooking ? "yes" : "no"}; pantry ${input.kitchenItems.join(", ")}; day ${input.dayToSwap}; avoid ${input.excludeTitles.join(", ")}.
-Rules: strict dietary compliance, realistic local supermarket ingredients, no luxury items, JSON only.
-Schema: {"title":"","description":"","imageUrl":"","estimatedCost":4.5,"calories":520,"prepTimeMinutes":25,"ingredients":[{"name":"","quantity":"","estimatedPrice":1.2}],"recipeSteps":[""],"whyThisMeal":[""]}`
+Rules: strict dietary compliance, realistic local supermarket ingredients, no luxury items, JSON only. Return only the overview; recipe details and image are generated later.
+Schema: {"title":"","description":"","estimatedCost":4.5,"calories":520,"prepTimeMinutes":25,"whyThisMeal":[""]}`
     : `You are Sera, a premium Mediterranean dinner planner. Reply in ${language}. Create a seven dinner plan for ${country}.
 Context: shop ${input.shop}; budget ${input.budgetMin}-${input.budgetMax} EUR; people ${input.numberOfPeople}; goal ${input.goal}; vibes ${input.vibes.join(", ")}; dietary ${input.dietaryNeeds.join(", ")}; max time ${input.maxCookingTime}; batch cooking ${input.batchCooking ? "yes, favor recipes that reheat and prep well in one session" : "no"}; pantry ${input.kitchenItems.join(", ")}.
 Country rules: use common shops, ingredients and dinner habits from ${country}. France should feel French, Italy Italian, UK British, US American.
 Budget rules: ${budgetNote} Reuse ingredients and reduce waste.
-Return JSON only with exactly seven meals Monday-Sunday and shopping categories only from: ${SHOPPING_CATEGORIES.join(", ")}.
-Schema: {"estimatedTotal":42,"estimatedMin":39,"estimatedMax":47,"budgetConfidence":86,"budgetMessage":"","meals":[{"day":"Monday","title":"","description":"","imageUrl":"","estimatedCost":4.2,"calories":620,"prepTimeMinutes":20,"ingredients":[{"name":"","quantity":"","estimatedPrice":0.6}],"recipeSteps":[""],"whyThisMeal":[""]}],"shoppingList":[{"name":"","category":"Pantry","quantity":"","estimatedPrice":1.4,"usedInMeals":["Monday"]}]}`;
+Return JSON only with exactly seven meal overviews Monday-Sunday. Do not generate ingredients, cooking steps, images or a shopping list yet.
+Schema: {"estimatedTotal":42,"estimatedMin":39,"estimatedMax":47,"budgetConfidence":86,"budgetMessage":"","meals":[{"day":"Monday","title":"","description":"","estimatedCost":4.2,"calories":620,"prepTimeMinutes":20,"whyThisMeal":[""]}]}`;
 }
 
 function parseJson(content: string) {

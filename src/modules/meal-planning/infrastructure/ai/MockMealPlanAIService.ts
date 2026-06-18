@@ -4,6 +4,8 @@ import {
   GeneratedMealPlanDTO,
   MealPlanAIService,
   SwapMealInput,
+  EnrichMealInput,
+  EnrichedMealDTO,
 } from "../../domain/services/MealPlanAIService";
 import { WeekDay } from "../../domain/value-objects/WeekDay";
 import { MockRecipe, RECIPE_LIBRARY } from "./mockRecipeLibrary";
@@ -75,7 +77,6 @@ export class MockMealPlanAIService implements MealPlanAIService {
     const meals = WEEKDAYS.map((day, index) =>
       this.createMeal(day, availableRecipes[index % availableRecipes.length], input, shopMultiplier, peopleMultiplier)
     );
-    const shoppingList = this.createShoppingList(meals);
     const estimatedTotal = meals.reduce((sum, meal) => sum + meal.estimatedCost, 0);
     const finalTotal = Math.round(estimatedTotal * 0.9 * 100) / 100;
     const confidence = this.getBudgetConfidence(finalTotal, input);
@@ -86,8 +87,8 @@ export class MockMealPlanAIService implements MealPlanAIService {
       estimatedMax: Math.round(finalTotal * 1.1 * 100) / 100,
       budgetConfidence: confidence.value,
       budgetMessage: confidence.message,
-      meals,
-      shoppingList,
+      meals: meals.map((meal) => ({ ...meal, ingredients: [], recipeSteps: [] })),
+      shoppingList: [],
     };
   }
 
@@ -101,7 +102,27 @@ export class MockMealPlanAIService implements MealPlanAIService {
     );
     const recipe = this.pickRecipe(candidateRecipes.length > 0 ? candidateRecipes : RECIPE_LIBRARY);
 
-    return this.createMeal(undefined, recipe, input, shopMultiplier, peopleMultiplier);
+    return { ...this.createMeal(undefined, recipe, input, shopMultiplier, peopleMultiplier), ingredients: [], recipeSteps: [] };
+  }
+
+  async generateMealImage(mealTitle: string): Promise<string> {
+    void mealTitle;
+    await delay(500);
+    return "";
+  }
+
+  async enrichMeal(input: EnrichMealInput): Promise<EnrichedMealDTO> {
+    await delay(1000);
+    const recipe = RECIPE_LIBRARY.find((r) => r.title.toLowerCase() === input.mealTitle.toLowerCase()) ?? RECIPE_LIBRARY[0];
+    const shopMultiplier = this.getStoreMultiplier(input.shop);
+    const peopleMultiplier = this.getPeopleMultiplier(input.numberOfPeople);
+
+    return {
+      ingredients: recipe.ingredients.map((ingredient) =>
+        ({ ...this.scaleIngredient(ingredient, shopMultiplier, peopleMultiplier), category: ingredient.category })
+      ),
+      recipeSteps: recipe.steps,
+    };
   }
 
   private getAvailableRecipes(input: GenerateMealPlanInput): MockRecipe[] {

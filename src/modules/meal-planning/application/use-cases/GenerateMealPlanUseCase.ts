@@ -61,6 +61,7 @@ export class GenerateMealPlanUseCase {
       })),
       recipeSteps: m.recipeSteps,
       whyThisMeal: m.whyThisMeal,
+      enrichmentStatus: "pending",
     }));
 
     const shoppingList: ShoppingItem[] = dto.shoppingList.map((item, idx) => ({

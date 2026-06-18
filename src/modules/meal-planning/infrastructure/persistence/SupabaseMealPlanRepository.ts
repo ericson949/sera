@@ -2,6 +2,7 @@ import { MealPlanRepository } from "../../domain/repositories/MealPlanRepository
 import { MealPlan } from "../../domain/entities/MealPlan";
 import { LocalMealPlanRepository } from "./LocalMealPlanRepository";
 import { createClient } from "@supabase/supabase-js";
+import { buildShoppingList } from "../../domain/services/buildShoppingList";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
@@ -130,5 +131,14 @@ export class SupabaseMealPlanRepository implements MealPlanRepository {
       saved: d.saved,
       createdAt: new Date(d.created_at),
     }));
+  }
+
+  async updateMeal(planId: string, mealId: string, update: Partial<MealPlan["days"][number]>): Promise<MealPlan> {
+    const current = await this.findById(planId);
+    if (!current) throw new Error("Meal plan not found.");
+    const days = current.days.map((meal) => meal.id === mealId ? { ...meal, ...update } : meal);
+    const updated = { ...current, days, shoppingList: buildShoppingList(days, current.shoppingList) };
+    await this.save(updated);
+    return updated;
   }
 }

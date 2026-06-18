@@ -19,6 +19,15 @@ Deno.serve(async (request) => {
     await recordEvent({ userId, action, provider: getProvider(), model: getModel(), status: "started" });
 
     const json = await generateWithRepair(input);
+    if (json && typeof json === "object") {
+      if (input.action === "swap") {
+        json.imageUrl = "";
+      } else if (Array.isArray(json.meals)) {
+        json.meals.forEach((meal: any) => {
+          meal.imageUrl = "";
+        });
+      }
+    }
     await recordEvent({ userId, action, provider: getProvider(), model: getModel(), status: "success", latencyMs: Date.now() - startedAt });
     return corsResponse(json);
   } catch (error) {
@@ -90,14 +99,14 @@ function buildPrompt(input: Record<string, unknown>) {
   return action === "swap"
     ? `You are Sera, a premium Mediterranean dinner planner. Reply in ${language}. Create one replacement dinner for ${country}.
 Context: ${context}; day ${input.dayToSwap}; avoid ${(input.excludeTitles as string[] || []).join(", ")}.
-Rules: strict dietary compliance, realistic local supermarket ingredients, no luxury items, JSON only. imageUrl is optional and should be omitted unless it is a real stable https image URL.
-Schema: {"title":"","description":"","imageUrl":"","estimatedCost":4.5,"calories":520,"prepTimeMinutes":25,"ingredients":[{"name":"","quantity":"","estimatedPrice":1.2}],"recipeSteps":[""],"whyThisMeal":[""]}`
+Rules: strict dietary compliance, realistic local supermarket ingredients, no luxury items, JSON only. Return only the overview; details are generated later.
+Schema: {"title":"","description":"","estimatedCost":4.5,"calories":520,"prepTimeMinutes":25,"whyThisMeal":[""]}`
     : `You are Sera, a premium Mediterranean dinner planner. Reply in ${language}. Create a seven dinner plan for ${country}.
 Context: ${context}.
 Country rules: use common shops, ingredients and dinner habits from ${country}. France should feel French, Italy Italian, UK British, US American.
 Budget rules: ${budgetNote} Reuse ingredients and reduce waste.
-Return JSON only with exactly seven meals Monday-Sunday and shopping categories only from: ${SHOPPING_CATEGORIES.join(", ")}. imageUrl is optional and should be omitted unless it is a real stable https image URL.
-Schema: {"estimatedTotal":42,"estimatedMin":39,"estimatedMax":47,"budgetConfidence":86,"budgetMessage":"","meals":[{"day":"Monday","title":"","description":"","imageUrl":"","estimatedCost":4.2,"calories":620,"prepTimeMinutes":20,"ingredients":[{"name":"","quantity":"","estimatedPrice":0.6}],"recipeSteps":[""],"whyThisMeal":[""]}],"shoppingList":[{"name":"","category":"Pantry","quantity":"","estimatedPrice":1.4,"usedInMeals":["Monday"]}]}`;
+Return JSON only with exactly seven meal overviews Monday-Sunday. Do not generate ingredients, cooking steps, images or a shopping list yet.
+Schema: {"estimatedTotal":42,"estimatedMin":39,"estimatedMax":47,"budgetConfidence":86,"budgetMessage":"","meals":[{"day":"Monday","title":"","description":"","estimatedCost":4.2,"calories":620,"prepTimeMinutes":20,"whyThisMeal":[""]}]}`;
 }
 
 function parseJson(content: string) {

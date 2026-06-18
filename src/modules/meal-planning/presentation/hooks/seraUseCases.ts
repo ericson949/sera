@@ -15,6 +15,8 @@ import { SaveMealPlanUseCase } from "../../application/use-cases/SaveMealPlanUse
 import { GetDashboardUseCase } from "../../application/use-cases/GetDashboardUseCase";
 import { SwapPlannedMealsUseCase } from "../../application/use-cases/SwapPlannedMealsUseCase";
 import { CreateCheckoutSessionUseCase } from "@/modules/subscriptions/application/use-cases/CreateCheckoutSessionUseCase";
+import { EnrichMealPlanUseCase } from "../../application/use-cases/EnrichMealPlanUseCase";
+import { jobQueue } from "@/shared/jobs/JobQueue";
 
 const userRepo = new LocalUserRepository();
 const prefsRepo = new LocalUserPreferencesRepository();
@@ -28,6 +30,7 @@ export const seraUseCases = {
   startOnboardingUseCase: new StartOnboardingUseCase(prefsRepo),
   savePrefsUseCase: new SaveUserPreferencesUseCase(prefsRepo),
   generatePlanUseCase: new GenerateMealPlanUseCase(mealPlanRepo, prefsRepo, aiService, subService),
+  enrichMealPlanUseCase: new EnrichMealPlanUseCase(mealPlanRepo, aiService, jobQueue),
   regeneratePlanUseCase: new RegenerateMealPlanUseCase(mealPlanRepo, prefsRepo, aiService, subService),
   swapMealUseCase: new SwapMealUseCase(mealPlanRepo, prefsRepo, aiService, subService),
   getCurrentPlanUseCase: new GetCurrentMealPlanUseCase(mealPlanRepo),

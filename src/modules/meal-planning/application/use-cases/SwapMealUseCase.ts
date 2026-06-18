@@ -75,6 +75,7 @@ export class SwapMealUseCase {
       })),
       recipeSteps: dto.recipeSteps,
       whyThisMeal: dto.whyThisMeal,
+      enrichmentStatus: "pending",
     };
 
     // 6. Update the days

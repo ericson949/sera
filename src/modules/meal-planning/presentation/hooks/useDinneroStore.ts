@@ -2,13 +2,13 @@ import { create } from "zustand";
 import { WeekDay } from "../../domain/value-objects/WeekDay";
 import { UserPreferences } from "@/modules/users/domain/entities/UserPreferences";
 import { DinneroState, AppCountry, AppLanguage } from "./useDinneroStore.types";
-import { clearOnboardingDraft, createOnboardingDraft, DEFAULT_USER_ID, getOnboardingDraft, getSavedLocale, LOCALE_STORAGE_KEY, saveOnboardingDraft, USAGE_STORAGE_KEY } from "./seraStoreConfig";
+import { clearOnboardingDraft, createOnboardingDraft, getOnboardingDraft, getSavedLocale, LOCALE_STORAGE_KEY, saveOnboardingDraft, USAGE_STORAGE_KEY } from "./seraStoreConfig";
 import { seraUseCases } from "./seraUseCases";
 import { SERA_INITIAL_STATE } from "./seraInitialState";
 
 export type { AppCountry, AppLanguage };
 
-const { userRepo, startOnboardingUseCase, savePrefsUseCase, generatePlanUseCase, regeneratePlanUseCase, swapMealUseCase, getCurrentPlanUseCase, toggleShoppingItemUseCase, saveMealPlanUseCase, getDashboardUseCase, swapPlannedMealsUseCase, createCheckoutUseCase } = seraUseCases;
+const { userRepo, startOnboardingUseCase, savePrefsUseCase, generatePlanUseCase, enrichMealPlanUseCase, regeneratePlanUseCase, swapMealUseCase, getCurrentPlanUseCase, toggleShoppingItemUseCase, saveMealPlanUseCase, getDashboardUseCase, swapPlannedMealsUseCase, createCheckoutUseCase } = seraUseCases;
 
 export const useDinneroStore = create<DinneroState>((set, get) => ({
   ...SERA_INITIAL_STATE,
@@ -56,6 +56,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
       });
 
       await get().loadDashboard();
+      if (currentPlan) get().enrichPlan(currentPlan);
     } catch (err: any) {
       set({ error: err.message, hasHydrated: true, isInitializing: false });
     }
@@ -133,6 +134,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
       const plan = await generatePlanUseCase.execute(uId);
 
       set({ activePlan: plan, isGenerating: false, preferences: prefData });
+      get().enrichPlan(plan);
       clearOnboardingDraft();
       await get().loadDashboard();
     } catch (err: any) {
@@ -149,6 +151,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
       const uId = get().userId;
       const plan = await regeneratePlanUseCase.execute(uId);
       set({ activePlan: plan, isGenerating: false });
+      get().enrichPlan(plan);
       await get().loadDashboard();
     } catch (err: any) {
       set({ isGenerating: false, error: err.message });
@@ -170,6 +173,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
       }
 
       set({ activePlan: updatedPlan, isSwapping: false });
+      get().enrichPlan(updatedPlan);
       await get().loadDashboard();
     } catch (err: any) {
       set({ isSwapping: false, error: err.message });
@@ -219,6 +223,17 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
   },
 
   activatePlan: (plan) => set({ activePlan: plan }),
+
+  enrichPlan: (plan) => {
+    enrichMealPlanUseCase.execute(plan, get().appLanguage, (updatedPlan) => {
+      set((state) => ({
+        activePlan: state.activePlan?.id === updatedPlan.id ? updatedPlan : state.activePlan,
+        selectedMeal: state.selectedMeal
+          ? updatedPlan.days.find((meal) => meal.id === state.selectedMeal?.id) ?? state.selectedMeal
+          : null,
+      }));
+    });
+  },
 
   loadDashboard: async () => {
     try {

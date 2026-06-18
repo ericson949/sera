@@ -23,6 +23,7 @@ export type GeneratedIngredientDTO = {
   name: string;
   quantity: string;
   estimatedPrice: number;
+  category?: string;
 };
 
 export type GeneratedMealDTO = {
@@ -71,7 +72,22 @@ export type SwapMealInput = {
   excludeTitles: string[];
 };
 
+export type EnrichMealInput = {
+  mealTitle: string;
+  mealDescription: string;
+  shop: GroceryShop;
+  numberOfPeople: number;
+  appLanguage: string;
+};
+
+export type EnrichedMealDTO = {
+  ingredients: GeneratedIngredientDTO[];
+  recipeSteps: string[];
+};
+
 export interface MealPlanAIService {
   generateMealPlan(input: GenerateMealPlanInput): Promise<GeneratedMealPlanDTO>;
   swapMeal(input: SwapMealInput): Promise<GeneratedMealDTO>;
+  generateMealImage(mealTitle: string): Promise<string>;
+  enrichMeal(input: EnrichMealInput): Promise<EnrichedMealDTO>;
 }
