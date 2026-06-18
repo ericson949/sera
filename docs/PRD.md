@@ -133,7 +133,7 @@ Initial countries:
 
 ## Production Readiness Checklist
 
-- Real OpenAI/OpenRouter generation tested for each country/language.
+- Real OpenRouter generation tested for each country/language.
 - Bad JSON repair flow tested.
 - Extreme budget values tested.
 - Lemon Squeezy production env configured.

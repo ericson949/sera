@@ -6,7 +6,7 @@ import {
   SwapMealInput,
 } from "../../domain/services/MealPlanAIService";
 
-export class OpenAIMealPlanAIService implements MealPlanAIService {
+export class OpenRouterMealPlanAIService implements MealPlanAIService {
   async generateMealPlan(input: GenerateMealPlanInput): Promise<GeneratedMealPlanDTO> {
     const locale = getStoredLocale();
     const res = await fetch("/api/generate", {

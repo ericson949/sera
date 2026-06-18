@@ -1,7 +1,7 @@
 import { LocalUserRepository } from "@/modules/users/infrastructure/persistence/LocalUserRepository";
 import { LocalUserPreferencesRepository } from "@/modules/users/infrastructure/persistence/LocalUserPreferencesRepository";
 import { LocalMealPlanRepository } from "@/modules/meal-planning/infrastructure/persistence/LocalMealPlanRepository";
-import { OpenAIMealPlanAIService } from "@/modules/meal-planning/infrastructure/ai/OpenAIMealPlanAIService";
+import { OpenRouterMealPlanAIService } from "@/modules/meal-planning/infrastructure/ai/OpenRouterMealPlanAIService";
 import { ClientSubscriptionService } from "@/modules/subscriptions/infrastructure/payments/ClientSubscriptionService";
 import { HttpPaymentProvider } from "@/modules/subscriptions/infrastructure/payments/HttpPaymentProvider";
 import { StartOnboardingUseCase } from "@/modules/users/application/use-cases/StartOnboardingUseCase";
@@ -19,7 +19,7 @@ import { CreateCheckoutSessionUseCase } from "@/modules/subscriptions/applicatio
 const userRepo = new LocalUserRepository();
 const prefsRepo = new LocalUserPreferencesRepository();
 const mealPlanRepo = new LocalMealPlanRepository();
-const aiService = new OpenAIMealPlanAIService();
+const aiService = new OpenRouterMealPlanAIService();
 const subService = new ClientSubscriptionService(userRepo);
 const paymentProvider = new HttpPaymentProvider();
 

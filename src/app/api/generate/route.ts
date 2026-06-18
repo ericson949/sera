@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     await captureServerException(error, { route: "/api/generate", provider: "supabase-edge", fallback: "next" });
   }
 
-  if (!process.env.OPENAI_API_KEY && !process.env.OPENROUTER_API_KEY) return NextResponse.json(await runMock(input));
+  if (!process.env.OPENROUTER_API_KEY) return NextResponse.json(await runMock(input));
 
   try {
     const data = await runNextAI(input);
@@ -117,7 +117,7 @@ async function runNextAI(input: z.infer<typeof inputSchema>) {
 async function callLocalAI(client: OpenAI, prompt: string) {
   const response = await withTimeout(
     client.chat.completions.create({
-      model: process.env.OPENROUTER_MODEL ?? process.env.OPENAI_MODEL ?? "gpt-4o-mini",
+      model: process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
       response_format: { type: "json_object" },
     }),
@@ -128,18 +128,19 @@ async function callLocalAI(client: OpenAI, prompt: string) {
 }
 
 function createAIClient() {
-  if (process.env.OPENROUTER_API_KEY) {
-    return new OpenAI({
-      apiKey: process.env.OPENROUTER_API_KEY,
-      baseURL: "https://openrouter.ai/api/v1",
-      defaultHeaders: {
-        "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "https://sera.menu",
-        "X-Title": "Sera",
-      },
-    });
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENROUTER_API_KEY is not configured");
   }
 
-  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  return new OpenAI({
+    apiKey: apiKey,
+    baseURL: "https://openrouter.ai/api/v1",
+    defaultHeaders: {
+      "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "https://sera.menu",
+      "X-Title": "Sera",
+    },
+  });
 }
 
 async function runMock(input: z.infer<typeof inputSchema>) {
@@ -209,7 +210,7 @@ function parseJson(content: string) {
 }
 
 function getLocalProvider() {
-  return process.env.OPENROUTER_API_KEY ? "openrouter" : "openai";
+  return "openrouter";
 }
 
 async function fetchWithTimeout(input: string, init: RequestInit) {

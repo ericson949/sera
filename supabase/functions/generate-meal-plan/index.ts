@@ -42,22 +42,22 @@ async function generateWithRepair(input: Record<string, unknown>) {
 }
 
 async function callAI(prompt: string) {
-  const provider = getProvider();
-  const apiKey = provider === "openrouter" ? Deno.env.get("OPENROUTER_API_KEY") : Deno.env.get("OPENAI_API_KEY");
-  if (!apiKey) throw new Error("AI provider is not configured");
+  const apiKey = Deno.env.get("OPENROUTER_API_KEY");
+  if (!apiKey) throw new Error("OpenRouter API key is not configured");
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    const baseUrl = provider === "openrouter" ? "https://openrouter.ai/api/v1" : "https://api.openai.com/v1";
+    const baseUrl = "https://openrouter.ai/api/v1";
     const response = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
-        ...(provider === "openrouter" ? { "HTTP-Referer": Deno.env.get("APP_URL") || "https://sera.menu", "X-Title": "Sera" } : {}),
+        "HTTP-Referer": Deno.env.get("APP_URL") || "https://sera.menu",
+        "X-Title": "Sera",
       },
       body: JSON.stringify({
         model: getModel(),
@@ -115,11 +115,11 @@ function parseJson(content: string) {
 }
 
 function getProvider() {
-  return Deno.env.get("OPENROUTER_API_KEY") ? "openrouter" : "openai";
+  return "openrouter";
 }
 
 function getModel() {
-  return Deno.env.get("OPENROUTER_MODEL") || Deno.env.get("OPENAI_MODEL") || "gpt-4o-mini";
+  return Deno.env.get("OPENROUTER_MODEL") || "openai/gpt-4o-mini";
 }
 
 async function assertRateLimit(userId: string, action: string) {
