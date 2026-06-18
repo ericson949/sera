@@ -1,5 +1,7 @@
 "use client";
 
+import { useMealPlanEnrichment } from "@/modules/meal-planning/presentation/hooks/useMealPlanEnrichment";
+
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { Check, GripVertical, Plus, ShoppingBag, X } from "lucide-react";
@@ -14,6 +16,7 @@ import { getProductCopy } from "@/shared/seraProductCopy";
 import { getSeraMealImagePosition, getSeraMealImageUrl } from "@/shared/seraVisuals";
 
 export default function WeekPage() {
+  useMealPlanEnrichment();
   const { activePlan, dashboard, user, userId, selectMeal, openPaywall, swapPlannedMeals, activatePlan, appLanguage } = useDinneroStore();
   const copy = getProductCopy(appLanguage).weekView;
   const weekState = useWeeklyMealState(activePlan, userId);

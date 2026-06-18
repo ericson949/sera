@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { z } from "zod";
 import { MockMealPlanAIService } from "@/modules/meal-planning/infrastructure/ai/MockMealPlanAIService";
-import { SHOPPING_CATEGORIES } from "@/modules/meal-planning/domain/value-objects/ShoppingCategory";
 import { captureServerException } from "@/shared/observability/posthogServer";
 
 const mockAIService = new MockMealPlanAIService();
@@ -28,23 +27,16 @@ const inputSchema = z.object({
   excludeTitles: z.array(z.string()).default([]),
 });
 
-const ingredientSchema = z.object({
-  name: z.string().min(1),
-  quantity: z.string().min(1),
-  estimatedPrice: z.number().nonnegative(),
-});
-
-const mealSchema = z.object({
+const mealOverviewSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
-  imageUrl: z.string().url().optional().or(z.literal("")),
   estimatedCost: z.number().nonnegative(),
   calories: z.number().int().positive(),
   prepTimeMinutes: z.number().int().positive(),
-  ingredients: z.array(ingredientSchema).default([]),
-  recipeSteps: z.array(z.string().min(1)).default([]),
   whyThisMeal: z.array(z.string().min(1)).min(1),
 });
+
+const mealSchema = mealOverviewSchema.transform(toEmptyMealDetails);
 
 const planSchema = z.object({
   estimatedTotal: z.number().nonnegative(),
@@ -52,15 +44,12 @@ const planSchema = z.object({
   estimatedMax: z.number().nonnegative(),
   budgetConfidence: z.number().min(0).max(100),
   budgetMessage: z.string().min(1),
-  meals: z.array(mealSchema.extend({ day: z.enum(weekdays) })).length(7),
-  shoppingList: z.array(z.object({
-    name: z.string().min(1),
-    category: z.enum(SHOPPING_CATEGORIES),
-    quantity: z.string().min(1),
-    estimatedPrice: z.number().nonnegative(),
-    usedInMeals: z.array(z.enum(weekdays)).min(1),
-  })).default([]),
-});
+  meals: z.array(mealOverviewSchema.extend({ day: z.enum(weekdays) })).length(7),
+}).transform((plan) => ({
+  ...plan,
+  meals: plan.meals.map(toEmptyMealDetails),
+  shoppingList: [],
+}));
 
 export async function POST(request: Request) {
   const input = inputSchema.parse(await request.json());
@@ -68,40 +57,20 @@ export async function POST(request: Request) {
 
   try {
     const supabaseResult = await runSupabaseAI(input);
-    if (supabaseResult) {
-      if (supabaseResult && typeof supabaseResult === "object") {
-        if (input.action === "swap") {
-          supabaseResult.imageUrl = "";
-        } else if (Array.isArray(supabaseResult.meals)) {
-          supabaseResult.meals.forEach((meal: any) => {
-            meal.imageUrl = "";
-          });
-        }
-      }
-      return NextResponse.json(validator.parse(supabaseResult));
-    }
+    if (supabaseResult) return NextResponse.json(validator.parse(supabaseResult));
   } catch (error) {
     await captureServerException(error, { route: "/api/generate", provider: "supabase-edge", fallback: "next" });
   }
 
-  if (!process.env.OPENROUTER_API_KEY) return NextResponse.json(await runMock(input));
+  if (!process.env.OPENROUTER_API_KEY) return NextResponse.json(validator.parse(await runMock(input)));
 
   try {
     const data = await runNextAI(input);
-    if (data && typeof data === "object") {
-      if (input.action === "swap") {
-        data.imageUrl = "";
-      } else if (Array.isArray(data.meals)) {
-        data.meals.forEach((meal: any) => {
-          meal.imageUrl = "";
-        });
-      }
-    }
     return NextResponse.json(validator.parse(data));
   } catch (error) {
     console.error("AI generation failed, using validated mock fallback:", error);
     await captureServerException(error, { route: "/api/generate", provider: getLocalProvider(), fallback: "mock" });
-    return NextResponse.json(await runMock(input));
+    return NextResponse.json(validator.parse(await runMock(input)));
   }
 }
 
@@ -230,6 +199,10 @@ function parseJson(content: string) {
 
 function getLocalProvider() {
   return "openrouter";
+}
+
+function toEmptyMealDetails<T extends z.infer<typeof mealOverviewSchema>>(meal: T) {
+  return { ...meal, imageUrl: "", ingredients: [], recipeSteps: [] };
 }
 
 async function fetchWithTimeout(input: string, init: RequestInit) {

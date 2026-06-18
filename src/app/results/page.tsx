@@ -13,8 +13,10 @@ import { useFeatureFlag } from "@/shared/presentation/hooks/useFeatureFlag";
 import { createMoney, formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getSeraMealImagePosition, getSeraMealImageUrl, SERA_IMAGES } from "@/shared/seraVisuals";
 import { getProductCopy } from "@/shared/seraProductCopy";
+import { useMealPlanEnrichment } from "@/modules/meal-planning/presentation/hooks/useMealPlanEnrichment";
 
 export default function ResultsPage() {
+  useMealPlanEnrichment();
   const { activePlan, isGenerating, saveCurrentPlan, regeneratePlan, selectMeal, swapPlannedMeals, openPaywall, user, userId, appLanguage } = useDinneroStore();
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [loadingSave, setLoadingSave] = useState(false);

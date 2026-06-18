@@ -15,40 +15,51 @@ export class EnrichMealPlanUseCase {
   ) {}
 
   execute(plan: MealPlan, appLanguage: string, onUpdate: (plan: MealPlan) => void) {
-    plan.days
-      .filter((meal) => meal.enrichmentStatus !== "ready")
-      .forEach((meal) => {
-        this.queue.enqueue(`${plan.id}:${meal.id}`, async () => {
-          await this.repository.updateMeal(plan.id, meal.id, { enrichmentStatus: "processing" });
+    const pendingDetails = plan.days.filter((meal) => meal.enrichmentStatus !== "ready");
+    const pendingImages = plan.days.filter((meal) => meal.imageStatus !== "ready" && !meal.imageUrl);
 
-          try {
-            const [details, imageUrl] = await Promise.all([
-              this.aiService.enrichMeal({
-                mealTitle: meal.title,
-                mealDescription: meal.description,
-                shop: plan.shop,
-                numberOfPeople: plan.peopleCount,
-                appLanguage,
-              }),
-              this.aiService.generateMealImage(meal.title).catch(() => ""),
-            ]);
+    pendingDetails.forEach((meal) => {
+      this.queue.enqueue(`${plan.id}:${meal.id}:details`, async () => {
+        await this.repository.updateMeal(plan.id, meal.id, { enrichmentStatus: "processing" });
 
-            const updated = await this.repository.updateMeal(plan.id, meal.id, {
-              ingredients: details.ingredients.map((ingredient) => ({
-                ...ingredient,
-                estimatedPrice: createMoney(ingredient.estimatedPrice),
-              })),
-              recipeSteps: details.recipeSteps,
-              imageUrl,
-              enrichmentStatus: "ready",
-            });
-            onUpdate(updated);
-          } catch (error) {
-            const updated = await this.repository.updateMeal(plan.id, meal.id, { enrichmentStatus: "failed" });
-            onUpdate(updated);
-            throw error;
-          }
-        });
+        try {
+          const details = await this.aiService.enrichMeal({
+            mealTitle: meal.title,
+            mealDescription: meal.description,
+            shop: plan.shop,
+            numberOfPeople: plan.peopleCount,
+            appLanguage,
+          });
+
+          const updated = await this.repository.updateMeal(plan.id, meal.id, {
+            ingredients: details.ingredients.map((ingredient) => ({
+              ...ingredient,
+              estimatedPrice: createMoney(ingredient.estimatedPrice),
+            })),
+            recipeSteps: details.recipeSteps,
+            enrichmentStatus: "ready",
+          });
+          onUpdate(updated);
+        } catch (error) {
+          const updated = await this.repository.updateMeal(plan.id, meal.id, { enrichmentStatus: "failed" });
+          onUpdate(updated);
+          throw error;
+        }
       });
+    });
+
+    pendingImages.forEach((meal) => {
+      this.queue.enqueue(`${plan.id}:${meal.id}:image`, async () => {
+        await this.repository.updateMeal(plan.id, meal.id, { imageStatus: "processing" });
+        try {
+          const imageUrl = await this.aiService.generateMealImage(meal.title);
+          const updated = await this.repository.updateMeal(plan.id, meal.id, { imageUrl, imageStatus: "ready" });
+          onUpdate(updated);
+        } catch {
+          const updated = await this.repository.updateMeal(plan.id, meal.id, { imageStatus: "failed" });
+          onUpdate(updated);
+        }
+      });
+    });
   }
 }

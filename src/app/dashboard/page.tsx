@@ -3,15 +3,17 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Check, ChefHat, Clock3, Shuffle, ShoppingBag } from "lucide-react";
+import { ArrowRight, ChefHat, Clock3, Shuffle, ShoppingBag } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import MealDetailModal from "@/modules/meal-planning/presentation/components/MealDetailModal";
 import PaywallModal from "@/modules/meal-planning/presentation/components/PaywallModal";
 import { useWeeklyMealState } from "@/modules/meal-planning/presentation/hooks/useWeeklyMealState";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getProductCopy } from "@/shared/seraProductCopy";
+import { useMealPlanEnrichment } from "@/modules/meal-planning/presentation/hooks/useMealPlanEnrichment";
 
 export default function DashboardPage() {
+  useMealPlanEnrichment();
   const router = useRouter();
   const { activePlan, user, userId, selectMeal, openPaywall, appLanguage } = useDinneroStore();
   const copy = getProductCopy(appLanguage).tonight;

@@ -13,8 +13,10 @@ import { useFeatureFlag } from "@/shared/presentation/hooks/useFeatureFlag";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getProductCopy } from "@/shared/seraProductCopy";
 import { getSeraMealImagePosition, getSeraMealImageUrl } from "@/shared/seraVisuals";
+import { useMealPlanEnrichment } from "@/modules/meal-planning/presentation/hooks/useMealPlanEnrichment";
 
 export default function PlanPreviewPage() {
+  useMealPlanEnrichment();
   const router = useRouter();
   const { activePlan, appLanguage, regeneratePlan, selectMeal, swapPlannedMeals, userId } = useDinneroStore();
   const [isRegenerating, setIsRegenerating] = useState(false);

@@ -23,4 +23,5 @@ export type Meal = {
   whyThisMeal: string[];
   imageUrl?: string;
   enrichmentStatus?: EnrichmentStatus;
+  imageStatus?: EnrichmentStatus;
 };

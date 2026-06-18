@@ -22,10 +22,15 @@ Deno.serve(async (request) => {
     if (json && typeof json === "object") {
       if (input.action === "swap") {
         json.imageUrl = "";
+        json.ingredients = [];
+        json.recipeSteps = [];
       } else if (Array.isArray(json.meals)) {
         json.meals.forEach((meal: any) => {
           meal.imageUrl = "";
+          meal.ingredients = [];
+          meal.recipeSteps = [];
         });
+        json.shoppingList = [];
       }
     }
     await recordEvent({ userId, action, provider: getProvider(), model: getModel(), status: "success", latencyMs: Date.now() - startedAt });

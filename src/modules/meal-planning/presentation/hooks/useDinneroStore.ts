@@ -56,7 +56,6 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
       });
 
       await get().loadDashboard();
-      if (currentPlan) get().enrichPlan(currentPlan);
     } catch (err: any) {
       set({ error: err.message, hasHydrated: true, isInitializing: false });
     }
@@ -134,7 +133,6 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
       const plan = await generatePlanUseCase.execute(uId);
 
       set({ activePlan: plan, isGenerating: false, preferences: prefData });
-      get().enrichPlan(plan);
       clearOnboardingDraft();
       await get().loadDashboard();
     } catch (err: any) {
@@ -151,7 +149,6 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
       const uId = get().userId;
       const plan = await regeneratePlanUseCase.execute(uId);
       set({ activePlan: plan, isGenerating: false });
-      get().enrichPlan(plan);
       await get().loadDashboard();
     } catch (err: any) {
       set({ isGenerating: false, error: err.message });
@@ -173,7 +170,6 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
       }
 
       set({ activePlan: updatedPlan, isSwapping: false });
-      get().enrichPlan(updatedPlan);
       await get().loadDashboard();
     } catch (err: any) {
       set({ isSwapping: false, error: err.message });
