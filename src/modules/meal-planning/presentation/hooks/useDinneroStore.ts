@@ -289,5 +289,16 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
 
   closePaywall: () => set({ showPaywall: false }),
   openPaywall: () => set({ showPaywall: true }),
-  selectMeal: (meal) => set({ selectedMeal: meal }),
+  selectMeal: (meal) => {
+    set({ selectedMeal: meal });
+    const activePlan = get().activePlan;
+    if (!meal || !activePlan || meal.enrichmentStatus === "ready") return;
+
+    enrichMealPlanUseCase.executeMeal(activePlan, meal.id, get().appLanguage, (updatedPlan) => {
+      set((state) => ({
+        activePlan: state.activePlan?.id === updatedPlan.id ? updatedPlan : state.activePlan,
+        selectedMeal: updatedPlan.days.find((candidate) => candidate.id === meal.id) ?? state.selectedMeal,
+      }));
+    });
+  },
 }));

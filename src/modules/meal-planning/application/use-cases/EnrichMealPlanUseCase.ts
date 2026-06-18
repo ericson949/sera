@@ -1,10 +1,11 @@
 import { MealPlan } from "../../domain/entities/MealPlan";
+import { Meal } from "../../domain/entities/Meal";
 import { MealPlanRepository } from "../../domain/repositories/MealPlanRepository";
 import { MealPlanAIService } from "../../domain/services/MealPlanAIService";
 import { createMoney } from "../../domain/value-objects/Money";
 
 type JobQueuePort = {
-  enqueue(id: string, task: () => Promise<void>): void;
+  enqueue(id: string, task: () => Promise<void>, priority?: boolean): void;
 };
 
 export class EnrichMealPlanUseCase {
@@ -19,7 +20,38 @@ export class EnrichMealPlanUseCase {
     const pendingImages = plan.days.filter((meal) => meal.imageStatus !== "ready" && !meal.imageUrl);
 
     pendingDetails.forEach((meal) => {
-      this.queue.enqueue(`${plan.id}:${meal.id}:details`, async () => {
+      this.enqueueDetails(plan, meal, appLanguage, onUpdate);
+    });
+
+    pendingImages.forEach((meal) => {
+      this.queue.enqueue(`${plan.id}:${meal.id}:image`, async () => {
+        await this.repository.updateMeal(plan.id, meal.id, { imageStatus: "processing" });
+        try {
+          const imageUrl = await this.aiService.generateMealImage(meal.title);
+          const updated = await this.repository.updateMeal(plan.id, meal.id, { imageUrl, imageStatus: "ready" });
+          onUpdate(updated);
+        } catch {
+          const updated = await this.repository.updateMeal(plan.id, meal.id, { imageStatus: "failed" });
+          onUpdate(updated);
+        }
+      });
+    });
+  }
+
+  executeMeal(plan: MealPlan, mealId: string, appLanguage: string, onUpdate: (plan: MealPlan) => void) {
+    const meal = plan.days.find((candidate) => candidate.id === mealId);
+    if (!meal || meal.enrichmentStatus === "ready") return;
+    this.enqueueDetails(plan, meal, appLanguage, onUpdate, true);
+  }
+
+  private enqueueDetails(
+    plan: MealPlan,
+    meal: Meal,
+    appLanguage: string,
+    onUpdate: (plan: MealPlan) => void,
+    priority = false
+  ) {
+    this.queue.enqueue(`${plan.id}:${meal.id}:details`, async () => {
         await this.repository.updateMeal(plan.id, meal.id, { enrichmentStatus: "processing" });
 
         try {
@@ -45,21 +77,6 @@ export class EnrichMealPlanUseCase {
           onUpdate(updated);
           throw error;
         }
-      });
-    });
-
-    pendingImages.forEach((meal) => {
-      this.queue.enqueue(`${plan.id}:${meal.id}:image`, async () => {
-        await this.repository.updateMeal(plan.id, meal.id, { imageStatus: "processing" });
-        try {
-          const imageUrl = await this.aiService.generateMealImage(meal.title);
-          const updated = await this.repository.updateMeal(plan.id, meal.id, { imageUrl, imageStatus: "ready" });
-          onUpdate(updated);
-        } catch {
-          const updated = await this.repository.updateMeal(plan.id, meal.id, { imageStatus: "failed" });
-          onUpdate(updated);
-        }
-      });
-    });
+      }, priority);
   }
 }

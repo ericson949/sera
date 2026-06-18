@@ -17,6 +17,8 @@ Sera splits generation into two phases:
 
 The client-side job queue runs at most five jobs concurrently. Recipe jobs are queued before image jobs, so cooking information remains the priority. Additional jobs remain FIFO in memory. Each meal persists separate recipe and image statuses (`pending`, `processing`, `ready`, or `failed`), so non-ready work can be queued again when the local session is restored.
 
+Opening a meal explicitly enqueues its recipe-detail job. If that job was already waiting, it is promoted to the front of the queue; image work never receives this interaction priority.
+
 The application use case owns orchestration. AI calls remain behind `MealPlanAIService`, persistence remains behind `MealPlanRepository`, and presentation only observes progressively updated plans.
 
 The shopping guide is rebuilt from every ingredient set persisted so far. It therefore becomes useful progressively rather than delaying the initial menu.

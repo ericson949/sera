@@ -5,11 +5,22 @@ export class JobQueue {
 
   constructor(private readonly maxConcurrency = 5) {}
 
-  enqueue(id: string, task: () => Promise<void>) {
-    if (this.knownJobs.has(id)) return;
+  enqueue(id: string, task: () => Promise<void>, priority = false) {
+    if (this.knownJobs.has(id)) {
+      if (priority) this.promote(id);
+      return;
+    }
     this.knownJobs.add(id);
-    this.queue.push({ id, task });
+    if (priority) this.queue.unshift({ id, task });
+    else this.queue.push({ id, task });
     this.drain();
+  }
+
+  private promote(id: string) {
+    const index = this.queue.findIndex((job) => job.id === id);
+    if (index < 1) return;
+    const [job] = this.queue.splice(index, 1);
+    this.queue.unshift(job);
   }
 
   private drain() {
