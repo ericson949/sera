@@ -37,6 +37,8 @@ export interface PlannedMeal {
   totalTime: number;
   estimatedCost: number;
   scaledIngredients: ScaledIngredient[];
+  ratings: number;
+  ratingsCount: number;
 }
 
 export interface GeneratedPlan {
@@ -63,6 +65,8 @@ export interface Recipe {
   allergens: string[];
   vibes: string[];
   ingredients: RecipeIngredient[];
+  ratings: number;
+  ratingsCount: number;
 }
 
 export interface IngredientRef {
@@ -90,8 +94,27 @@ export class MealPlanEngine {
     }
 
     const candidateMeals = candidateRecipes.map((recipe) => this.calculateRecipeCost(recipe, preferences));
-    const bestUnderBudget = this.findBestUnderBudgetPlan(candidateMeals, preferences.weeklyBudget);
-    const meals = bestUnderBudget ?? candidateMeals.sort((a, b) => a.estimatedCost - b.estimatedCost).slice(0, 7);
+    
+    // Sort all candidate meals by ratings desc, ratingsCount desc
+    const sortedMeals = [...candidateMeals].sort((a, b) => b.ratings - a.ratings || b.ratingsCount - a.ratingsCount);
+
+    // 1. Try to find a plan within the top 15 highest-rated meals first
+    const top15Pool = sortedMeals.slice(0, Math.min(sortedMeals.length, 15));
+    let bestUnderBudget = this.findBestUnderBudgetPlan(top15Pool, preferences.weeklyBudget);
+
+    // 2. If that fails, expand pool to the top 25 highest-rated meals
+    if (!bestUnderBudget && sortedMeals.length > 15) {
+      const top25Pool = sortedMeals.slice(0, Math.min(sortedMeals.length, 25));
+      bestUnderBudget = this.findBestUnderBudgetPlan(top25Pool, preferences.weeklyBudget);
+    }
+
+    // 3. If that also fails, fall back to searching all candidates
+    if (!bestUnderBudget && sortedMeals.length > 25) {
+      bestUnderBudget = this.findBestUnderBudgetPlan(sortedMeals, preferences.weeklyBudget);
+    }
+
+    // 4. If budget solving still fails, pick the absolute top 7 best-rated meals directly (even if over budget)
+    const meals = bestUnderBudget ?? sortedMeals.slice(0, 7);
     const totalCalculatedCost = roundMoney(meals.reduce((sum, meal) => sum + meal.estimatedCost, 0));
 
     return {
@@ -140,6 +163,8 @@ export class MealPlanEngine {
       totalTime: recipe.totalTime,
       estimatedCost: roundMoney(scaledIngredients.reduce((sum, ingredient) => sum + ingredient.estimatedCost, 0)),
       scaledIngredients,
+      ratings: recipe.ratings || 0,
+      ratingsCount: recipe.ratingsCount || 0,
     };
   }
 

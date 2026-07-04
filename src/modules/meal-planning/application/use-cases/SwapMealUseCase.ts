@@ -78,6 +78,8 @@ export class SwapMealUseCase {
       recipeSteps: dto.recipeSteps,
       whyThisMeal: dto.whyThisMeal,
       recipeId: dto.recipeId,
+      ratings: dto.ratings,
+      ratingsCount: dto.ratingsCount,
       enrichmentStatus: "pending",
       imageStatus: "pending",
     };

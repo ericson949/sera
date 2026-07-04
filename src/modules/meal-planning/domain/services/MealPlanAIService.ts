@@ -37,6 +37,8 @@ export type GeneratedMealDTO = {
   recipeSteps: string[];
   whyThisMeal: string[];
   recipeId?: string;
+  ratings?: number;
+  ratingsCount?: number;
 };
 
 export type GeneratedShoppingItemDTO = {

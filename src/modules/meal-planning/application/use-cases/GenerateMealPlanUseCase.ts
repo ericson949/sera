@@ -62,6 +62,8 @@ export class GenerateMealPlanUseCase {
       recipeSteps: m.recipeSteps,
       whyThisMeal: m.whyThisMeal,
       recipeId: m.recipeId,
+      ratings: m.ratings,
+      ratingsCount: m.ratingsCount,
       enrichmentStatus: "pending",
       imageStatus: "pending",
     }));

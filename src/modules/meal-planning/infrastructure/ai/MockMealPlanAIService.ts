@@ -176,6 +176,8 @@ export class MockMealPlanAIService implements MealPlanAIService {
       recipeSteps: recipe.steps,
       whyThisMeal: this.createMealReasons(recipe, input),
       recipeId: `mock_recipe_${recipe.title.toLowerCase().replace(/[^a-z0-9]/g, "_")}`,
+      ratings: 4.0 + (recipe.title.length % 11) * 0.1,
+      ratingsCount: recipe.title.length * 5,
     };
 
     return day ? { day, ...meal } : meal;

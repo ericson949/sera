@@ -37,6 +37,8 @@ const mealOverviewSchema = z.object({
   whyThisMeal: z.array(z.string().min(1)).min(1),
   imageUrl: z.string().optional().default(""),
   recipeId: z.string().optional().default(""),
+  ratings: z.number().optional().default(0.0),
+  ratingsCount: z.number().int().optional().default(0),
 });
 
 const mealSchema = mealOverviewSchema.transform(toEmptyMealDetails);
@@ -101,7 +103,7 @@ export async function POST(request: Request) {
     // 3. Query matching recipes from Database
     let query = supabase
       .from("recipes")
-      .select("id, title, description, imageUrl, prepTime, cookTime, totalTime, defaultServings, ingredients, steps, allergens, diet, taxonomy")
+      .select("id, title, description, imageUrl, prepTime, cookTime, totalTime, defaultServings, ingredients, steps, allergens, diet, taxonomy, ratings, ratingsCount")
       .lte("totalTime", cookingTimeLimit);
 
     if (dbDietFilters.length > 0) {
@@ -148,6 +150,8 @@ export async function POST(request: Request) {
         quantityValue: ing.quantity?.value || 1,
         unit: ing.quantity?.unit || "unit",
       })),
+      ratings: Number(row.ratings) || 0,
+      ratingsCount: Number(row.ratingsCount) || 0,
     }));
 
     // 4. Retrieve scaled ingredient reference prices
@@ -227,6 +231,8 @@ export async function POST(request: Request) {
         whyThisMeal,
         imageUrl: dbRecipe.imageUrl || "",
         recipeId: dbRecipe.id,
+        ratings: selectedMeal.ratings,
+        ratingsCount: selectedMeal.ratingsCount,
       }));
     }
 
@@ -249,6 +255,8 @@ export async function POST(request: Request) {
         whyThisMeal,
         imageUrl: dbRecipe.imageUrl || "",
         recipeId: dbRecipe.id,
+        ratings: meal.ratings,
+        ratingsCount: meal.ratingsCount,
       };
     });
 

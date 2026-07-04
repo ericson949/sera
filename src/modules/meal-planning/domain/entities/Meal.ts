@@ -23,6 +23,8 @@ export type Meal = {
   whyThisMeal: string[];
   imageUrl?: string;
   recipeId?: string;
+  ratings?: number;
+  ratingsCount?: number;
   enrichmentStatus?: EnrichmentStatus;
   imageStatus?: EnrichmentStatus;
 };

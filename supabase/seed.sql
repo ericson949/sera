@@ -1,5 +1,5 @@
 -- Fichier de seed d'initialisation de la base de données de Sera
--- Généré automatiquement le 2026-07-04T06:53:29.075Z
+-- Généré automatiquement le 2026-07-04T10:56:34.829Z
 
 -- ==========================================
 -- 1. INGRÉDIENTS DE RÉFÉRENCE
