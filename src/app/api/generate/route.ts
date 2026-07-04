@@ -126,8 +126,27 @@ export async function POST(request: Request) {
       return !recipeAllergens.some((a) => dbAllergensFilters.includes(a));
     });
 
+    // Apply exclusions for recipe IDs and titles with safety thresholds
+    let filteredExcludes = filteredRecipes;
+    if (input.excludeIds && input.excludeIds.length > 0) {
+      filteredExcludes = filteredExcludes.filter((r) => !input.excludeIds.includes(r.id));
+    }
+    if (input.excludeTitles && input.excludeTitles.length > 0) {
+      filteredExcludes = filteredExcludes.filter((r) => !input.excludeTitles.includes(r.title));
+    }
+
     if (input.action === "swap") {
-      filteredRecipes = filteredRecipes.filter((r) => !input.excludeIds.includes(r.id) && !input.excludeTitles.includes(r.title));
+      if (filteredExcludes.length > 0) {
+        filteredRecipes = filteredExcludes;
+      } else {
+        // Fallback for swap: filter out only the target recipe being swapped
+        filteredRecipes = filteredRecipes.filter((r) => !input.excludeIds.includes(r.id));
+      }
+    } else {
+      // For weekly generation/regeneration: only exclude if we still have at least 7 candidate recipes left
+      if (filteredExcludes.length >= 7) {
+        filteredRecipes = filteredExcludes;
+      }
     }
 
     if (filteredRecipes.length === 0) {

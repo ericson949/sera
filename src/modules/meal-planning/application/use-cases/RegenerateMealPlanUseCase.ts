@@ -9,7 +9,7 @@ export class RegenerateMealPlanUseCase {
   private generateMealPlanUseCase: GenerateMealPlanUseCase;
 
   constructor(
-    mealPlanRepo: MealPlanRepository,
+    private mealPlanRepo: MealPlanRepository,
     userPrefsRepo: UserPreferencesRepository,
     aiService: MealPlanAIService,
     subService: SubscriptionService
@@ -23,6 +23,10 @@ export class RegenerateMealPlanUseCase {
   }
 
   async execute(userId: string): Promise<MealPlan> {
-    return this.generateMealPlanUseCase.execute(userId);
+    const currentPlan = await this.mealPlanRepo.findCurrentByUserId(userId);
+    const excludeIds = currentPlan
+      ? (currentPlan.days.map((d) => d.recipeId).filter(Boolean) as string[])
+      : [];
+    return this.generateMealPlanUseCase.execute(userId, excludeIds);
   }
 }

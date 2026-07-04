@@ -13,6 +13,9 @@ Generating seven complete recipes in one AI response makes the user wait for ing
 Sera splits generation into two phases:
 
 1. The foreground request returns only the seven meal overviews, weekly budget estimate, and short reasons for each choice.
+   - **Database-Driven Constraint Optimization**: Instead of calling external LLMs or edge functions, `/api/generate` runs the `MealPlanEngine` solver directly within Next.js. It queries the PostgreSQL `recipes` and `ingredients_reference` tables, applies dietary/allergy filters, and scales ingredient costs by household size.
+   - **Rating-Based Prioritization**: Matches are sorted by `ratings` (descending) and `ratingsCount` (descending). The engine executes a cascading budget solver that first tries to fit the budget using the **top 15 highest-rated meals**, falling back to the **top 25**, and finally to all matches.
+   - **Swapping and Continuity**: Swapping meals passes the existing recipe IDs (`excludeIds`) to filter them out of subsequent candidates.
 2. Independent background jobs request recipe details and images after the menu screen has rendered.
 
 The client-side job queue runs at most five jobs concurrently. Recipe jobs are queued before image jobs, so cooking information remains the priority. Additional jobs remain FIFO in memory. Each meal persists separate recipe and image statuses (`pending`, `processing`, `ready`, or `failed`), so non-ready work can be queued again when the local session is restored.

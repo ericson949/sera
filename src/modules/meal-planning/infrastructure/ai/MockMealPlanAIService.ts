@@ -129,7 +129,13 @@ export class MockMealPlanAIService implements MealPlanAIService {
   }
 
   private getAvailableRecipes(input: GenerateMealPlanInput): MockRecipe[] {
-    const filteredRecipes = this.filterRecipes(input.dietaryNeeds, input.maxCookingTime);
+    let filteredRecipes = this.filterRecipes(input.dietaryNeeds, input.maxCookingTime);
+    if (input.excludeIds && input.excludeIds.length > 0) {
+      filteredRecipes = filteredRecipes.filter((recipe) => {
+        const id = `mock_recipe_${recipe.title.toLowerCase().replace(/[^a-z0-9]/g, "_")}`;
+        return !input.excludeIds!.includes(id);
+      });
+    }
     return filteredRecipes.length > 0 ? filteredRecipes : RECIPE_LIBRARY;
   }
 

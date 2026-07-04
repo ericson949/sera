@@ -17,6 +17,7 @@ export type GenerateMealPlanInput = {
   maxCookingTime: CookingTime;
   kitchenItems: string[];
   batchCooking: boolean;
+  excludeIds?: string[];
 };
 
 export type GeneratedIngredientDTO = {

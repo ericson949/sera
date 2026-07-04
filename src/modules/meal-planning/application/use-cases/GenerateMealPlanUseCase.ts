@@ -16,7 +16,7 @@ export class GenerateMealPlanUseCase {
     private subService: SubscriptionService
   ) {}
 
-  async execute(userId: string): Promise<MealPlan> {
+  async execute(userId: string, excludeIds: string[] = []): Promise<MealPlan> {
     // 1. Subscription check
     const canGenerate = await this.subService.canGenerateMealPlan(userId);
     if (!canGenerate) {
@@ -42,6 +42,7 @@ export class GenerateMealPlanUseCase {
       maxCookingTime: preferences.maxCookingTime,
       kitchenItems: preferences.kitchenItems,
       batchCooking: preferences.batchCooking,
+      excludeIds,
     });
 
     // 4. Map DTO to MealPlan Entity
