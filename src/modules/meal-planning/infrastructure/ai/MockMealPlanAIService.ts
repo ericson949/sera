@@ -73,7 +73,7 @@ export class MockMealPlanAIService implements MealPlanAIService {
 
     const shopMultiplier = this.getStoreMultiplier(input.shop);
     const peopleMultiplier = this.getPeopleMultiplier(input.numberOfPeople);
-    const availableRecipes = this.getAvailableRecipes(input);
+    const availableRecipes = [...this.getAvailableRecipes(input)].sort(() => Math.random() - 0.5);
     const meals = WEEKDAYS.map((day, index) =>
       this.createMeal(day, availableRecipes[index % availableRecipes.length], input, shopMultiplier, peopleMultiplier)
     );

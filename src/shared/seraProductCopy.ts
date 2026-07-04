@@ -123,7 +123,7 @@ export const PRODUCT_COPY = {
       loadingTitle: "Composition de ta semaine.", loadingBody: "Un menu plus calme est en preparation.",
       journal: "Journal hebdomadaire Sera", title: "Diners, selectionnes.", guest: "personne", guests: "personnes",
       estimated: "Courses estimees", budget: "Budget", budgetMax: "Budget maximum", inRange: "Dans la limite", watch: "A surveiller",
-      marketList: "Liste courses", regenerate: "Regenerer le menu", save: "Sauver le plan", evenings: "Sept soirs",
+      marketList: "Liste courses", regenerate: "Regenerer le menu", save: "Enregistrer le plan", evenings: "Sept soirs",
     },
     shopping: {
       emptyTitle: "Pas encore de liste courses.", emptyBody: "Cree une semaine et Sera classera tes ingredients par rayon.",

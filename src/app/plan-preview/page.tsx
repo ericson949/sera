@@ -65,7 +65,7 @@ export default function PlanPreviewPage() {
       </div>
     );
   }
-
+  console.log("erere541", isRegenerating)
   return (
     <div className="flex h-svh flex-col bg-background p-5">
       <header className="shrink-0 pb-4 pt-2">

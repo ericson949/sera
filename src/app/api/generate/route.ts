@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
 import { z } from "zod";
+import { createClient } from "@supabase/supabase-js";
+import { MealPlanEngine, Recipe, IngredientRef, Category } from "@/domain/services/MealPlanEngine";
 import { MockMealPlanAIService } from "@/modules/meal-planning/infrastructure/ai/MockMealPlanAIService";
 import { captureServerException } from "@/shared/observability/posthogServer";
 
 const mockAIService = new MockMealPlanAIService();
 const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
-const AI_TIMEOUT_MS = 35_000;
 
 const inputSchema = z.object({
   userId: z.string().optional(),
@@ -34,6 +34,7 @@ const mealOverviewSchema = z.object({
   calories: z.number().int().positive(),
   prepTimeMinutes: z.number().int().positive(),
   whyThisMeal: z.array(z.string().min(1)).min(1),
+  imageUrl: z.string().optional().default(""),
 });
 
 const mealSchema = mealOverviewSchema.transform(toEmptyMealDetails);
@@ -52,83 +53,255 @@ const planSchema = z.object({
 }));
 
 export async function POST(request: Request) {
-  const input = inputSchema.parse(await request.json());
-  const validator = input.action === "swap" ? mealSchema : planSchema;
-
+  let parsedInput: any = null;
   try {
-    const supabaseResult = await runSupabaseAI(input);
-    if (supabaseResult) return NextResponse.json(validator.parse(supabaseResult));
-  } catch (error) {
-    await captureServerException(error, { route: "/api/generate", provider: "supabase-edge", fallback: "next" });
-  }
+    const bodyJson = await request.json();
+    parsedInput = inputSchema.parse(bodyJson);
+    const input = parsedInput;
+    const validator = input.action === "swap" ? mealSchema : planSchema;
 
-  if (!process.env.OPENROUTER_API_KEY) return NextResponse.json(validator.parse(await runMock(input)));
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  try {
-    const data = await runNextAI(input);
-    return NextResponse.json(validator.parse(data));
-  } catch (error) {
-    console.error("AI generation failed, using validated mock fallback:", error);
-    await captureServerException(error, { route: "/api/generate", provider: getLocalProvider(), fallback: "mock" });
-    return NextResponse.json(validator.parse(await runMock(input)));
+    if (!supabaseUrl || !serviceRoleKey) {
+      console.warn("Supabase environment configuration missing. Using mock engine fallback.");
+      return NextResponse.json(validator.parse(await runMock(input)));
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    // 1. Determine cooking time constraint
+    let cookingTimeLimit = 180; // Default: No limit
+    const minutesMatch = input.maxCookingTime.match(/^(\d+)/);
+    if (minutesMatch) {
+      cookingTimeLimit = parseInt(minutesMatch[1]);
+    }
+
+    // 2. Map dietary needs to database diet filters and allergen exclusions
+    const dbDietFilters: string[] = [];
+    const dbAllergensFilters: string[] = [];
+
+    input.dietaryNeeds.forEach((need: string) => {
+      if (need === "None") return;
+      
+      const lower = need.toLowerCase();
+      if (lower === "vegetarian") dbDietFilters.push("vegetarian");
+      else if (lower === "vegan") dbDietFilters.push("vegan");
+      else if (lower === "pescatarian") dbDietFilters.push("pescatarian");
+      else if (lower === "low carb") dbDietFilters.push("keto_friendly");
+      else if (lower === "high protein") dbDietFilters.push("high_protein");
+      else if (lower === "gluten-free") dbAllergensFilters.push("gluten");
+      else if (lower === "lactose-free") dbAllergensFilters.push("milk");
+    });
+
+    // 3. Query matching recipes from Database
+    let query = supabase
+      .from("recipes")
+      .select("id, title, description, imageUrl, prepTime, cookTime, totalTime, defaultServings, ingredients, steps, allergens, diet, taxonomy")
+      .lte("totalTime", cookingTimeLimit);
+
+    if (dbDietFilters.length > 0) {
+      query = query.contains("diet", dbDietFilters);
+    }
+
+    const { data: recipeRows, error: recipeError } = await query;
+    if (recipeError) {
+      throw new Error(`Unable to fetch recipes: ${recipeError.message}`);
+    }
+
+    if (!recipeRows || recipeRows.length === 0) {
+      throw new Error("No recipes found matching the constraints.");
+    }
+
+    // Filter recipes locally to exclude allergens (PostgreSQL doesn't do "not contains" easily)
+    let filteredRecipes = recipeRows.filter((r) => {
+      const recipeAllergens = r.allergens as string[] | null;
+      if (!recipeAllergens) return true;
+      return !recipeAllergens.some((a) => dbAllergensFilters.includes(a));
+    });
+
+    if (input.action === "swap") {
+      filteredRecipes = filteredRecipes.filter((r) => !input.excludeTitles.includes(r.title));
+    }
+
+    if (filteredRecipes.length === 0) {
+      // If we filtered out too many, fallback to unfiltered query results
+      filteredRecipes = recipeRows;
+    }
+
+    // Map DB recipes to domain Recipe schema
+    const recipes: Recipe[] = filteredRecipes.map((row) => ({
+      id: row.id,
+      title: row.title,
+      imageUrl: row.imageUrl || "",
+      totalTime: row.totalTime || row.prepTime + row.cookTime || 20,
+      defaultServings: row.defaultServings || 4,
+      diet: row.diet || [],
+      allergens: row.allergens || [],
+      vibes: row.taxonomy?.cuisine || [],
+      ingredients: (row.ingredients || []).map((ing: any) => ({
+        ingredientId: ing.id,
+        quantityValue: ing.quantity?.value || 1,
+        unit: ing.quantity?.unit || "unit",
+      })),
+    }));
+
+    // 4. Retrieve scaled ingredient reference prices
+    const neededIngredientIds = new Set<string>();
+    recipes.forEach((recipe) => {
+      recipe.ingredients.forEach((ingredient) => neededIngredientIds.add(ingredient.ingredientId));
+    });
+
+    // Chunk requests to avoid "URI too long" (HTTP 414) in PostgREST for large sets of unique ingredients
+    const ingredientIdsArray = Array.from(neededIngredientIds);
+    const CHUNK_SIZE = 100;
+    const ingredientRows: any[] = [];
+
+    for (let i = 0; i < ingredientIdsArray.length; i += CHUNK_SIZE) {
+      const chunk = ingredientIdsArray.slice(i, i + CHUNK_SIZE);
+      const { data, error } = await supabase
+        .from("ingredients_reference")
+        .select("id, category, translations, estimatedPricePerUnit")
+        .in("id", chunk);
+
+      if (error) {
+        throw new Error(`Unable to fetch ingredient references chunk: ${error.message}`);
+      }
+      if (data) {
+        ingredientRows.push(...data);
+      }
+    }
+
+    // Map DB ingredients to domain IngredientRef schema
+    const ingredients: IngredientRef[] = (ingredientRows || []).map((row: any) => {
+      const prices = row.estimatedPricePerUnit || {};
+      const translations = row.translations || {};
+      const unitPrice = prices["EUR"] || prices["USD"] || 0.01;
+      const name = translations[input.appLanguage] || translations["en"] || row.id;
+
+      return {
+        id: row.id,
+        name,
+        category: row.category as Category,
+        unitPrice,
+        unit: "unit", // fallback unit
+      };
+    });
+
+    // 5. Initialize Optimization Engine
+    const engine = new MealPlanEngine(recipes, ingredients);
+
+    // Map input fields to UserPreferences domain object
+    const userPrefs = {
+      householdSize: input.numberOfPeople,
+      weeklyBudget: input.budgetMax,
+      currency: "EUR" as const,
+      dietaryRestrictions: dbDietFilters,
+      allergens: dbAllergensFilters,
+      cookingTimeLimit,
+      knownPantryItems: input.kitchenItems,
+      vibes: input.vibes,
+    };
+
+    // 6. Action 1: SWAP SINGLE MEAL
+    if (input.action === "swap") {
+      const candidateMeals = recipes.map((recipe) => (engine as any).calculateRecipeCost(recipe, userPrefs));
+      // Pick a random swap meal from candidates
+      const selectedMeal = candidateMeals[Math.floor(Math.random() * candidateMeals.length)];
+      if (!selectedMeal) throw new Error("No swap meal available");
+
+      const dbRecipe = filteredRecipes.find((r) => r.id === selectedMeal.recipeId)!;
+      const calories = getDeterministicCalories(dbRecipe);
+      const whyThisMeal = buildWhyThisMeal(dbRecipe, input);
+
+      return NextResponse.json(validator.parse({
+        title: selectedMeal.title,
+        description: dbRecipe.description || "",
+        estimatedCost: selectedMeal.estimatedCost,
+        calories,
+        prepTimeMinutes: selectedMeal.totalTime,
+        whyThisMeal,
+        imageUrl: dbRecipe.imageUrl || "",
+      }));
+    }
+
+    // 7. Action 2: GENERATE FULL WEEKLY PLAN
+    const generatedPlan = engine.generatePlan(userPrefs);
+
+    // Map engine plan to UI planSchema DTO
+    const meals = generatedPlan.meals.map((meal, index) => {
+      const dbRecipe = filteredRecipes.find((r) => r.id === meal.recipeId)!;
+      const calories = getDeterministicCalories(dbRecipe);
+      const whyThisMeal = buildWhyThisMeal(dbRecipe, input);
+
+      return {
+        day: weekdays[index],
+        title: meal.title,
+        description: dbRecipe.description || "",
+        estimatedCost: meal.estimatedCost,
+        calories,
+        prepTimeMinutes: meal.totalTime,
+        whyThisMeal,
+        imageUrl: dbRecipe.imageUrl || "",
+      };
+    });
+
+    const totalCost = generatedPlan.totalCalculatedCost;
+    const confidence = totalCost <= input.budgetMax 
+      ? Math.min(100, 85 + Math.floor(Math.random() * 15))
+      : Math.max(50, Math.round(100 - ((totalCost - input.budgetMax) / input.budgetMax) * 100));
+
+    const budgetMessage = totalCost <= input.budgetMax
+      ? "Il piano rispetta perfettamente il budget impostato!"
+      : `Questo piano supera di poco il tuo budget massimo di €${input.budgetMax} a causa degli ingredienti selezionati.`;
+    console.log("Generated plan:", { totalCost, confidence, budgetMessage, meals });
+    const result = {
+      estimatedTotal: totalCost,
+      estimatedMin: Math.round(totalCost * 0.9 * 100) / 100,
+      estimatedMax: Math.round(totalCost * 1.1 * 100) / 100,
+      budgetConfidence: confidence,
+      budgetMessage,
+      meals,
+    };
+
+    return NextResponse.json(validator.parse(result));
+  } catch (error: any) {
+    console.error("AI/Engine generation failed, using validated mock fallback:", error);
+    await captureServerException(error, { route: "/api/generate", provider: "local-engine", fallback: "mock" });
+    
+    // Fallback to mock on any failures
+    if (parsedInput) {
+      const validator = parsedInput.action === "swap" ? mealSchema : planSchema;
+      return NextResponse.json(validator.parse(await runMock(parsedInput)));
+    } else {
+      return NextResponse.json({ error: "Invalid request body or schema mismatch." }, { status: 400 });
+    }
   }
 }
 
-async function runSupabaseAI(input: z.infer<typeof inputSchema>) {
-  const functionUrl = process.env.SUPABASE_AI_FUNCTION_URL || (
-    process.env.NEXT_PUBLIC_SUPABASE_URL ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-meal-plan` : ""
+function getDeterministicCalories(recipe: any): number {
+  const hash = recipe.id.split("").reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+  const isLowCal = (recipe.diet || []).includes("low_calorie");
+  return isLowCal ? 380 + (hash % 100) : 550 + (hash % 200);
+}
+
+function buildWhyThisMeal(recipe: any, input: any): string[] {
+  const reasons = [
+    `Pronto in soli ${recipe.totalTime} minuti.`,
+    `Ottimo per raggiungere l'obiettivo: "${input.goal.toLowerCase()}".`,
+  ];
+  if ((recipe.diet || []).includes("high_protein")) {
+    reasons.push("Alto contenuto proteico.");
+  }
+  const match = (recipe.ingredients || []).find((ing: any) =>
+    input.kitchenItems.some((k: string) => ing.id.includes(k.toLowerCase()))
   );
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!functionUrl || !serviceKey) return null;
-
-  const response = await fetchWithTimeout(functionUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${serviceKey}`, apikey: serviceKey },
-    body: JSON.stringify(input),
-  });
-
-  if (!response.ok) throw new Error(`Supabase AI failed: ${response.status} ${await response.text()}`);
-  return response.json();
-}
-
-async function runNextAI(input: z.infer<typeof inputSchema>) {
-  const client = createAIClient();
-  const content = await callLocalAI(client, buildPrompt(input));
-  const parsed = parseJson(content);
-  if (parsed) return parsed;
-
-  const repaired = await callLocalAI(client, `Repair this into valid JSON only. Do not add markdown.\n\n${content}`);
-  const repairedJson = parseJson(repaired);
-  if (!repairedJson) throw new Error("AI returned invalid JSON after repair");
-  return repairedJson;
-}
-
-async function callLocalAI(client: OpenAI, prompt: string) {
-  const response = await withTimeout(
-    client.chat.completions.create({
-      model: process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
-    }),
-    AI_TIMEOUT_MS
-  );
-  return response.choices[0]?.message?.content || "{}";
-}
-
-function createAIClient() {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) {
-    throw new Error("OPENROUTER_API_KEY is not configured");
+  if (match) {
+    reasons.push("Utilizza ingredienti già presenti nella tua cucina.");
   }
-
-  return new OpenAI({
-    apiKey: apiKey,
-    baseURL: "https://openrouter.ai/api/v1",
-    defaultHeaders: {
-      "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "https://sera.menu",
-      "X-Title": "Sera",
-    },
-  });
+  return reasons;
 }
 
 async function runMock(input: z.infer<typeof inputSchema>) {
@@ -163,61 +336,6 @@ async function runMock(input: z.infer<typeof inputSchema>) {
   });
 }
 
-function buildPrompt(input: z.infer<typeof inputSchema>) {
-  const language = input.appLanguage === "fr" ? "French" : input.appLanguage === "it" ? "Italian" : "English";
-  const country = input.appCountry;
-  const budgetNote = input.budgetMax < input.numberOfPeople * 12
-    ? "The budget is very tight. Use pantry staples, legumes, eggs or seasonal vegetables, and be transparent in budgetMessage."
-    : "Keep total cost inside the selected budget whenever realistic.";
-
-  return input.action === "swap"
-    ? `You are Sera, a premium Mediterranean dinner planner. Reply in ${language}. Create one replacement dinner for ${country}.
-Context: shop ${input.shop}; budget ${input.budgetMin}-${input.budgetMax} EUR; people ${input.numberOfPeople}; goal ${input.goal}; vibes ${input.vibes.join(", ")}; dietary ${input.dietaryNeeds.join(", ")}; max time ${input.maxCookingTime}; batch cooking ${input.batchCooking ? "yes" : "no"}; pantry ${input.kitchenItems.join(", ")}; day ${input.dayToSwap}; avoid ${input.excludeTitles.join(", ")}.
-Rules: strict dietary compliance, realistic local supermarket ingredients, no luxury items, JSON only. Return only the overview; recipe details and image are generated later.
-Schema: {"title":"","description":"","estimatedCost":4.5,"calories":520,"prepTimeMinutes":25,"whyThisMeal":[""]}`
-    : `You are Sera, a premium Mediterranean dinner planner. Reply in ${language}. Create a seven dinner plan for ${country}.
-Context: shop ${input.shop}; budget ${input.budgetMin}-${input.budgetMax} EUR; people ${input.numberOfPeople}; goal ${input.goal}; vibes ${input.vibes.join(", ")}; dietary ${input.dietaryNeeds.join(", ")}; max time ${input.maxCookingTime}; batch cooking ${input.batchCooking ? "yes, favor recipes that reheat and prep well in one session" : "no"}; pantry ${input.kitchenItems.join(", ")}.
-Country rules: use common shops, ingredients and dinner habits from ${country}. France should feel French, Italy Italian, UK British, US American.
-Budget rules: ${budgetNote} Reuse ingredients and reduce waste.
-Return JSON only with exactly seven meal overviews Monday-Sunday. Do not generate ingredients, cooking steps, images or a shopping list yet.
-Schema: {"estimatedTotal":42,"estimatedMin":39,"estimatedMax":47,"budgetConfidence":86,"budgetMessage":"","meals":[{"day":"Monday","title":"","description":"","estimatedCost":4.2,"calories":620,"prepTimeMinutes":20,"whyThisMeal":[""]}]}`;
-}
-
-function parseJson(content: string) {
-  try {
-    return JSON.parse(content);
-  } catch {
-    const match = content.match(/\{[\s\S]*\}/);
-    if (!match) return null;
-    try {
-      return JSON.parse(match[0]);
-    } catch {
-      return null;
-    }
-  }
-}
-
-function getLocalProvider() {
-  return "openrouter";
-}
-
 function toEmptyMealDetails<T extends z.infer<typeof mealOverviewSchema>>(meal: T) {
-  return { ...meal, imageUrl: "", ingredients: [], recipeSteps: [] };
-}
-
-async function fetchWithTimeout(input: string, init: RequestInit) {
-  return withTimeout(fetch(input, init), AI_TIMEOUT_MS);
-}
-
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => reject(new Error("AI request timed out")), timeoutMs);
-  });
-
-  try {
-    return await Promise.race([promise, timeout]);
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId);
-  }
+  return { ...meal, imageUrl: meal.imageUrl || "", ingredients: [], recipeSteps: [] };
 }

@@ -147,6 +147,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
     set({ isGenerating: true, error: null });
     try {
       const uId = get().userId;
+      console.log("Regenerating plan for user:", uId);
       const plan = await regeneratePlanUseCase.execute(uId);
       set({ activePlan: plan, isGenerating: false });
       await get().loadDashboard();
