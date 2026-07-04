@@ -27,8 +27,8 @@ export class MockSubscriptionService implements SubscriptionService {
       return true;
     }
     const counters = this.getUsageCounters();
-    // Allow 1 generation + 1 regeneration (total 2) on free tier
-    if (counters.generations < 2) {
+    // Allow 1 generation + 9 regenerations (total 10) on free tier
+    if (counters.generations < 10) {
       this.incrementUsage("generations");
       return true;
     }

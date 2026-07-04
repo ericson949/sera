@@ -7,6 +7,7 @@ import { Check, GripVertical, RefreshCw, ShoppingBag } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import MealDetailModal from "@/modules/meal-planning/presentation/components/MealDetailModal";
+import PaywallModal from "@/modules/meal-planning/presentation/components/PaywallModal";
 import { useMealPlanDragSwap } from "@/modules/meal-planning/presentation/hooks/useMealPlanDragSwap";
 import { useWeeklyMealState } from "@/modules/meal-planning/presentation/hooks/useWeeklyMealState";
 import { useFeatureFlag } from "@/shared/presentation/hooks/useFeatureFlag";
@@ -157,6 +158,7 @@ export default function PlanPreviewPage() {
         </div>
       )}
       <MealDetailModal />
+      <PaywallModal />
     </div>
   );
 }

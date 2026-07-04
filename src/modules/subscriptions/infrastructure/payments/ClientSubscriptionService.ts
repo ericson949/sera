@@ -23,7 +23,7 @@ export class ClientSubscriptionService implements SubscriptionService {
     const user = await this.userRepo.findById(userId);
     if (user?.subscriptionStatus === "pro") return true;
     const counters = this.getUsageCounters();
-    if (counters.generations >= 2) return false;
+    if (counters.generations >= 10) return false;
     this.incrementUsage("generations");
     return true;
   }

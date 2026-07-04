@@ -71,6 +71,14 @@ export const PRODUCT_COPY = {
       trial: "Continue with 7-day trial",
       benefits: ["Saved dinner journals", "Previous weeks always available", "Unlimited new weekly plans", "Unlimited refined meal swaps"],
     },
+    paywallRegenerate: {
+      kicker: "Sera membership", title: "Endless culinary inspiration.",
+      body: "You've refined this week's plan multiple times. Start your membership to unlock unlimited recipe regenerations and compose the perfect weekly menu.",
+      perMonth: "/ month", unlock: "Demo: unlock membership",
+      subscribe: "Start Membership",
+      trial: "Continue with 7-day trial",
+      benefits: ["Unlimited weekly menu regenerations", "Refine as many times as you like", "Access the entire premium recipe book", "Custom portion scaling & pantry mode"],
+    },
     notifications: {
       kicker: "Notifications", on: "Dinner reminders are on.", off: "Let Sera remind you.",
       blocked: "Notifications are blocked in your browser settings.", body: "Get a quiet nudge when your weekly market guide is ready.",
@@ -147,6 +155,15 @@ export const PRODUCT_COPY = {
       trial: "Continuer avec l'essai de 7 jours",
       benefits: ["Journaux de diners sauvegardes", "Semaines precedentes toujours accessibles", "Nouvelles semaines illimitees", "Remplacements raffines illimites"],
     },
+    paywallRegenerate: {
+      kicker: "Abonnement Sera",
+      title: "Une inspiration culinaire sans fin.",
+      body: "Tu as personnalise le plan de cette semaine plusieurs fois. Rejoins Sera Pro pour deverrouiller les regenerations illimitees et composer le menu parfait.",
+      perMonth: "/ mois", unlock: "Demo : debloquer",
+      subscribe: "S'abonner à Sera",
+      trial: "Continuer avec l'essai de 7 jours",
+      benefits: ["Regenerations de menus illimitees", "Personnalise ton menu a l'infini", "Accede a l'integralite du livre de recettes", "Portions sur mesure et mode placard"],
+    },
     notifications: {
       kicker: "Notifications", on: "Les rappels diner sont actifs.", off: "Laisse Sera te le rappeler.",
       blocked: "Les notifications sont bloquees dans ton navigateur.", body: "Recois un rappel discret quand ton guide courses est pret.",
@@ -222,6 +239,15 @@ export const PRODUCT_COPY = {
       subscribe: "Abbonati a Sera",
       trial: "Continua con la prova di 7 giorni",
       benefits: ["Diari cena salvati", "Settimane precedenti sempre disponibili", "Nuove settimane illimitate", "Cambi pasto raffinati illimitati"],
+    },
+    paywallRegenerate: {
+      kicker: "Abbonamento Sera",
+      title: "Ispirazione culinaria senza limiti.",
+      body: "Hai personalizzato il piano di questa settimana piu volte. Abbonati a Sera Pro per sbloccare rigenerazioni illimitate e comporre il menu settimanale perfetto.",
+      perMonth: "/ mese", unlock: "Demo: sblocca",
+      subscribe: "Abbonati a Sera",
+      trial: "Continua con la prova di 7 giorni",
+      benefits: ["Rigenerazioni menu illimitate", "Personalizza il tuo piano all'infinito", "Accedi all'intero ricettario premium", "Porzioni su misura e dispensa intelligente"],
     },
     notifications: {
       kicker: "Notifiche", on: "Promemoria cena attivi.", off: "Lascia che Sera te lo ricordi.",
