@@ -39,6 +39,7 @@ export interface DinneroState {
   isSwapping: boolean;
   error: string | null;
   showPaywall: boolean;
+  paywallTrigger: "default" | "regenerate";
   initStore: () => Promise<void>;
   setOnboardingField: (key: string, value: any) => void;
   nextStep: () => void;

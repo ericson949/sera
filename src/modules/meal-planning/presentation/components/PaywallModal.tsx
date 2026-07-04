@@ -9,11 +9,11 @@ import { isStagingEnv } from "@/shared/env";
 import { SERA_IMAGES } from "@/shared/seraVisuals";
 
 export default function PaywallModal() {
-  const { showPaywall, closePaywall, simulateProUpgrade, triggerUpgradeCheckout, appLanguage } = useDinneroStore();
+  const { showPaywall, closePaywall, simulateProUpgrade, triggerUpgradeCheckout, appLanguage, paywallTrigger } = useDinneroStore();
   const [loadingCheckout, setLoadingCheckout] = useState(false);
   const [loadingSim, setLoadingSim] = useState(false);
   const productCopy = getProductCopy(appLanguage);
-  const copy = productCopy.paywall;
+  const copy = paywallTrigger === "regenerate" ? productCopy.paywallRegenerate : productCopy.paywall;
   const isStaging = isStagingEnv();
 
   if (!showPaywall) return null;

@@ -1,3 +1,5 @@
+"use client";
+
 import { create } from "zustand";
 import { WeekDay } from "../../domain/value-objects/WeekDay";
 import { UserPreferences } from "@/modules/users/domain/entities/UserPreferences";
@@ -138,7 +140,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
     } catch (err: any) {
       set({ isGenerating: false, error: err.message });
       if (err.message.includes("limit reached") || err.message.includes("upgrade")) {
-        set({ showPaywall: true });
+        set({ showPaywall: true, paywallTrigger: "default" });
       }
     }
   },
@@ -154,7 +156,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
     } catch (err: any) {
       set({ isGenerating: false, error: err.message });
       if (err.message.includes("limit reached") || err.message.includes("upgrade")) {
-        set({ showPaywall: true });
+        set({ showPaywall: true, paywallTrigger: "regenerate" });
       }
     }
   },
@@ -175,7 +177,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
     } catch (err: any) {
       set({ isSwapping: false, error: err.message });
       if (err.message.includes("limit") || err.message.includes("upgrade")) {
-        set({ showPaywall: true });
+        set({ showPaywall: true, paywallTrigger: "default" });
       }
     }
   },
@@ -201,8 +203,8 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
       await get().loadDashboard();
     } catch (err: any) {
       set({ error: err.message });
-      if (err.message.includes("premium") || err.message.includes("upgrade")) {
-        set({ showPaywall: true });
+      if (err.message.includes("limit") || err.message.includes("upgrade")) {
+        set({ showPaywall: true, paywallTrigger: "default" });
       }
     }
   },
@@ -277,8 +279,8 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
     }
   },
 
-  closePaywall: () => set({ showPaywall: false }),
-  openPaywall: () => set({ showPaywall: true }),
+  closePaywall: () => set({ showPaywall: false, paywallTrigger: "default" }),
+  openPaywall: () => set({ showPaywall: true, paywallTrigger: "default" }),
   selectMeal: (meal) => {
     set({ selectedMeal: meal });
   },

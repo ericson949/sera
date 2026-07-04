@@ -28,6 +28,7 @@ export const SERA_INITIAL_STATE: Pick<
   | "isSwapping"
   | "error"
   | "showPaywall"
+  | "paywallTrigger"
 > = {
   user: null,
   userId: DEFAULT_USER_ID,
@@ -54,4 +55,5 @@ export const SERA_INITIAL_STATE: Pick<
   isSwapping: false,
   error: null,
   showPaywall: false,
+  paywallTrigger: "default",
 };
