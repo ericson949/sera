@@ -10,10 +10,7 @@ import PaywallModal from "@/modules/meal-planning/presentation/components/Paywal
 import { useWeeklyMealState } from "@/modules/meal-planning/presentation/hooks/useWeeklyMealState";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getProductCopy } from "@/shared/seraProductCopy";
-import { useMealPlanEnrichment } from "@/modules/meal-planning/presentation/hooks/useMealPlanEnrichment";
-
 export default function DashboardPage() {
-  useMealPlanEnrichment();
   const router = useRouter();
   const { activePlan, user, userId, selectMeal, openPaywall, appLanguage } = useDinneroStore();
   const copy = getProductCopy(appLanguage).tonight;

@@ -1,7 +1,5 @@
 "use client";
 
-import { useMealPlanEnrichment } from "@/modules/meal-planning/presentation/hooks/useMealPlanEnrichment";
-
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { Check, GripVertical, Plus, ShoppingBag, X } from "lucide-react";
@@ -16,7 +14,6 @@ import { getProductCopy } from "@/shared/seraProductCopy";
 import { getSeraMealImagePosition, getSeraMealImageUrl } from "@/shared/seraVisuals";
 
 export default function WeekPage() {
-  useMealPlanEnrichment();
   const { activePlan, dashboard, user, userId, selectMeal, openPaywall, swapPlannedMeals, activatePlan, appLanguage } = useDinneroStore();
   const copy = getProductCopy(appLanguage).weekView;
   const weekState = useWeeklyMealState(activePlan, userId);
@@ -71,15 +68,16 @@ export default function WeekPage() {
               >
                 <button onClick={() => openMeal(meal)} className="w-full text-left">
                   <div className="grid grid-cols-[86px_1fr_auto] gap-3">
-                    <div
-                      className="editorial-photo h-24 rounded-[1.2rem]"
-                      style={
-                        {
-                          "--editorial-image": `url(${getSeraMealImageUrl(meal.imageUrl)})`,
-                          "--editorial-position": getSeraMealImagePosition(meal.day),
-                        } as CSSProperties
-                      }
-                    />
+                    <div className="relative overflow-hidden h-24 rounded-[1.2rem]">
+                      <img
+                        src={getSeraMealImageUrl(meal.imageUrl)}
+                        alt=""
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover"
+                        style={{ objectPosition: getSeraMealImagePosition(meal.day) }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-b from-[rgba(30,30,30,0.02)] to-[rgba(30,30,30,0.34)]" />
+                    </div>
                     <span className="min-w-0 py-1">
                       <p className="editorial-kicker">{item.isToday ? `${copy.today} - ${item.dateLabel}` : item.dateLabel}</p>
                       <h2 className="mt-1 line-clamp-2 font-serif text-[26px] leading-[28px] text-foreground">{meal.title}</h2>

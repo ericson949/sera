@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import type { CSSProperties } from "react";
-import { Check, Loader2, RefreshCw, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Loader2, RefreshCw, X } from "lucide-react";
 import { useDinneroStore } from "../hooks/useDinneroStore";
 import { useWeeklyMealState } from "../hooks/useWeeklyMealState";
 import { formatMoney } from "../../domain/value-objects/Money";
@@ -11,13 +12,12 @@ import { getProductCopy } from "@/shared/seraProductCopy";
 export default function MealDetailModal() {
   const { selectedMeal, activePlan, userId, selectMeal, swapMeal, isSwapping, appLanguage } = useDinneroStore();
   const weekState = useWeeklyMealState(activePlan, userId);
+  const [isIngredientsOpen, setIsIngredientsOpen] = useState(false);
   const productCopy = getProductCopy(appLanguage);
   const copy = productCopy.meal;
 
   if (!selectedMeal) return null;
   const canSwap = weekState.canSwapMeal(selectedMeal);
-  const detailsReady = selectedMeal.enrichmentStatus === "ready";
-  const detailsMessage = selectedMeal.enrichmentStatus === "failed" ? copy.unavailable : copy.preparing;
 
   const handleSwap = async () => {
     if (!canSwap) return;
@@ -62,28 +62,37 @@ export default function MealDetailModal() {
             </div>
           </section>
 
-          <section className="mt-7">
-            <h3 className="font-serif text-[28px] leading-[30px] text-foreground">{copy.ingredients}</h3>
-            {!detailsReady ? <EnrichmentNotice message={detailsMessage} /> : <div className="mt-3 divide-y divide-warm-stone/50">
-              {selectedMeal.ingredients.map((ingredient, index) => (
-                <div key={`${selectedMeal.id}-ingredient-${index}`} className="flex justify-between gap-4 py-3 text-sm">
-                  <span className="font-medium text-foreground">{ingredient.name}</span>
-                  <span className="text-right text-muted">{ingredient.quantity} - {formatMoney(ingredient.estimatedPrice)}</span>
-                </div>
-              ))}
-            </div>}
+          <section className="mt-7 border-b border-warm-stone/40 pb-5">
+            <button
+              onClick={() => setIsIngredientsOpen(!isIngredientsOpen)}
+              className="flex w-full items-center justify-between text-left focus:outline-none"
+              aria-expanded={isIngredientsOpen}
+            >
+              <h3 className="font-serif text-[28px] leading-[30px] text-foreground">{copy.ingredients}</h3>
+              {isIngredientsOpen ? <ChevronUp className="h-6 w-6 text-muted" /> : <ChevronDown className="h-6 w-6 text-muted" />}
+            </button>
+            {isIngredientsOpen && (
+              <div className="mt-3 divide-y divide-warm-stone/50">
+                {selectedMeal.ingredients.map((ingredient, index) => (
+                  <div key={`${selectedMeal.id}-ingredient-${index}`} className="flex justify-between gap-4 py-3 text-sm">
+                    <span className="font-medium text-foreground">{ingredient.name}</span>
+                    <span className="text-right text-muted">{ingredient.quantity} - {formatMoney(ingredient.estimatedPrice)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           <section className="mt-7 pb-24">
             <h3 className="font-serif text-[28px] leading-[30px] text-foreground">{copy.method}</h3>
-            {!detailsReady ? <EnrichmentNotice message={detailsMessage} /> : <div className="mt-4 space-y-4">
+            <div className="mt-4 space-y-4">
               {selectedMeal.recipeSteps.map((step, index) => (
                 <div key={`${selectedMeal.id}-step-${index}`} className="grid grid-cols-[2rem_1fr] gap-3">
                   <span className="font-serif text-xl text-primary">{index + 1}</span>
                   <p className="text-sm leading-6 text-muted">{step}</p>
                 </div>
               ))}
-            </div>}
+            </div>
           </section>
         </div>
 

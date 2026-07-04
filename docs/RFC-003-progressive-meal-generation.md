@@ -40,8 +40,17 @@ The menu becomes visible after a much smaller AI response. Recipe details arrive
 
 ## Verification
 
-- The overview response contains seven meals without recipe steps or ingredients.
-- No more than five enrichment jobs are active at once.
-- Remaining jobs start as active jobs finish.
-- Reloading resumes meals whose status is not `ready`.
+- The `/api/generate` response contains complete meals with all ingredients and preparation steps.
+- The weekly shopping list is fully compiled and returned inside the same response.
 - `npx tsc --noEmit` passes and no source file exceeds 300 effective lines.
+
+---
+
+## 2026-07-04 Update: Deprecation of Background Enrichment
+
+With the implementation of the database-driven constraint optimization engine, the system now queries the complete recipe catalogue (including ingredients and steps) directly from PostgreSQL inside `/api/generate`.
+
+Consequently:
+- The `/api/enrich-meal` route and its associated client background jobs (`useMealPlanEnrichment`) have been fully removed from the codebase.
+- The `GenerateMealPlanUseCase` and `SwapMealUseCase` set both `enrichmentStatus` and `imageStatus` to `"ready"` directly upon mapping.
+- The entire recipe details and the compiled weekly shopping list are returned instantly in the foreground response, eliminating background queue jobs, HTTP requests, and network latency entirely.

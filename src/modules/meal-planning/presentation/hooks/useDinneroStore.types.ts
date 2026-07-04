@@ -45,7 +45,6 @@ export interface DinneroState {
   prevStep: () => void;
   resetOnboarding: () => void;
   generatePlan: () => Promise<void>;
-  enrichPlan: (plan: MealPlan) => void;
   regeneratePlan: () => Promise<void>;
   swapMeal: (day: WeekDay) => Promise<void>;
   toggleShoppingItem: (itemId: string) => Promise<void>;

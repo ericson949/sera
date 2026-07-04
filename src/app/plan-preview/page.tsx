@@ -13,10 +13,7 @@ import { useFeatureFlag } from "@/shared/presentation/hooks/useFeatureFlag";
 import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getProductCopy } from "@/shared/seraProductCopy";
 import { getSeraMealImagePosition, getSeraMealImageUrl } from "@/shared/seraVisuals";
-import { useMealPlanEnrichment } from "@/modules/meal-planning/presentation/hooks/useMealPlanEnrichment";
-
 export default function PlanPreviewPage() {
-  useMealPlanEnrichment();
   const router = useRouter();
   const { activePlan, appLanguage, regeneratePlan, selectMeal, swapPlannedMeals, userId } = useDinneroStore();
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -94,18 +91,16 @@ export default function PlanPreviewPage() {
                 className={`grid grid-cols-[1fr_auto] gap-2 rounded-[1.4rem] bg-card p-3 shadow-sm transition duration-200 ${draggedMealId === meal.id ? "scale-[0.98] opacity-25" : ""} ${hoverMealId === meal.id ? "translate-y-1 ring-1 ring-primary/30" : ""}`}
               >
                 <button onClick={() => selectMeal(meal)} className="grid min-w-0 grid-cols-[84px_1fr] gap-3 text-left">
-                  <span
-                    className="editorial-photo h-24 rounded-[1.1rem]"
-                    style={
-                      {
-                        "--editorial-image": `url(${getSeraMealImageUrl(meal.imageUrl)})`,
-                        "--editorial-position": getSeraMealImagePosition(meal.day),
-                        backgroundImage: `url(${getSeraMealImageUrl(meal.imageUrl)})`,
-                        backgroundPosition: getSeraMealImagePosition(meal.day),
-                        backgroundSize: "cover",
-                      } as CSSProperties
-                    }
-                  />
+                  <div className="relative overflow-hidden h-24 rounded-[1.1rem]">
+                    <img
+                      src={getSeraMealImageUrl(meal.imageUrl)}
+                      alt=""
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover"
+                      style={{ objectPosition: getSeraMealImagePosition(meal.day) }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[rgba(30,30,30,0.02)] to-[rgba(30,30,30,0.34)]" />
+                  </div>
                   <span className="min-w-0 py-1">
                     <span className="editorial-kicker">{item.isToday ? `${weekCopy.today} - ${item.dateLabel}` : item.dateLabel}</span>
                     <span className="mt-1 line-clamp-2 font-serif text-[24px] leading-[26px] text-foreground">{meal.title}</span>

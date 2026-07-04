@@ -8,7 +8,7 @@ import { SERA_INITIAL_STATE } from "./seraInitialState";
 
 export type { AppCountry, AppLanguage };
 
-const { userRepo, startOnboardingUseCase, savePrefsUseCase, generatePlanUseCase, enrichMealPlanUseCase, regeneratePlanUseCase, swapMealUseCase, getCurrentPlanUseCase, toggleShoppingItemUseCase, saveMealPlanUseCase, getDashboardUseCase, swapPlannedMealsUseCase, createCheckoutUseCase } = seraUseCases;
+const { userRepo, startOnboardingUseCase, savePrefsUseCase, generatePlanUseCase, regeneratePlanUseCase, swapMealUseCase, getCurrentPlanUseCase, toggleShoppingItemUseCase, saveMealPlanUseCase, getDashboardUseCase, swapPlannedMealsUseCase, createCheckoutUseCase } = seraUseCases;
 
 export const useDinneroStore = create<DinneroState>((set, get) => ({
   ...SERA_INITIAL_STATE,
@@ -221,17 +221,6 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
 
   activatePlan: (plan) => set({ activePlan: plan }),
 
-  enrichPlan: (plan) => {
-    enrichMealPlanUseCase.execute(plan, get().appLanguage, (updatedPlan) => {
-      set((state) => ({
-        activePlan: state.activePlan?.id === updatedPlan.id ? updatedPlan : state.activePlan,
-        selectedMeal: state.selectedMeal
-          ? updatedPlan.days.find((meal) => meal.id === state.selectedMeal?.id) ?? state.selectedMeal
-          : null,
-      }));
-    });
-  },
-
   loadDashboard: async () => {
     try {
       const uId = get().userId;
@@ -292,14 +281,5 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
   openPaywall: () => set({ showPaywall: true }),
   selectMeal: (meal) => {
     set({ selectedMeal: meal });
-    const activePlan = get().activePlan;
-    if (!meal || !activePlan || meal.enrichmentStatus === "ready") return;
-
-    enrichMealPlanUseCase.executeMeal(activePlan, meal.id, get().appLanguage, (updatedPlan) => {
-      set((state) => ({
-        activePlan: state.activePlan?.id === updatedPlan.id ? updatedPlan : state.activePlan,
-        selectedMeal: updatedPlan.days.find((candidate) => candidate.id === meal.id) ?? state.selectedMeal,
-      }));
-    });
   },
 }));

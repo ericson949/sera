@@ -80,8 +80,8 @@ export class SwapMealUseCase {
       recipeId: dto.recipeId,
       ratings: dto.ratings,
       ratingsCount: dto.ratingsCount,
-      enrichmentStatus: "pending",
-      imageStatus: "pending",
+      enrichmentStatus: "ready",
+      imageStatus: "ready",
     };
 
     // 6. Update the days

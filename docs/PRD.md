@@ -60,11 +60,11 @@ Initial countries:
    - Select existing kitchen items.
 
 3. Post-onboarding conversion
-   - First generated plan opens in a personalized preview as soon as the seven meal overviews are available.
-   - Ingredients, cooking methods, images, and the shopping guide enrich progressively in the background without blocking the menu list.
-   - User validates the plan before entering the app.
-   - The preview can show a compact estimated market total, but it must not expose the full shopping list before the conversion/account moment.
-   - A soft paywall/account prompt appears but is not blocking.
+    - First generated plan opens in a personalized preview as soon as the seven meals are selected.
+    - Ingredients, cooking methods, and the shopping list are resolved instantly in the foreground from the database, giving the user immediate access to details.
+    - User validates the plan before entering the app.
+    - The preview can show a compact estimated market total, but it must not expose the full shopping list before the conversion/account moment.
+    - A soft paywall/account prompt appears but is not blocking.
    - Notification opt-in appears immediately after this conversion step.
 
 4. Tonight
@@ -128,8 +128,7 @@ Initial countries:
 - Preserve anonymous local session data.
 - Wait for local session hydration before routing users away from the app shell.
 - Cache app shell and last useful plan for offline use.
-- Persist meal enrichment status so interrupted recipe jobs can resume on the next app launch.
-- Limit background AI enrichment to five concurrent jobs and queue the remainder.
+- Retrieve and construct recipe details and shopping lists directly in the foreground, eliminating background queue jobs and network latency after generation.
 - Track cooked/skipped meal execution locally in the MVP.
 - Verify TypeScript before release.
 - Staging must simulate paywall purchase and expose beta reset tooling.
@@ -138,7 +137,7 @@ Initial countries:
 
 - Real OpenRouter generation tested for each country/language.
 - Bad JSON repair flow tested.
-- Fast meal-overview response and progressive enrichment tested with more than five queued jobs.
+- Fast meal response containing full ingredients, preparation steps, and shopping list resolved directly from the database.
 - Extreme budget values tested.
 - Lemon Squeezy production env configured.
 - Lemon Squeezy webhook writes to durable persistence.

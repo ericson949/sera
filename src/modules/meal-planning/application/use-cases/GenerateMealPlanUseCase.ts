@@ -65,8 +65,8 @@ export class GenerateMealPlanUseCase {
       recipeId: m.recipeId,
       ratings: m.ratings,
       ratingsCount: m.ratingsCount,
-      enrichmentStatus: "pending",
-      imageStatus: "pending",
+      enrichmentStatus: "ready",
+      imageStatus: "ready",
     }));
 
     const shoppingList: ShoppingItem[] = dto.shoppingList.map((item, idx) => ({

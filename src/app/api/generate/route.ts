@@ -28,6 +28,13 @@ const inputSchema = z.object({
   excludeIds: z.array(z.string()).default([]),
 });
 
+const ingredientSchema = z.object({
+  name: z.string(),
+  quantity: z.string(),
+  estimatedPrice: z.number(),
+  category: z.string().optional(),
+});
+
 const mealOverviewSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
@@ -39,9 +46,36 @@ const mealOverviewSchema = z.object({
   recipeId: z.string().optional().default(""),
   ratings: z.number().optional().default(0.0),
   ratingsCount: z.number().int().optional().default(0),
+  ingredients: z.array(ingredientSchema).default([]),
+  recipeSteps: z.array(z.string()).default([]),
 });
 
 const mealSchema = mealOverviewSchema.transform(toEmptyMealDetails);
+
+function buildShoppingList(meals: any[]): any[] {
+  const itemsMap = new Map<string, any>();
+  meals.forEach((meal) => {
+    (meal.ingredients || []).forEach((ing: any) => {
+      const key = ing.name.toLowerCase().trim();
+      const existing = itemsMap.get(key);
+      if (existing) {
+        existing.estimatedPrice = Math.round((existing.estimatedPrice + ing.estimatedPrice) * 100) / 100;
+        if (!existing.usedInMeals.includes(meal.day)) {
+          existing.usedInMeals.push(meal.day);
+        }
+      } else {
+        itemsMap.set(key, {
+          name: ing.name,
+          category: ing.category || "Pantry",
+          quantity: ing.quantity,
+          estimatedPrice: ing.estimatedPrice,
+          usedInMeals: [meal.day],
+        });
+      }
+    });
+  });
+  return Array.from(itemsMap.values());
+}
 
 const planSchema = z.object({
   estimatedTotal: z.number().nonnegative(),
@@ -50,11 +84,14 @@ const planSchema = z.object({
   budgetConfidence: z.number().min(0).max(100),
   budgetMessage: z.string().min(1),
   meals: z.array(mealOverviewSchema.extend({ day: z.enum(weekdays) })).length(7),
-}).transform((plan) => ({
-  ...plan,
-  meals: plan.meals.map(toEmptyMealDetails),
-  shoppingList: [],
-}));
+}).transform((plan) => {
+  const meals = plan.meals.map(toEmptyMealDetails);
+  return {
+    ...plan,
+    meals,
+    shoppingList: buildShoppingList(meals),
+  };
+});
 
 export async function POST(request: Request) {
   let parsedInput: any = null;
@@ -252,6 +289,13 @@ export async function POST(request: Request) {
         recipeId: dbRecipe.id,
         ratings: selectedMeal.ratings,
         ratingsCount: selectedMeal.ratingsCount,
+        ingredients: selectedMeal.scaledIngredients.map((ing: any) => ({
+          name: ing.name,
+          quantity: `${ing.quantityValue} ${ing.unit}`,
+          estimatedPrice: ing.estimatedCost,
+          category: ing.category,
+        })),
+        recipeSteps: (dbRecipe.steps || []).map((s: any) => s.description || s.step || ""),
       }));
     }
 
@@ -276,6 +320,13 @@ export async function POST(request: Request) {
         recipeId: dbRecipe.id,
         ratings: meal.ratings,
         ratingsCount: meal.ratingsCount,
+        ingredients: meal.scaledIngredients.map((ing: any) => ({
+          name: ing.name,
+          quantity: `${ing.quantityValue} ${ing.unit}`,
+          estimatedPrice: ing.estimatedCost,
+          category: ing.category,
+        })),
+        recipeSteps: (dbRecipe.steps || []).map((s: any) => s.description || s.step || ""),
       };
     });
 
@@ -369,5 +420,5 @@ async function runMock(input: z.infer<typeof inputSchema>) {
 }
 
 function toEmptyMealDetails<T extends z.infer<typeof mealOverviewSchema>>(meal: T) {
-  return { ...meal, imageUrl: meal.imageUrl || "", ingredients: [], recipeSteps: [] };
+  return { ...meal, imageUrl: meal.imageUrl || "" };
 }

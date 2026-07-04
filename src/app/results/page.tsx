@@ -13,10 +13,7 @@ import { useFeatureFlag } from "@/shared/presentation/hooks/useFeatureFlag";
 import { createMoney, formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getSeraMealImagePosition, getSeraMealImageUrl, SERA_IMAGES } from "@/shared/seraVisuals";
 import { getProductCopy } from "@/shared/seraProductCopy";
-import { useMealPlanEnrichment } from "@/modules/meal-planning/presentation/hooks/useMealPlanEnrichment";
-
 export default function ResultsPage() {
-  useMealPlanEnrichment();
   const { activePlan, isGenerating, saveCurrentPlan, regeneratePlan, selectMeal, swapPlannedMeals, openPaywall, user, userId, appLanguage } = useDinneroStore();
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [loadingSave, setLoadingSave] = useState(false);
@@ -125,15 +122,16 @@ export default function ResultsPage() {
               >
                 <div className="grid grid-cols-[1fr_auto] gap-3">
                   <button onClick={() => selectMeal(meal)} className="grid min-w-0 grid-cols-[96px_1fr] gap-3 text-left">
-                    <span
-                      className="editorial-photo h-28 rounded-[1.25rem]"
-                      style={
-                        {
-                          "--editorial-image": `url(${getSeraMealImageUrl(meal.imageUrl)})`,
-                          "--editorial-position": getSeraMealImagePosition(meal.day),
-                        } as CSSProperties
-                      }
-                    />
+                    <div className="relative overflow-hidden h-28 rounded-[1.25rem]">
+                      <img
+                        src={getSeraMealImageUrl(meal.imageUrl)}
+                        alt=""
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover"
+                        style={{ objectPosition: getSeraMealImagePosition(meal.day) }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-b from-[rgba(30,30,30,0.02)] to-[rgba(30,30,30,0.34)]" />
+                    </div>
                     <span className="min-w-0 py-1">
                       <span className="editorial-kicker">{item.isToday ? `${weekCopy.today} - ${item.dateLabel}` : item.dateLabel}</span>
                       <span className="mt-1 line-clamp-2 font-serif text-[26px] leading-[28px] text-foreground">{meal.title}</span>
