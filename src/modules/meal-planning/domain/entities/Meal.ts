@@ -22,6 +22,7 @@ export type Meal = {
   recipeSteps: string[];
   whyThisMeal: string[];
   imageUrl?: string;
+  recipeId?: string;
   enrichmentStatus?: EnrichmentStatus;
   imageStatus?: EnrichmentStatus;
 };

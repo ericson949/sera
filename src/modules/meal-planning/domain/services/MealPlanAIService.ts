@@ -36,6 +36,7 @@ export type GeneratedMealDTO = {
   ingredients: GeneratedIngredientDTO[];
   recipeSteps: string[];
   whyThisMeal: string[];
+  recipeId?: string;
 };
 
 export type GeneratedShoppingItemDTO = {
@@ -70,6 +71,7 @@ export type SwapMealInput = {
   batchCooking: boolean;
   dayToSwap: WeekDay;
   excludeTitles: string[];
+  excludeIds?: string[];
 };
 
 export type EnrichMealInput = {

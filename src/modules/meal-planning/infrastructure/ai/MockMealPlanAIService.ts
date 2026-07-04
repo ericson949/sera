@@ -98,7 +98,10 @@ export class MockMealPlanAIService implements MealPlanAIService {
     const shopMultiplier = this.getStoreMultiplier(input.shop);
     const peopleMultiplier = this.getPeopleMultiplier(input.numberOfPeople);
     const candidateRecipes = this.filterRecipes(input.dietaryNeeds, input.maxCookingTime).filter(
-      (recipe) => !input.excludeTitles.includes(recipe.title)
+      (recipe) => {
+        const id = `mock_recipe_${recipe.title.toLowerCase().replace(/[^a-z0-9]/g, "_")}`;
+        return (!input.excludeIds || !input.excludeIds.includes(id)) && !input.excludeTitles.includes(recipe.title);
+      }
     );
     const recipe = this.pickRecipe(candidateRecipes.length > 0 ? candidateRecipes : RECIPE_LIBRARY);
 
@@ -172,6 +175,7 @@ export class MockMealPlanAIService implements MealPlanAIService {
       ),
       recipeSteps: recipe.steps,
       whyThisMeal: this.createMealReasons(recipe, input),
+      recipeId: `mock_recipe_${recipe.title.toLowerCase().replace(/[^a-z0-9]/g, "_")}`,
     };
 
     return day ? { day, ...meal } : meal;

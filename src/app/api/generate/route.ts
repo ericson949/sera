@@ -25,6 +25,7 @@ const inputSchema = z.object({
   action: z.enum(["swap"]).optional(),
   dayToSwap: z.enum(weekdays).optional(),
   excludeTitles: z.array(z.string()).default([]),
+  excludeIds: z.array(z.string()).default([]),
 });
 
 const mealOverviewSchema = z.object({
@@ -35,6 +36,7 @@ const mealOverviewSchema = z.object({
   prepTimeMinutes: z.number().int().positive(),
   whyThisMeal: z.array(z.string().min(1)).min(1),
   imageUrl: z.string().optional().default(""),
+  recipeId: z.string().optional().default(""),
 });
 
 const mealSchema = mealOverviewSchema.transform(toEmptyMealDetails);
@@ -123,7 +125,7 @@ export async function POST(request: Request) {
     });
 
     if (input.action === "swap") {
-      filteredRecipes = filteredRecipes.filter((r) => !input.excludeTitles.includes(r.title));
+      filteredRecipes = filteredRecipes.filter((r) => !input.excludeIds.includes(r.id) && !input.excludeTitles.includes(r.title));
     }
 
     if (filteredRecipes.length === 0) {
@@ -224,6 +226,7 @@ export async function POST(request: Request) {
         prepTimeMinutes: selectedMeal.totalTime,
         whyThisMeal,
         imageUrl: dbRecipe.imageUrl || "",
+        recipeId: dbRecipe.id,
       }));
     }
 
@@ -245,6 +248,7 @@ export async function POST(request: Request) {
         prepTimeMinutes: meal.totalTime,
         whyThisMeal,
         imageUrl: dbRecipe.imageUrl || "",
+        recipeId: dbRecipe.id,
       };
     });
 
@@ -319,6 +323,7 @@ async function runMock(input: z.infer<typeof inputSchema>) {
       batchCooking: input.batchCooking,
       dayToSwap: input.dayToSwap ?? "Monday",
       excludeTitles: input.excludeTitles,
+      excludeIds: input.excludeIds,
     });
   }
 

@@ -41,6 +41,7 @@ export class SwapMealUseCase {
     }
 
     // 4. Call AI to swap
+    const excludeIds = currentPlan.days.map((d) => d.recipeId).filter(Boolean) as string[];
     const excludeTitles = currentPlan.days.map((d) => d.title);
     const dto = await this.aiService.swapMeal({
       userId,
@@ -56,6 +57,7 @@ export class SwapMealUseCase {
       batchCooking: preferences.batchCooking,
       dayToSwap,
       excludeTitles,
+      excludeIds,
     });
 
     // 5. Map DTO to Meal entity
@@ -75,6 +77,7 @@ export class SwapMealUseCase {
       })),
       recipeSteps: dto.recipeSteps,
       whyThisMeal: dto.whyThisMeal,
+      recipeId: dto.recipeId,
       enrichmentStatus: "pending",
       imageStatus: "pending",
     };
