@@ -74,6 +74,7 @@ export class SwapMealUseCase {
         name: ing.name,
         quantity: ing.quantity,
         estimatedPrice: createMoney(ing.estimatedPrice),
+        category: ing.category,
       })),
       recipeSteps: dto.recipeSteps,
       whyThisMeal: dto.whyThisMeal,
@@ -82,6 +83,7 @@ export class SwapMealUseCase {
       ratingsCount: dto.ratingsCount,
       enrichmentStatus: "ready",
       imageStatus: "ready",
+      category: dto.category,
     };
 
     // 6. Update the days

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ChefHat, Clock3, Shuffle, ShoppingBag } from "lucide-react";
+import { ArrowRight, ChefHat, ChevronDown, ChevronUp, Clock3, Shuffle, ShoppingBag } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import MealDetailModal from "@/modules/meal-planning/presentation/components/MealDetailModal";
 import PaywallModal from "@/modules/meal-planning/presentation/components/PaywallModal";
@@ -12,16 +12,21 @@ import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money"
 import { getProductCopy } from "@/shared/seraProductCopy";
 export default function DashboardPage() {
   const router = useRouter();
-  const { activePlan, user, userId, selectMeal, openPaywall, appLanguage } = useDinneroStore();
+  const { activePlan, user, userId, selectMeal, openPaywall, appLanguage, hasHydrated } = useDinneroStore();
   const copy = getProductCopy(appLanguage).tonight;
   const weekState = useWeeklyMealState(activePlan, userId);
   const meal = weekState.todayMeal;
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
 
   useEffect(() => {
-    if (!activePlan) return;
+    if (!hasHydrated) return;
+    if (!activePlan) {
+      router.replace("/onboarding");
+      return;
+    }
     const acceptedPlanId = localStorage.getItem("sera_preview_accepted_plan_id");
     if (acceptedPlanId !== activePlan.id) router.replace("/plan-preview");
-  }, [activePlan, router]);
+  }, [hasHydrated, activePlan, router]);
 
   if (!activePlan || !meal) {
     return (
@@ -38,21 +43,37 @@ export default function DashboardPage() {
   const mealState = weekState.getState(meal);
   const status = mealState?.status ?? "planned";
   const quickMeal = weekState.scheduledMeals.filter((item) => item.canSwap).map((item) => item.meal).sort((a, b) => a.prepTimeMinutes - b.prepTimeMinutes)[0];
-  const openMeal = (targetMeal: typeof meal) => (user?.subscriptionStatus === "pro" ? selectMeal(targetMeal) : openPaywall());
+  const openMeal = (targetMeal: typeof meal) => selectMeal(targetMeal);
 
   return (
     <div className="flex h-[calc(100svh-5rem)] flex-col bg-background">
       <section className="mx-5 mt-5 rounded-[2.25rem] bg-card p-5 shadow-md">
         <p className="editorial-kicker">{copy.kicker}</p>
         <h1 className="mt-3 font-serif text-[36px] leading-[40px] text-foreground">{copy.title}</h1>
-        <button onClick={() => openMeal(meal)} className="mt-6 w-full text-left">
-          <p className="font-serif text-[26px] leading-[30px] text-primary">{meal.title}</p>
-          {mealState && <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted">{mealState.dateLabel}</p>}
-          <p className="mt-3 text-sm leading-6 text-muted">{meal.description}</p>
-        </button>
+        <div className="mt-6 w-full">
+          <button onClick={() => openMeal(meal)} className="w-full text-left">
+            <p className="font-serif text-[26px] leading-[30px] text-primary">{meal.title}</p>
+            {mealState && <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted">{mealState.dateLabel}</p>}
+          </button>
+          
+          <div className="mt-4 border-t border-warm-stone/40 pt-3">
+            <p className={`text-sm leading-6 text-muted ${isDescriptionOpen ? "" : "line-clamp-2"}`}>
+              {meal.description}
+            </p>
+            {meal.description && meal.description.length > 80 && (
+              <button 
+                onClick={() => setIsDescriptionOpen(!isDescriptionOpen)} 
+                className="mt-1 flex items-center gap-1 text-xs font-semibold text-primary focus:outline-none"
+              >
+                <span>{isDescriptionOpen ? "See less" : "See more"}</span>
+                {isDescriptionOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              </button>
+            )}
+          </div>
+        </div>
         <div className="mt-5 flex gap-3 text-sm font-semibold text-muted">
           <span className="flex items-center gap-1.5"><Clock3 className="h-4 w-4" />{meal.prepTimeMinutes} min</span>
-          <span>{formatMoney(meal.estimatedCost)}</span>
+          <span className="capitalize">{meal.category || "Dinner"}</span>
           <span>{status === "cooked" ? copy.cooked : status === "skipped" ? copy.skipped : ""}</span>
         </div>
       </section>

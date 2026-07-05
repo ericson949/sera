@@ -27,4 +27,5 @@ export type Meal = {
   ratingsCount?: number;
   enrichmentStatus?: EnrichmentStatus;
   imageStatus?: EnrichmentStatus;
+  category?: string;
 };

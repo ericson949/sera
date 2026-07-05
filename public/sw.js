@@ -109,6 +109,23 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Intercept and cache external images (e.g. Unsplash) to prevent visual reloads
+  if (url.pathname.match(/\.(png|jpg|jpeg|gif|webp|svg)$/) || url.host.includes("unsplash.com")) {
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) return cachedResponse;
+        return fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const cacheCopy = networkResponse.clone();
+            caches.open("sera-external-images").then((cache) => cache.put(event.request, cacheCopy));
+          }
+          return networkResponse;
+        }).catch(() => new Response("", { status: 404 }));
+      })
+    );
+    return;
+  }
+
   if (url.origin !== self.location.origin) {
     return;
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, Clipboard, ClipboardCheck, ShoppingBag, Trash2 } from "lucide-react";
@@ -13,10 +13,17 @@ const categories: ShoppingCategory[] = ["Vegetables", "Meat & Fish", "Dairy", "P
 
 export default function ShoppingListPage() {
   const router = useRouter();
-  const { activePlan, toggleShoppingItem, appLanguage } = useDinneroStore();
+  const { activePlan, toggleShoppingItem, appLanguage, hasHydrated } = useDinneroStore();
   const [exportStatus, setExportStatus] = useState<"idle" | "done" | "error">("idle");
   const productCopy = getProductCopy(appLanguage);
   const copy = productCopy.shopping;
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+    if (!activePlan) {
+      router.replace("/onboarding");
+    }
+  }, [hasHydrated, activePlan, router]);
 
   if (!activePlan) {
     return (
@@ -116,10 +123,6 @@ export default function ShoppingListPage() {
         <button onClick={handleExportList} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-white shadow-md">
           {exportStatus === "done" ? <ClipboardCheck className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
           {exportStatus === "done" ? copy.exported : exportStatus === "error" ? copy.tryAgain : copy.export}
-        </button>
-        <button onClick={checkedCount > 0 ? handleClearPurchased : handleMarkAllPurchased} className="flex h-12 items-center justify-center gap-2 rounded-full bg-card px-5 text-sm font-semibold text-foreground shadow-sm">
-          {checkedCount > 0 ? <Trash2 className="h-4 w-4" /> : <Check className="h-4 w-4" />}
-          {checkedCount > 0 ? copy.clear : copy.all}
         </button>
       </div>
 

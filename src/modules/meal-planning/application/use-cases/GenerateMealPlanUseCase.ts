@@ -7,6 +7,7 @@ import { createMoney } from "../../domain/value-objects/Money";
 import { ShoppingItem } from "../../domain/entities/ShoppingItem";
 import { Meal } from "../../domain/entities/Meal";
 import { ShoppingCategory } from "../../domain/value-objects/ShoppingCategory";
+import { buildShoppingList } from "../../domain/services/buildShoppingList";
 
 export class GenerateMealPlanUseCase {
   constructor(
@@ -59,6 +60,7 @@ export class GenerateMealPlanUseCase {
         name: ing.name,
         quantity: ing.quantity,
         estimatedPrice: createMoney(ing.estimatedPrice),
+        category: ing.category,
       })),
       recipeSteps: m.recipeSteps,
       whyThisMeal: m.whyThisMeal,
@@ -67,17 +69,20 @@ export class GenerateMealPlanUseCase {
       ratingsCount: m.ratingsCount,
       enrichmentStatus: "ready",
       imageStatus: "ready",
+      category: m.category,
     }));
 
-    const shoppingList: ShoppingItem[] = dto.shoppingList.map((item, idx) => ({
-      id: `shop-item-${idx}-${Date.now()}`,
-      name: item.name,
-      category: item.category as ShoppingCategory,
-      quantity: item.quantity,
-      estimatedPrice: createMoney(item.estimatedPrice),
-      usedInMeals: item.usedInMeals,
-      checked: false,
-    }));
+    const shoppingList: ShoppingItem[] = dto.shoppingList.length > 0
+      ? dto.shoppingList.map((item, idx) => ({
+          id: `shop-item-${idx}-${Date.now()}`,
+          name: item.name,
+          category: item.category as ShoppingCategory,
+          quantity: item.quantity,
+          estimatedPrice: createMoney(item.estimatedPrice),
+          usedInMeals: item.usedInMeals,
+          checked: false,
+        }))
+      : buildShoppingList(meals, []);
 
     const plan: MealPlan = {
       id: `plan-${Date.now()}`,

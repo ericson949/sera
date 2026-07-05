@@ -49,7 +49,18 @@ export function useWeeklyMealState(plan: MealPlan | null, userId: string) {
     });
   }, [executions, plan]);
 
-  const todayMeal = scheduledMeals.find((item) => item.isToday)?.meal ?? null;
+  const todayMeal = useMemo(() => {
+    // Find the first meal that is not cooked and not skipped (i.e. status is "planned")
+    const uncooked = scheduledMeals.find((item) => item.status === "planned");
+    if (uncooked) return uncooked.meal;
+    
+    // If all are cooked/skipped, fall back to the last meal in the schedule
+    if (scheduledMeals.length > 0) {
+      return scheduledMeals[scheduledMeals.length - 1].meal;
+    }
+    return null;
+  }, [scheduledMeals]);
+
   const getState = (meal: Meal) => scheduledMeals.find((item) => item.meal.id === meal.id);
 
   return {

@@ -258,5 +258,5 @@ export const PRODUCT_COPY = {
 } as const;
 
 export function getProductCopy(language: AppLanguage) {
-  return PRODUCT_COPY[language] ?? PRODUCT_COPY.en;
+  return PRODUCT_COPY.en;
 }

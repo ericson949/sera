@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Check, GripVertical, Plus, ShoppingBag, X } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import MealDetailModal from "@/modules/meal-planning/presentation/components/MealDetailModal";
@@ -14,12 +16,21 @@ import { getProductCopy } from "@/shared/seraProductCopy";
 import { getSeraMealImagePosition, getSeraMealImageUrl } from "@/shared/seraVisuals";
 
 export default function WeekPage() {
-  const { activePlan, dashboard, user, userId, selectMeal, openPaywall, swapPlannedMeals, activatePlan, appLanguage } = useDinneroStore();
+  const router = useRouter();
+  const { activePlan, dashboard, user, userId, selectMeal, openPaywall, swapPlannedMeals, activatePlan, appLanguage, hasHydrated } = useDinneroStore();
   const copy = getProductCopy(appLanguage).weekView;
   const weekState = useWeeklyMealState(activePlan, userId);
   const dragAndDropV2 = useFeatureFlag("flag-drag-and-drop-v2", true);
   const { draggedMealId, startDrag } = useMealPlanDragSwap({ enabled: dragAndDropV2, canSwapPair: weekState.canSwapPair, swapMeals: swapPlannedMeals });
-  const openMeal = (meal: NonNullable<typeof activePlan>["days"][number]) => (user?.subscriptionStatus === "pro" ? selectMeal(meal) : openPaywall());
+  const openMeal = (meal: NonNullable<typeof activePlan>["days"][number]) => selectMeal(meal);
+  const [isPreviousWeeksOpen, setIsPreviousWeeksOpen] = useState(false);
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+    if (!activePlan) {
+      router.replace("/onboarding");
+    }
+  }, [hasHydrated, activePlan, router]);
 
   if (!activePlan) {
     return (
@@ -41,7 +52,14 @@ export default function WeekPage() {
         <div className="mt-4 grid grid-cols-3 gap-3 text-center">
           <Stat value={`${weekState.cookedCount}/${activePlan.days.length}`} label={copy.cooked} />
           <Stat value={formatMoney(activePlan.estimatedTotal)} label={copy.market} />
-          <Stat value={String(dashboard?.savedPlans.length ?? 0)} label={copy.previous} />
+          <button 
+            disabled={(dashboard?.savedPlans.length ?? 0) === 0} 
+            onClick={() => setIsPreviousWeeksOpen(true)}
+            className="text-center rounded-[1.4rem] bg-surface-container-low p-3 transition hover:bg-surface-container-medium disabled:opacity-50 focus:outline-none"
+          >
+            <p className="font-serif text-2xl leading-none text-foreground">{String(dashboard?.savedPlans.length ?? 0)}</p>
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">{copy.previous}</p>
+          </button>
         </div>
       </header>
 
@@ -109,27 +127,45 @@ export default function WeekPage() {
             );
           })}
         </div>
+      </section>
 
-        {(dashboard?.savedPlans.length ?? 0) > 0 && (
-          <div className="mt-6">
-            <p className="editorial-kicker mb-3">{copy.previous}</p>
-            <div className="space-y-2">
+      <MealDetailModal />
+      <PaywallModal />
+
+      {isPreviousWeeksOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#1E1E1E]/55">
+          <button className="absolute inset-0 cursor-default" onClick={() => setIsPreviousWeeksOpen(false)} aria-label="Close" />
+          <article className="relative z-10 flex max-h-[80svh] w-full max-w-[480px] flex-col overflow-hidden rounded-t-[2.25rem] bg-background p-5 shadow-lg border border-warm-stone/50">
+            <div className="flex items-center justify-between border-b border-warm-stone/50 pb-4">
+              <h2 className="font-serif text-[28px] leading-[30px] text-foreground">{copy.previous}</h2>
+              <button onClick={() => setIsPreviousWeeksOpen(false)} className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-low text-foreground">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            
+            <div className="min-h-0 flex-1 overflow-y-auto py-4 space-y-3 no-scrollbar">
               {dashboard?.savedPlans.map((plan) => (
-                <button key={plan.id} onClick={() => activatePlan(plan)} className="flex w-full items-center justify-between rounded-[1.4rem] bg-surface-container-low p-4 text-left">
+                <button 
+                  key={plan.id} 
+                  onClick={() => {
+                    activatePlan(plan);
+                    setIsPreviousWeeksOpen(false);
+                  }} 
+                  className="flex w-full items-center justify-between rounded-[1.4rem] bg-card p-4 text-left shadow-sm border border-warm-stone/40 hover:border-primary transition-colors"
+                >
                   <span>
-                    <span className="block font-serif text-[24px] leading-[26px] text-foreground">{plan.shop}</span>
-                    <span className="mt-1 block text-xs text-muted">{formatMoney(plan.estimatedTotal)} - {plan.days.length} {copy.planned}</span>
+                    <span className="block font-serif text-[22px] leading-[24px] text-primary">{plan.shop}</span>
+                    <span className="mt-1 block text-xs text-muted">
+                      {formatMoney(plan.estimatedTotal)} - {plan.days.length} meals - {new Date(plan.createdAt).toLocaleDateString()}
+                    </span>
                   </span>
                   <span className="text-xs font-semibold text-primary">{copy.open}</span>
                 </button>
               ))}
             </div>
-          </div>
-        )}
-      </section>
-
-      <MealDetailModal />
-      <PaywallModal />
+          </article>
+        </div>
+      )}
     </div>
   );
 }

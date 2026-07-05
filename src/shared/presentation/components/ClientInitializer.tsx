@@ -21,6 +21,7 @@ export default function ClientInitializer() {
     }
 
     let unsubscribeStore: (() => void) | undefined;
+    let reminderInterval: ReturnType<typeof setInterval> | undefined;
 
     navigator.serviceWorker
       .register("/sw.js", { scope: "/", updateViaCache: "none" })
@@ -42,6 +43,52 @@ export default function ClientInitializer() {
             shoppingItems: plan.shoppingList,
           });
         };
+
+        // Set up recurring check for daily cooking time and weekly shopping day reminders
+        const checkReminders = () => {
+          if (localStorage.getItem("sera_notifications_enabled") !== "true") return;
+
+          const now = new Date();
+          const todayStr = now.toISOString().split("T")[0];
+
+          // 1. Cooking Reminder
+          const cookingTime = localStorage.getItem("sera_default_cooking_time") || "19:00";
+          const [cookH, cookM] = cookingTime.split(":").map(Number);
+          if (now.getHours() === cookH && now.getMinutes() === cookM) {
+            const lastCookNotif = localStorage.getItem("sera_last_cooking_notif_date");
+            if (lastCookNotif !== todayStr) {
+              const worker = registration.active ?? navigator.serviceWorker.controller;
+              worker?.postMessage({
+                type: "SERA_NOTIFICATION",
+                title: "Time to Cook! 🍳",
+                body: "Ready for dinner? Open Sera to start preparing tonight's fresh meal.",
+                url: "/dashboard",
+              });
+              localStorage.setItem("sera_last_cooking_notif_date", todayStr);
+            }
+          }
+
+          // 2. Shopping Reminder
+          const shoppingDay = Number(localStorage.getItem("sera_shopping_day") ?? "6"); // default Saturday
+          const shoppingTime = localStorage.getItem("sera_shopping_time") || "10:00";
+          const [shopH, shopM] = shoppingTime.split(":").map(Number);
+          if (now.getDay() === shoppingDay && now.getHours() === shopH && now.getMinutes() === shopM) {
+            const lastShopNotif = localStorage.getItem("sera_last_shopping_notif_date");
+            if (lastShopNotif !== todayStr) {
+              const worker = registration.active ?? navigator.serviceWorker.controller;
+              worker?.postMessage({
+                type: "SERA_NOTIFICATION",
+                title: "Shopping Day! 🛒",
+                body: "Time to head to the market. Check your shopping list inside the app.",
+                url: "/shopping-list",
+              });
+              localStorage.setItem("sera_last_shopping_notif_date", todayStr);
+            }
+          }
+        };
+
+        checkReminders();
+        reminderInterval = setInterval(checkReminders, 30000);
 
         publishOfflineState();
         unsubscribeStore = useDinneroStore.subscribe((state, previousState) => {
@@ -72,6 +119,7 @@ export default function ClientInitializer() {
 
     return () => {
       unsubscribeStore?.();
+      if (reminderInterval) clearInterval(reminderInterval);
     };
   }, []);
 

@@ -32,8 +32,10 @@ export default function NewWeekPage() {
 
   useEffect(() => {
     if (!store.hasHydrated) return;
-    if (!store.user && !store.activePlan) router.replace("/onboarding");
-  }, [router, store.activePlan, store.hasHydrated, store.user]);
+    if (!store.activePlan) {
+      router.replace("/onboarding");
+    }
+  }, [router, store.activePlan, store.hasHydrated]);
 
   if (store.hasHydrated && !isPro) {
     return (

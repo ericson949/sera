@@ -48,6 +48,7 @@ const mealOverviewSchema = z.object({
   ratingsCount: z.number().int().optional().default(0),
   ingredients: z.array(ingredientSchema).default([]),
   recipeSteps: z.array(z.string()).default([]),
+  category: z.string().optional().default("Dinner"),
 });
 
 const mealSchema = mealOverviewSchema.transform(toEmptyMealDetails);
@@ -156,11 +157,44 @@ export async function POST(request: Request) {
       throw new Error("No recipes found matching the constraints.");
     }
 
-    // Filter recipes locally to exclude allergens (PostgreSQL doesn't do "not contains" easily)
+    // Filter recipes locally to exclude allergens and cakes/desserts
     let filteredRecipes = recipeRows.filter((r) => {
+      // 1. Exclude allergens
       const recipeAllergens = r.allergens as string[] | null;
-      if (!recipeAllergens) return true;
-      return !recipeAllergens.some((a) => dbAllergensFilters.includes(a));
+      if (recipeAllergens && recipeAllergens.some((a) => dbAllergensFilters.includes(a))) {
+        return false;
+      }
+
+      // 2. Exclude desserts / cakes / breakfasts
+      const taxonomy = r.taxonomy || {};
+      const mealTypes = taxonomy.mealType || [];
+      const categories = taxonomy.categories || [];
+      const title = (r.title || "").toLowerCase();
+
+      const hasDessertCategory = categories.some((c: string) => 
+        c.includes("dessert") || c.includes("cake") || c.includes("sweet") || c.includes("biscuit") || c.includes("cookie")
+      );
+
+      const hasCakeInTitle = title.includes("cake") || 
+                             title.includes("gateau") || 
+                             title.includes("gâteau") || 
+                             title.includes("cookie") || 
+                             title.includes("muffin") || 
+                             title.includes("brownie") || 
+                             title.includes("waffle") || 
+                             title.includes("pancake") || 
+                             title.includes("pudding");
+
+      if (hasDessertCategory || hasCakeInTitle) {
+        return false;
+      }
+
+      // 3. Keep only dinner/main_course if meal types are explicitly defined
+      if (mealTypes.length > 0 && !mealTypes.includes("dinner") && !mealTypes.includes("main_course")) {
+        return false;
+      }
+
+      return true;
     });
 
     // Apply exclusions for recipe IDs and titles with safety thresholds
@@ -296,6 +330,7 @@ export async function POST(request: Request) {
           category: ing.category,
         })),
         recipeSteps: (dbRecipe.steps || []).map((s: any) => s.description || s.step || ""),
+        category: (dbRecipe.taxonomy as any)?.categories?.[0] || "Dinner",
       }));
     }
 
@@ -327,6 +362,7 @@ export async function POST(request: Request) {
           category: ing.category,
         })),
         recipeSteps: (dbRecipe.steps || []).map((s: any) => s.description || s.step || ""),
+        category: (dbRecipe.taxonomy as any)?.categories?.[0] || "Dinner",
       };
     });
 

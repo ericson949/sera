@@ -3,8 +3,8 @@ import { AppCountry, AppLanguage } from "./useDinneroStore";
 
 export const SERA_COUNTRIES: { value: AppCountry; label: string; flag: string; defaultShop: string; language: AppLanguage }[] = [
   { value: "UK", label: "UK", flag: "🇬🇧", defaultShop: "Aldi", language: "en" },
-  { value: "France", label: "France", flag: "🇫🇷", defaultShop: "Carrefour", language: "fr" },
-  { value: "Italy", label: "Italy", flag: "🇮🇹", defaultShop: "Lidl", language: "it" },
+  { value: "France", label: "France", flag: "🇫🇷", defaultShop: "Carrefour", language: "en" },
+  { value: "Italy", label: "Italy", flag: "🇮🇹", defaultShop: "Lidl", language: "en" },
   { value: "US", label: "US", flag: "🇺🇸", defaultShop: "Aldi", language: "en" },
 ];
 

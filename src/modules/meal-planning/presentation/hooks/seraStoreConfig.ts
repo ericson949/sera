@@ -5,6 +5,16 @@ export const LOCALE_STORAGE_KEY = "sera_locale";
 export const ONBOARDING_DRAFT_STORAGE_KEY = "sera_onboarding_draft";
 export const USAGE_STORAGE_KEY = "dinnero_usage_counters";
 
+export const getPersistentUserId = (): string => {
+  if (typeof window === "undefined") return DEFAULT_USER_ID;
+  let storedId = localStorage.getItem("sera_user_id");
+  if (!storedId) {
+    storedId = `guest_${Math.random().toString(36).substring(2, 15)}`;
+    localStorage.setItem("sera_user_id", storedId);
+  }
+  return storedId;
+};
+
 export type OnboardingDraft = Partial<Pick<
   DinneroState,
   | "onboardingStep"

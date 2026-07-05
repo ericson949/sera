@@ -40,6 +40,7 @@ export type GeneratedMealDTO = {
   recipeId?: string;
   ratings?: number;
   ratingsCount?: number;
+  category?: string;
 };
 
 export type GeneratedShoppingItemDTO = {

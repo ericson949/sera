@@ -33,9 +33,12 @@ export function useOnboardingFlow() {
   useSeraLocaleDetection(setOnboardingField);
 
   useEffect(() => {
-    if (!hasHydrated || !activePlan || onboardingStep !== 1) return;
-    router.replace("/dashboard");
-  }, [activePlan, hasHydrated, onboardingStep, router]);
+    if (!hasHydrated || !activePlan) return;
+    const acceptedPlanId = localStorage.getItem("sera_preview_accepted_plan_id");
+    if (acceptedPlanId === activePlan.id) {
+      router.replace("/dashboard");
+    }
+  }, [activePlan, hasHydrated, router]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;

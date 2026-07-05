@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { Check, ChevronDown, ChevronUp, Loader2, RefreshCw, X } from "lucide-react";
 import { useDinneroStore } from "../hooks/useDinneroStore";
@@ -13,8 +13,13 @@ export default function MealDetailModal() {
   const { selectedMeal, activePlan, userId, selectMeal, swapMeal, isSwapping, appLanguage } = useDinneroStore();
   const weekState = useWeeklyMealState(activePlan, userId);
   const [isIngredientsOpen, setIsIngredientsOpen] = useState(false);
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
   const productCopy = getProductCopy(appLanguage);
   const copy = productCopy.meal;
+
+  useEffect(() => {
+    setIsDescExpanded(false);
+  }, [selectedMeal]);
 
   if (!selectedMeal) return null;
   const canSwap = weekState.canSwapMeal(selectedMeal);
@@ -43,11 +48,24 @@ export default function MealDetailModal() {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 no-scrollbar">
-          <p className="text-base leading-7 text-muted">{selectedMeal.description}</p>
+          <div className="relative">
+            <p className={`text-base leading-7 text-muted ${isDescExpanded ? "" : "line-clamp-2"}`}>
+              {selectedMeal.description}
+            </p>
+            {selectedMeal.description && selectedMeal.description.length > 80 && (
+              <button 
+                onClick={() => setIsDescExpanded(!isDescExpanded)} 
+                className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-primary focus:outline-none"
+              >
+                <span>{isDescExpanded ? "See less" : "See more"}</span>
+                {isDescExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              </button>
+            )}
+          </div>
           <div className="mt-5 grid grid-cols-3 border-y border-warm-stone/70 py-4 text-center">
             <Metric label={copy.time} value={`${selectedMeal.prepTimeMinutes} min`} />
             <Metric label={copy.energy} value={`${selectedMeal.calories} kcal`} />
-            <Metric label={copy.cost} value={formatMoney(selectedMeal.estimatedCost)} />
+            <Metric label="Category" value={selectedMeal.category || "Dinner"} />
           </div>
 
           <section className="mt-6">
@@ -76,7 +94,7 @@ export default function MealDetailModal() {
                 {selectedMeal.ingredients.map((ingredient, index) => (
                   <div key={`${selectedMeal.id}-ingredient-${index}`} className="flex justify-between gap-4 py-3 text-sm">
                     <span className="font-medium text-foreground">{ingredient.name}</span>
-                    <span className="text-right text-muted">{ingredient.quantity} - {formatMoney(ingredient.estimatedPrice)}</span>
+                    <span className="text-right text-muted">{ingredient.quantity}</span>
                   </div>
                 ))}
               </div>

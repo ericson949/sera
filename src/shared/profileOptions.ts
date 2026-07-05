@@ -2,8 +2,6 @@ import { AppLanguage } from "@/modules/meal-planning/presentation/hooks/useDinne
 
 export const LANGUAGE_OPTIONS: { value: AppLanguage; label: string }[] = [
   { value: "en", label: "English" },
-  { value: "fr", label: "Francais" },
-  { value: "it", label: "Italiano" },
 ];
 
 export const BETA_RESET_STORAGE_KEYS = [

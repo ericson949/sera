@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { WeekDay } from "../../domain/value-objects/WeekDay";
 import { UserPreferences } from "@/modules/users/domain/entities/UserPreferences";
 import { DinneroState, AppCountry, AppLanguage } from "./useDinneroStore.types";
-import { clearOnboardingDraft, createOnboardingDraft, getOnboardingDraft, getSavedLocale, LOCALE_STORAGE_KEY, saveOnboardingDraft, USAGE_STORAGE_KEY } from "./seraStoreConfig";
+import { clearOnboardingDraft, createOnboardingDraft, getOnboardingDraft, getPersistentUserId, getSavedLocale, LOCALE_STORAGE_KEY, saveOnboardingDraft, USAGE_STORAGE_KEY } from "./seraStoreConfig";
 import { seraUseCases } from "./seraUseCases";
 import { SERA_INITIAL_STATE } from "./seraInitialState";
 
@@ -20,7 +20,9 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
     set({ isInitializing: true });
 
     try {
-      const uId = get().userId;
+      const uId = getPersistentUserId();
+      set({ userId: uId });
+      
       const savedLocale = getSavedLocale();
       const onboardingDraft = getOnboardingDraft();
       let userObj = await userRepo.findById(uId);
@@ -33,14 +35,17 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
         };
         await userRepo.save(userObj);
       }
+      
+      // Set user immediately for state stability
+      set({ user: userObj });
+
       const prefs = await startOnboardingUseCase.execute(uId);
       const currentPlan = await getCurrentPlanUseCase.execute(uId);
 
       set({
-        user: userObj,
         preferences: prefs,
         activePlan: currentPlan,
-        appLanguage: onboardingDraft?.appLanguage || savedLocale?.appLanguage || get().appLanguage,
+        appLanguage: "en", // Always force English
         appCountry: onboardingDraft?.appCountry || savedLocale?.appCountry || get().appCountry,
         onboardingStep: currentPlan ? 1 : onboardingDraft?.onboardingStep || get().onboardingStep,
         onboardingShop: onboardingDraft?.onboardingShop || prefs.shop,

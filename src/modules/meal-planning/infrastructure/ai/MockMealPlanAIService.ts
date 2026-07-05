@@ -81,14 +81,24 @@ export class MockMealPlanAIService implements MealPlanAIService {
     const finalTotal = Math.round(estimatedTotal * 0.9 * 100) / 100;
     const confidence = this.getBudgetConfidence(finalTotal, input);
 
+    const shoppingList = meals.flatMap((meal) =>
+      meal.ingredients.map((ing) => ({
+        name: ing.name,
+        category: ing.category || "Other",
+        quantity: ing.quantity,
+        estimatedPrice: ing.estimatedPrice,
+        usedInMeals: [meal.day],
+      }))
+    );
+
     return {
       estimatedTotal: finalTotal,
       estimatedMin: Math.round(finalTotal * 0.9 * 100) / 100,
       estimatedMax: Math.round(finalTotal * 1.1 * 100) / 100,
       budgetConfidence: confidence.value,
       budgetMessage: confidence.message,
-      meals: meals.map((meal) => ({ ...meal, ingredients: [], recipeSteps: [] })),
-      shoppingList: [],
+      meals,
+      shoppingList,
     };
   }
 
@@ -105,7 +115,7 @@ export class MockMealPlanAIService implements MealPlanAIService {
     );
     const recipe = this.pickRecipe(candidateRecipes.length > 0 ? candidateRecipes : RECIPE_LIBRARY);
 
-    return { ...this.createMeal(undefined, recipe, input, shopMultiplier, peopleMultiplier), ingredients: [], recipeSteps: [] };
+    return this.createMeal(undefined, recipe, input, shopMultiplier, peopleMultiplier);
   }
 
   async generateMealImage(mealTitle: string): Promise<string> {
@@ -170,6 +180,15 @@ export class MockMealPlanAIService implements MealPlanAIService {
     shopMultiplier: number,
     peopleMultiplier: number
   ): GeneratedMealDTO & { day?: WeekDay } {
+    const title = recipe.title.toLowerCase();
+    const category = title.includes("pasta") ? "Pasta"
+                   : title.includes("salad") ? "Salad"
+                   : title.includes("soup") ? "Soup"
+                   : title.includes("chicken") ? "Chicken"
+                   : title.includes("taco") ? "Mexican"
+                   : title.includes("curry") ? "Curry"
+                   : "Dinner";
+
     const meal = {
       title: recipe.title,
       description: recipe.description,
@@ -184,6 +203,7 @@ export class MockMealPlanAIService implements MealPlanAIService {
       recipeId: `mock_recipe_${recipe.title.toLowerCase().replace(/[^a-z0-9]/g, "_")}`,
       ratings: 4.0 + (recipe.title.length % 11) * 0.1,
       ratingsCount: recipe.title.length * 5,
+      category,
     };
 
     return day ? { day, ...meal } : meal;

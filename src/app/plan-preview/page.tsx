@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
-import { useState } from "react";
 import Link from "next/link";
 import { Check, GripVertical, RefreshCw, ShoppingBag } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -16,7 +16,19 @@ import { getProductCopy } from "@/shared/seraProductCopy";
 import { getSeraMealImagePosition, getSeraMealImageUrl } from "@/shared/seraVisuals";
 export default function PlanPreviewPage() {
   const router = useRouter();
-  const { activePlan, appLanguage, regeneratePlan, selectMeal, swapPlannedMeals, userId } = useDinneroStore();
+  const { activePlan, appLanguage, regeneratePlan, selectMeal, swapPlannedMeals, userId, hasHydrated } = useDinneroStore();
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+    if (!activePlan) {
+      router.replace("/onboarding");
+      return;
+    }
+    const acceptedPlanId = localStorage.getItem("sera_preview_accepted_plan_id");
+    if (acceptedPlanId === activePlan.id) {
+      router.replace("/dashboard");
+    }
+  }, [hasHydrated, activePlan, router]);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const copy = getProductCopy(appLanguage).results;
   const weekCopy = getProductCopy(appLanguage).weekView;
