@@ -7,7 +7,7 @@ import { createMoney } from "../../domain/value-objects/Money";
 import { ShoppingItem } from "../../domain/entities/ShoppingItem";
 import { Meal } from "../../domain/entities/Meal";
 import { ShoppingCategory } from "../../domain/value-objects/ShoppingCategory";
-import { buildShoppingList } from "../../domain/services/buildShoppingList";
+import { buildShoppingList, mapDbCategoryToShoppingCategory } from "../../domain/services/buildShoppingList";
 
 export class GenerateMealPlanUseCase {
   constructor(
@@ -76,7 +76,7 @@ export class GenerateMealPlanUseCase {
       ? dto.shoppingList.map((item, idx) => ({
           id: `shop-item-${idx}-${Date.now()}`,
           name: item.name,
-          category: item.category as ShoppingCategory,
+          category: mapDbCategoryToShoppingCategory(item.category),
           quantity: item.quantity,
           estimatedPrice: createMoney(item.estimatedPrice),
           usedInMeals: item.usedInMeals,

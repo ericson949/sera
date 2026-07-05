@@ -3,7 +3,7 @@ import { ShoppingItem } from "../entities/ShoppingItem";
 import { createMoney } from "../value-objects/Money";
 import { ShoppingCategory, SHOPPING_CATEGORIES } from "../value-objects/ShoppingCategory";
 
-function mapDbCategoryToShoppingCategory(dbCat: string | undefined): ShoppingCategory {
+export function mapDbCategoryToShoppingCategory(dbCat: string | undefined): ShoppingCategory {
   if (!dbCat) return "Other";
   const cat = dbCat.trim().toLowerCase();
   
