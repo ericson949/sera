@@ -7,7 +7,7 @@ import { getCountryConfig, SERA_COUNTRIES } from "@/modules/meal-planning/presen
 import SeraNotificationCard from "@/shared/presentation/components/SeraNotificationCard";
 import { BETA_RESET_STORAGE_KEYS, LANGUAGE_OPTIONS } from "@/shared/profileOptions";
 import { getProductCopy } from "@/shared/seraProductCopy";
-import { isStagingEnv } from "@/shared/env";
+import { isBetaLikeEnv, isStagingEnv } from "@/shared/env";
 
 export default function ProfilePage() {
   const { user, appLanguage, appCountry, onboardingBudgetMax, onboardingPeople, setOnboardingField } = useDinneroStore();
@@ -32,6 +32,12 @@ export default function ProfilePage() {
       body: JSON.stringify({ userId: user?.id }),
     });
     BETA_RESET_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+    window.location.href = "/onboarding";
+  };
+
+  const clearStoreAndStorage = () => {
+    BETA_RESET_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+    localStorage.removeItem("dinnero_locale");
     window.location.href = "/onboarding";
   };
 
@@ -104,6 +110,16 @@ export default function ProfilePage() {
         {isStagingEnv() && (
           <button onClick={resetBetaAccount} className="mt-3 h-12 w-full rounded-full bg-foreground text-sm font-semibold text-white">
             Reinitialiser mon compte de test
+          </button>
+        )}
+
+        {isBetaLikeEnv() && (
+          <button
+            id="btn-clear-store"
+            onClick={clearStoreAndStorage}
+            className="mt-3 h-12 w-full rounded-full bg-[#E11D48] text-sm font-semibold text-white hover:bg-[#BE123C] transition-colors"
+          >
+            Vider le store (Test)
           </button>
         )}
       </section>
