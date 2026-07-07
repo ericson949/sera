@@ -113,15 +113,13 @@ export default function ProfilePage() {
           </button>
         )}
 
-        {isBetaLikeEnv() && (
-          <button
-            id="btn-clear-store"
-            onClick={clearStoreAndStorage}
-            className="mt-3 h-12 w-full rounded-full bg-[#E11D48] text-sm font-semibold text-white hover:bg-[#BE123C] transition-colors"
-          >
-            Vider le store (Test)
-          </button>
-        )}
+        <button
+          id="btn-clear-store"
+          onClick={clearStoreAndStorage}
+          className="mt-3 h-12 w-full rounded-full bg-[#E11D48] text-sm font-semibold text-white hover:bg-[#BE123C] transition-colors"
+        >
+          Vider le store (Test)
+        </button>
       </section>
     </div>
   );
