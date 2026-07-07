@@ -8,6 +8,22 @@ import { captureServerException } from "@/shared/observability/posthogServer";
 const mockAIService = new MockMealPlanAIService();
 const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
 
+let cachedIngredientRows: any[] | null = null;
+
+async function fetchAllIngredients(supabase: any): Promise<any[]> {
+  if (cachedIngredientRows && cachedIngredientRows.length > 0) {
+    return cachedIngredientRows;
+  }
+  const { data, error } = await supabase
+    .from("ingredients_reference")
+    .select("id, category, translations, estimatedPricePerUnit");
+  if (error) {
+    throw new Error(`Unable to fetch ingredients reference: ${error.message}`);
+  }
+  cachedIngredientRows = data || [];
+  return cachedIngredientRows;
+}
+
 const inputSchema = z.object({
   userId: z.string().optional(),
   shop: z.string(),
@@ -163,7 +179,7 @@ export async function POST(request: Request) {
     // 3. Query matching recipes from Database
     let query = supabase
       .from("recipes")
-      .select("id, title, description, imageUrl, prepTime, cookTime, totalTime, defaultServings, ingredients, steps, allergens, diet, taxonomy, ratings, ratingsCount")
+      .select("id, title, imageUrl, prepTime, cookTime, totalTime, defaultServings, ingredients, allergens, diet, taxonomy, ratings, ratingsCount")
       .lte("totalTime", cookingTimeLimit);
 
     if (dbDietFilters.length > 0) {
@@ -314,28 +330,11 @@ export async function POST(request: Request) {
       recipe.ingredients.forEach((ingredient) => neededIngredientIds.add(ingredient.ingredientId));
     });
 
-    // Chunk requests to avoid "URI too long" (HTTP 414) in PostgREST for large sets of unique ingredients
-    const ingredientIdsArray = Array.from(neededIngredientIds);
-    const CHUNK_SIZE = 100;
-    const ingredientRows: any[] = [];
-
-    for (let i = 0; i < ingredientIdsArray.length; i += CHUNK_SIZE) {
-      const chunk = ingredientIdsArray.slice(i, i + CHUNK_SIZE);
-      const { data, error } = await supabase
-        .from("ingredients_reference")
-        .select("id, category, translations, estimatedPricePerUnit")
-        .in("id", chunk);
-
-      if (error) {
-        throw new Error(`Unable to fetch ingredient references chunk: ${error.message}`);
-      }
-      if (data) {
-        ingredientRows.push(...data);
-      }
-    }
+    const ingredientRows = await fetchAllIngredients(supabase);
+    const neededIngredientRows = ingredientRows.filter((row: any) => neededIngredientIds.has(row.id));
 
     // Map DB ingredients to domain IngredientRef schema
-    const ingredients: IngredientRef[] = (ingredientRows || []).map((row: any) => {
+    const ingredients: IngredientRef[] = neededIngredientRows.map((row: any) => {
       const prices = row.estimatedPricePerUnit || {};
       const translations = row.translations || {};
       const unitPrice = prices["EUR"] || prices["USD"] || 0.01;
@@ -374,13 +373,27 @@ export async function POST(request: Request) {
       const selectedMeal = candidateMeals[Math.floor(Math.random() * candidateMeals.length)];
       if (!selectedMeal) throw new Error("No swap meal available");
 
+      // Fetch details for the selected recipe!
+      const { data: detailRows, error: detailError } = await supabase
+        .from("recipes")
+        .select("id, description, steps")
+        .eq("id", selectedMeal.recipeId);
+        
+      if (detailError || !detailRows || detailRows.length === 0) {
+        throw new Error(`Failed to fetch recipe details: ${detailError?.message || "Not found"}`);
+      }
+      
       const dbRecipe = filteredRecipes.find((r) => r.id === selectedMeal.recipeId)!;
+      const details = detailRows[0];
       const calories = getDeterministicCalories(dbRecipe);
       const whyThisMeal = buildWhyThisMeal(dbRecipe, input);
 
+      const tSwap = performance.now();
+      console.log(`[Profiler] Swap generated in: ${(tSwap - t0).toFixed(2)} ms`);
+
       return NextResponse.json(validator.parse({
         title: selectedMeal.title,
-        description: dbRecipe.description || "",
+        description: details.description || "",
         estimatedCost: selectedMeal.estimatedCost,
         calories,
         prepTimeMinutes: selectedMeal.totalTime,
@@ -395,7 +408,7 @@ export async function POST(request: Request) {
           estimatedPrice: ing.estimatedCost,
           category: ing.category,
         })),
-        recipeSteps: (dbRecipe.steps || []).map((s: any) => s.description || s.step || ""),
+        recipeSteps: (details.steps || []).map((s: any) => s.description || s.step || ""),
         category: (dbRecipe.taxonomy as any)?.categories?.[0] || "Dinner",
       }));
     }
@@ -405,16 +418,31 @@ export async function POST(request: Request) {
 
     const t4 = performance.now();
 
+    // Fetch details (description, steps) for the 7 selected recipes in a single query!
+    const selectedIds = generatedPlan.meals.map((m) => m.recipeId);
+    const { data: detailRows, error: detailError } = await supabase
+      .from("recipes")
+      .select("id, description, steps")
+      .in("id", selectedIds);
+      
+    if (detailError || !detailRows) {
+      throw new Error(`Failed to fetch recipe details: ${detailError?.message || "Not found"}`);
+    }
+    
+    // Create a map for quick details lookup
+    const detailsMap = new Map(detailRows.map((row: any) => [row.id, row]));
+
     // Map engine plan to UI planSchema DTO
     const meals = generatedPlan.meals.map((meal, index) => {
       const dbRecipe = filteredRecipes.find((r) => r.id === meal.recipeId)!;
+      const details = detailsMap.get(meal.recipeId) || { description: "", steps: [] };
       const calories = getDeterministicCalories(dbRecipe);
       const whyThisMeal = buildWhyThisMeal(dbRecipe, input);
 
       return {
         day: weekdays[index],
         title: meal.title,
-        description: dbRecipe.description || "",
+        description: details.description || "",
         estimatedCost: meal.estimatedCost,
         calories,
         prepTimeMinutes: meal.totalTime,
@@ -429,7 +457,7 @@ export async function POST(request: Request) {
           estimatedPrice: ing.estimatedCost,
           category: ing.category,
         })),
-        recipeSteps: (dbRecipe.steps || []).map((s: any) => s.description || s.step || ""),
+        recipeSteps: (details.steps || []).map((s: any) => s.description || s.step || ""),
         category: (dbRecipe.taxonomy as any)?.categories?.[0] || "Dinner",
       };
     });
@@ -442,7 +470,7 @@ export async function POST(request: Request) {
     const budgetMessage = totalCost <= input.budgetMax
       ? "Il piano rispetta perfettamente il budget impostato!"
       : `Questo piano supera di poco il tuo budget massimo di €${input.budgetMax} a causa degli ingredienti selezionati.`;
-    console.log("Generated plan:", { totalCost, confidence, budgetMessage, meals });
+    
     const result = {
       estimatedTotal: totalCost,
       estimatedMin: Math.round(totalCost * 0.9 * 100) / 100,
