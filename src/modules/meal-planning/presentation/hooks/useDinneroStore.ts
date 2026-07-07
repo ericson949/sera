@@ -289,4 +289,7 @@ export const useDinneroStore = create<DinneroState>((set, get) => ({
   selectMeal: (meal) => {
     set({ selectedMeal: meal });
   },
+  resetStore: () => {
+    set({ ...SERA_INITIAL_STATE });
+  },
 }));

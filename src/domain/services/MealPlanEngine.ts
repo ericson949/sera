@@ -45,7 +45,7 @@ export interface GeneratedPlan {
   meals: PlannedMeal[];
   targetBudget: number;
   totalCalculatedCost: number;
-  currency: string;
+  currency: "EUR" | "USD";
   isOverBudget: boolean;
 }
 
@@ -115,7 +115,7 @@ export class MealPlanEngine {
 
     // 4. If budget solving still fails, pick the absolute top 7 best-rated meals directly (even if over budget)
     const meals = bestUnderBudget ?? sortedMeals.slice(0, 7);
-    const totalCalculatedCost = roundMoney(meals.reduce((sum, meal) => sum + meal.estimatedCost, 0));
+    const totalCalculatedCost = this.calculatePlanCheckoutCost(meals);
 
     return {
       meals,
@@ -168,30 +168,66 @@ export class MealPlanEngine {
     };
   }
 
-  private findBestUnderBudgetPlan(meals: PlannedMeal[], weeklyBudget: number) {
+  private findBestUnderBudgetPlan(meals: PlannedMeal[], weeklyBudget: number): PlannedMeal[] | null {
+    const targetLength = 7;
     let bestPlan: PlannedMeal[] | null = null;
-    let bestTotal = -1;
 
-    for (let attempt = 0; attempt < 100; attempt++) {
-      const selected: PlannedMeal[] = [];
-      let total = 0;
+    // Prioritize highest-rated meals first
+    const sorted = [...meals].sort((a, b) => b.ratings - a.ratings || b.ratingsCount - a.ratingsCount);
 
-      for (const meal of shuffle(meals)) {
-        if (selected.length === 7) break;
-        const nextTotal = total + meal.estimatedCost;
-        if (nextTotal <= weeklyBudget) {
-          selected.push(meal);
-          total = nextTotal;
+    const backtrack = (startIndex: number, currentSelection: PlannedMeal[]): boolean => {
+      if (currentSelection.length === targetLength) {
+        bestPlan = [...currentSelection];
+        return true; // Found a valid combination, stop search!
+      }
+
+      for (let i = startIndex; i < sorted.length; i++) {
+        const meal = sorted[i];
+        currentSelection.push(meal);
+
+        const cost = this.calculatePlanCheckoutCost(currentSelection);
+        if (cost <= weeklyBudget) {
+          const found = backtrack(i + 1, currentSelection);
+          if (found) return true;
+        }
+
+        currentSelection.pop();
+      }
+      return false;
+    };
+
+    backtrack(0, []);
+    return bestPlan;
+  }
+
+  private calculatePlanCheckoutCost(meals: PlannedMeal[]): number {
+    const groupedQuantities = new Map<string, { quantity: number; unitPrice: number }>();
+    
+    for (const meal of meals) {
+      for (const ing of meal.scaledIngredients) {
+        if (ing.isInPantry) continue;
+        const ref = this.ingredientRefById.get(ing.id);
+        if (!ref) continue;
+        
+        const existing = groupedQuantities.get(ing.id);
+        if (existing) {
+          existing.quantity += ing.quantityValue;
+        } else {
+          groupedQuantities.set(ing.id, {
+            quantity: ing.quantityValue,
+            unitPrice: ref.unitPrice
+          });
         }
       }
-
-      if (selected.length === 7 && total > bestTotal) {
-        bestPlan = selected;
-        bestTotal = total;
-      }
     }
-
-    return bestPlan;
+    
+    let totalCost = 0;
+    for (const [_, item] of groupedQuantities) {
+      const unitsToBuy = Math.ceil(item.quantity);
+      totalCost += unitsToBuy * item.unitPrice;
+    }
+    
+    return roundMoney(totalCost);
   }
 }
 
@@ -209,5 +245,5 @@ function roundMoney(value: number) {
 }
 
 function roundQuantity(value: number) {
-  return Math.ceil(value);
+  return Math.round(value * 1000) / 1000;
 }

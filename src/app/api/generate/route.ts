@@ -58,9 +58,18 @@ function buildShoppingList(meals: any[]): any[] {
   meals.forEach((meal) => {
     (meal.ingredients || []).forEach((ing: any) => {
       const key = ing.name.toLowerCase().trim();
+      const qStr = ing.quantity || "";
+      const match = qStr.trim().match(/^([\d.]+)\s*(.*)$/);
+      const val = match ? parseFloat(match[1]) : 0;
+      const unit = match ? match[2].trim() : "";
+      
       const existing = itemsMap.get(key);
       if (existing) {
-        existing.estimatedPrice = Math.round((existing.estimatedPrice + ing.estimatedPrice) * 100) / 100;
+        if (existing.unit === unit) {
+          existing.quantityValue += val;
+        } else {
+          existing.quantityValue += val;
+        }
         if (!existing.usedInMeals.includes(meal.day)) {
           existing.usedInMeals.push(meal.day);
         }
@@ -68,14 +77,26 @@ function buildShoppingList(meals: any[]): any[] {
         itemsMap.set(key, {
           name: ing.name,
           category: ing.category || "Pantry",
-          quantity: ing.quantity,
-          estimatedPrice: ing.estimatedPrice,
+          unit: unit,
+          quantityValue: val,
+          unitPrice: ing.estimatedPrice / (val || 1),
           usedInMeals: [meal.day],
         });
       }
     });
   });
-  return Array.from(itemsMap.values());
+
+  return Array.from(itemsMap.values()).map((item) => {
+    const roundedQty = Math.ceil(item.quantityValue);
+    const price = Math.round((roundedQty * item.unitPrice) * 100) / 100;
+    return {
+      name: item.name,
+      category: item.category,
+      quantity: `${roundedQty} ${item.unit}`,
+      estimatedPrice: price,
+      usedInMeals: item.usedInMeals,
+    };
+  });
 }
 
 const planSchema = z.object({

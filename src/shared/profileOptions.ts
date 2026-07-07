@@ -12,4 +12,5 @@ export const BETA_RESET_STORAGE_KEYS = [
   "sera_meal_executions",
   "sera_onboarding_draft",
   "sera_welcome_page",
+  "sera_ios_install_dismissed",
 ];

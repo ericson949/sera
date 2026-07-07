@@ -40,15 +40,14 @@ export function buildShoppingList(days: Meal[], previous: ShoppingItem[]): Shopp
   days.forEach((meal) => meal.ingredients.forEach((ingredient) => {
     const key = ingredient.name.trim().toLowerCase();
     const existing = items.get(key);
+    const p = parseQuantity(ingredient.quantity);
+    
     if (existing) {
-      existing.estimatedPrice = createMoney(existing.estimatedPrice.amount + ingredient.estimatedPrice.amount);
       if (!existing.usedInMeals.includes(meal.day)) existing.usedInMeals.push(meal.day);
       
-      // Aggregate quantities if units match
       const p1 = parseQuantity(existing.quantity);
-      const p2 = parseQuantity(ingredient.quantity);
-      if (p1.unit === p2.unit && p1.value > 0 && p2.value > 0) {
-        existing.quantity = `${p1.value + p2.value} ${p1.unit}`;
+      if (p1.unit === p.unit && p1.value > 0 && p.value > 0) {
+        existing.quantity = `${p1.value + p.value} ${p1.unit}`;
       } else {
         existing.quantity = `${existing.quantity} + ${ingredient.quantity}`;
       }
@@ -67,6 +66,19 @@ export function buildShoppingList(days: Meal[], previous: ShoppingItem[]): Shopp
       checked: oldItem?.checked ?? false,
     });
   }));
+
+  // Post-process to round up weekly quantities and compute checkout prices
+  for (const [_, item] of items) {
+    const p = parseQuantity(item.quantity);
+    if (p.unit && p.value > 0) {
+      const unitPrice = item.estimatedPrice.amount / (p.value || 1);
+      const roundedQty = Math.ceil(p.value);
+      const finalPrice = Math.round((roundedQty * unitPrice) * 100) / 100;
+      
+      item.quantity = `${roundedQty} ${p.unit}`;
+      item.estimatedPrice = createMoney(finalPrice);
+    }
+  }
 
   return [...items.values()];
 }

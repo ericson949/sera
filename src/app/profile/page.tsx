@@ -38,6 +38,7 @@ export default function ProfilePage() {
   const clearStoreAndStorage = () => {
     BETA_RESET_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
     localStorage.removeItem("dinnero_locale");
+    useDinneroStore.getState().resetStore();
     window.location.href = "/onboarding";
   };
 
