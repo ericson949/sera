@@ -116,6 +116,7 @@ const planSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const t0 = performance.now();
   let parsedInput: any = null;
   try {
     const bodyJson = await request.json();
@@ -177,6 +178,8 @@ export async function POST(request: Request) {
     if (!recipeRows || recipeRows.length === 0) {
       throw new Error("No recipes found matching the constraints.");
     }
+
+    const t1 = performance.now();
 
     // Filter recipes locally to exclude allergens, guides, sides, desserts, dressings
     let filteredRecipes = recipeRows.filter((r) => {
@@ -303,6 +306,7 @@ export async function POST(request: Request) {
       ratings: Number(row.ratings) || 0,
       ratingsCount: Number(row.ratingsCount) || 0,
     }));
+    const t2 = performance.now();
 
     // 4. Retrieve scaled ingredient reference prices
     const neededIngredientIds = new Set<string>();
@@ -345,6 +349,8 @@ export async function POST(request: Request) {
         unit: "unit", // fallback unit
       };
     });
+
+    const t3 = performance.now();
 
     // 5. Initialize Optimization Engine
     const engine = new MealPlanEngine(recipes, ingredients);
@@ -397,6 +403,8 @@ export async function POST(request: Request) {
     // 7. Action 2: GENERATE FULL WEEKLY PLAN
     const generatedPlan = engine.generatePlan(userPrefs);
 
+    const t4 = performance.now();
+
     // Map engine plan to UI planSchema DTO
     const meals = generatedPlan.meals.map((meal, index) => {
       const dbRecipe = filteredRecipes.find((r) => r.id === meal.recipeId)!;
@@ -443,6 +451,16 @@ export async function POST(request: Request) {
       budgetMessage,
       meals,
     };
+
+    const t5 = performance.now();
+    console.table({
+      "1. Init & Fetch Recipes (Supabase)": `${(t1 - t0).toFixed(2)} ms`,
+      "2. Local Filtering & Mapping": `${(t2 - t1).toFixed(2)} ms`,
+      "3. Fetch Ingredients References (Supabase)": `${(t3 - t2).toFixed(2)} ms`,
+      "4. Optimization Algorithm (Backtracking)": `${(t4 - t3).toFixed(2)} ms`,
+      "5. DTO Mapping & Formatting": `${(t5 - t4).toFixed(2)} ms`,
+      "Total Execution Time": `${(t5 - t0).toFixed(2)} ms`
+    });
 
     return NextResponse.json(validator.parse(result));
   } catch (error: any) {
