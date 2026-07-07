@@ -178,7 +178,7 @@ export async function POST(request: Request) {
       throw new Error("No recipes found matching the constraints.");
     }
 
-    // Filter recipes locally to exclude allergens and cakes/desserts
+    // Filter recipes locally to exclude allergens, guides, sides, desserts, dressings
     let filteredRecipes = recipeRows.filter((r) => {
       // 1. Exclude allergens
       const recipeAllergens = r.allergens as string[] | null;
@@ -186,16 +186,20 @@ export async function POST(request: Request) {
         return false;
       }
 
-      // 2. Exclude desserts / cakes / breakfasts
       const taxonomy = r.taxonomy || {};
-      const mealTypes = taxonomy.mealType || [];
-      const categories = taxonomy.categories || [];
-      const title = (r.title || "").toLowerCase();
+      const mealTypes = ((taxonomy.mealType || []) as string[]).map((m) => m.toLowerCase().trim());
+      const categories = ((taxonomy.categories || []) as string[]).map((c) => c.toLowerCase().trim());
+      const title = (r.title || "").toLowerCase().trim();
 
-      const hasDessertCategory = categories.some((c: string) => 
-        c.includes("dessert") || c.includes("cake") || c.includes("sweet") || c.includes("biscuit") || c.includes("cookie")
+      // 2. Exclude "how to" guides / tutorials
+      if (title.startsWith("how to ") || title.includes("how to ") || categories.includes("how-to") || categories.includes("good-to-know")) {
+        return false;
+      }
+
+      // 3. Exclude desserts / cakes / sweets
+      const hasDessertCategory = categories.some((c) => 
+        c.includes("dessert") || c.includes("cake") || c.includes("sweet") || c.includes("biscuit") || c.includes("cookie") || c.includes("pastry")
       );
-
       const hasCakeInTitle = title.includes("cake") || 
                              title.includes("gateau") || 
                              title.includes("gâteau") || 
@@ -204,13 +208,48 @@ export async function POST(request: Request) {
                              title.includes("brownie") || 
                              title.includes("waffle") || 
                              title.includes("pancake") || 
-                             title.includes("pudding");
+                             title.includes("pudding") ||
+                             title.includes("tiramisu") ||
+                             title.includes("tart") ||
+                             title.includes("tarte") ||
+                             title.includes("pie") ||
+                             title.includes("biscuit") ||
+                             title.includes("brownies") ||
+                             title.includes("cookies") ||
+                             title.includes("muffins");
 
       if (hasDessertCategory || hasCakeInTitle) {
         return false;
       }
 
-      // 3. Keep only dinner/main_course if meal types are explicitly defined
+      // 4. Exclude dressings, sauces, dips, marinades, condiments
+      const hasSauceKeyword = categories.some((c) => 
+        c.includes("sauces") || c.includes("dressings") || c.includes("condiments") || c.includes("marinade")
+      );
+      const hasSauceInTitle = title.includes("dressing") || 
+                              title.includes("sauce") || 
+                              title.includes("marinade") || 
+                              title.includes("gravy") || 
+                              title.includes("pesto") || 
+                              title.includes("vinaigrette") || 
+                              title.includes("condiment");
+      // Exception: allow curry/pasta/stir-fry dishes that contain "sauce" in description or name but are main dishes
+      if (hasSauceKeyword || (hasSauceInTitle && !title.includes("pasta") && !title.includes("chicken") && !title.includes("beef") && !title.includes("curry"))) {
+        return false;
+      }
+
+      // 5. Exclude sides / side-dishes unless explicitly tagged as main_course or dinner
+      const isSideDish = categories.some((c) => 
+        c.includes("side-dishes") || c.includes("sides") || c.includes("all-vegetable-sides")
+      );
+      const hasSideInTitle = title.includes("side dish") || title.endsWith(" side");
+      const isExplicitMain = mealTypes.includes("dinner") || mealTypes.includes("main_course");
+
+      if ((isSideDish || hasSideInTitle) && !isExplicitMain) {
+        return false;
+      }
+
+      // 6. Strict meal type validation: if mealTypes is defined and not empty, it MUST contain dinner or main_course
       if (mealTypes.length > 0 && !mealTypes.includes("dinner") && !mealTypes.includes("main_course")) {
         return false;
       }
