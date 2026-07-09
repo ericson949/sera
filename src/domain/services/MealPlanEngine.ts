@@ -95,8 +95,14 @@ export class MealPlanEngine {
 
     const candidateMeals = candidateRecipes.map((recipe) => this.calculateRecipeCost(recipe, preferences));
     
-    // Sort all candidate meals by ratings desc, ratingsCount desc
-    const sortedMeals = [...candidateMeals].sort((a, b) => b.ratings - a.ratings || b.ratingsCount - a.ratingsCount);
+    // Map candidate meals with a small random jitter to ratings to vary the search order on each generation
+    const sortedMeals = [...candidateMeals]
+      .map((meal) => ({
+        meal,
+        score: meal.ratings + (Math.random() - 0.5) * 0.4, // Jitter of ±0.2 stars
+      }))
+      .sort((a, b) => b.score - a.score || b.meal.ratingsCount - a.meal.ratingsCount)
+      .map((item) => item.meal);
 
     // 1. Try to find a plan within the top 15 highest-rated meals first
     const top15Pool = sortedMeals.slice(0, Math.min(sortedMeals.length, 15));
@@ -113,8 +119,8 @@ export class MealPlanEngine {
       bestUnderBudget = this.findBestUnderBudgetPlan(sortedMeals, preferences.weeklyBudget);
     }
 
-    // 4. If budget solving still fails, pick the absolute top 7 best-rated meals directly (even if over budget)
-    const meals = bestUnderBudget ?? sortedMeals.slice(0, 7);
+    // 4. If budget solving still fails, pick the 7 cheapest meals to respect budget as much as possible
+    const meals = bestUnderBudget ?? [...candidateMeals].sort((a, b) => a.estimatedCost - b.estimatedCost).slice(0, 7);
     const totalCalculatedCost = this.calculatePlanCheckoutCost(meals);
 
     return {
@@ -170,15 +176,15 @@ export class MealPlanEngine {
 
   private findBestUnderBudgetPlan(meals: PlannedMeal[], weeklyBudget: number): PlannedMeal[] | null {
     const targetLength = 7;
-    let bestPlan: PlannedMeal[] | null = null;
+    const validPlans: PlannedMeal[][] = [];
 
-    // Prioritize highest-rated meals first
-    const sorted = [...meals].sort((a, b) => b.ratings - a.ratings || b.ratingsCount - a.ratingsCount);
+    // Keep the incoming jittered sort order
+    const sorted = [...meals];
 
     const backtrack = (startIndex: number, currentSelection: PlannedMeal[]): boolean => {
       if (currentSelection.length === targetLength) {
-        bestPlan = [...currentSelection];
-        return true; // Found a valid combination, stop search!
+        validPlans.push([...currentSelection]);
+        return validPlans.length >= 10; // Stop searching once we have 10 valid plans
       }
 
       for (let i = startIndex; i < sorted.length; i++) {
@@ -187,8 +193,8 @@ export class MealPlanEngine {
 
         const cost = this.calculatePlanCheckoutCost(currentSelection);
         if (cost <= weeklyBudget) {
-          const found = backtrack(i + 1, currentSelection);
-          if (found) return true;
+          const stop = backtrack(i + 1, currentSelection);
+          if (stop) return true;
         }
 
         currentSelection.pop();
@@ -197,7 +203,10 @@ export class MealPlanEngine {
     };
 
     backtrack(0, []);
-    return bestPlan;
+
+    if (validPlans.length === 0) return null;
+    const randomIndex = Math.floor(Math.random() * validPlans.length);
+    return validPlans[randomIndex];
   }
 
   private calculatePlanCheckoutCost(meals: PlannedMeal[]): number {

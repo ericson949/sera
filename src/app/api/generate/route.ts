@@ -21,7 +21,7 @@ async function fetchAllIngredients(supabase: any): Promise<any[]> {
     throw new Error(`Unable to fetch ingredients reference: ${error.message}`);
   }
   cachedIngredientRows = data || [];
-  return cachedIngredientRows;
+  return cachedIngredientRows as any[];
 }
 
 const inputSchema = z.object({
