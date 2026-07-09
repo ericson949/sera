@@ -180,9 +180,12 @@ export class MealPlanEngine {
     // Shuffle the candidate pool to ensure maximum variety on each generation
     const shuffled = [...meals].sort(() => Math.random() - 0.5);
 
-    const backtrack = (startIndex: number, currentSelection: PlannedMeal[]): PlannedMeal[] | null => {
+    const validPlans: PlannedMeal[][] = [];
+
+    const backtrack = (startIndex: number, currentSelection: PlannedMeal[]): boolean => {
       if (currentSelection.length === targetLength) {
-        return [...currentSelection];
+        validPlans.push([...currentSelection]);
+        return validPlans.length >= 30; // Collect up to 30 valid plans
       }
 
       for (let i = startIndex; i < shuffled.length; i++) {
@@ -191,16 +194,46 @@ export class MealPlanEngine {
 
         const cost = this.calculatePlanCheckoutCost(currentSelection);
         if (cost <= weeklyBudget) {
-          const found = backtrack(i + 1, currentSelection);
-          if (found) return found;
+          const stop = backtrack(i + 1, currentSelection);
+          if (stop) return true;
         }
 
         currentSelection.pop();
       }
-      return null;
+      return false;
     };
 
-    return backtrack(0, []);
+    backtrack(0, []);
+
+    if (validPlans.length === 0) return null;
+
+    // Helper to count unique ingredients to buy for a plan
+    const getUniqueIngredientCount = (planMeals: PlannedMeal[]): number => {
+      const uniqueIds = new Set<string>();
+      for (const m of planMeals) {
+        for (const ing of m.scaledIngredients) {
+          if (!ing.isInPantry) {
+            uniqueIds.add(ing.id);
+          }
+        }
+      }
+      return uniqueIds.size;
+    };
+
+    // Find the plan with the minimum number of unique ingredients to buy
+    let bestPlan = validPlans[0];
+    let minIngredients = getUniqueIngredientCount(bestPlan);
+
+    for (let i = 1; i < validPlans.length; i++) {
+      const plan = validPlans[i];
+      const count = getUniqueIngredientCount(plan);
+      if (count < minIngredients) {
+        minIngredients = count;
+        bestPlan = plan;
+      }
+    }
+
+    return bestPlan;
   }
 
   private calculatePlanCheckoutCost(meals: PlannedMeal[]): number {
