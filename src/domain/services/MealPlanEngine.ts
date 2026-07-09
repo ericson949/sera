@@ -39,6 +39,7 @@ export interface PlannedMeal {
   scaledIngredients: ScaledIngredient[];
   ratings: number;
   ratingsCount: number;
+  vibes: string[];
 }
 
 export interface GeneratedPlan {
@@ -101,12 +102,19 @@ export class MealPlanEngine {
       throw new Error("Not enough candidate recipes with valid ingredient references to generate a weekly meal plan.");
     }
 
-    // Map candidate meals with a small random jitter to ratings to vary the search order on each generation
+    // Map candidate meals with a small random jitter and a soft vibe priority bonus to vary the search order
     const sortedMeals = [...candidateMeals]
-      .map((meal) => ({
-        meal,
-        score: meal.ratings + (Math.random() - 0.5) * 0.4, // Jitter of ±0.2 stars
-      }))
+      .map((meal) => {
+        const hasMatchingVibe = preferences.vibes && preferences.vibes.length > 0
+          ? meal.vibes.some((vibe) => preferences.vibes.includes(vibe))
+          : false;
+        const vibeBonus = hasMatchingVibe ? 0.5 : 0.0;
+
+        return {
+          meal,
+          score: meal.ratings + vibeBonus + (Math.random() - 0.5) * 0.4, // Jitter of ±0.2 stars
+        };
+      })
       .sort((a, b) => b.score - a.score || b.meal.ratingsCount - a.meal.ratingsCount)
       .map((item) => item.meal);
 
@@ -180,6 +188,7 @@ export class MealPlanEngine {
       scaledIngredients,
       ratings: recipe.ratings || 0,
       ratingsCount: recipe.ratingsCount || 0,
+      vibes: recipe.vibes || [],
     };
   }
 
