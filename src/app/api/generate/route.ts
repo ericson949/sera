@@ -462,7 +462,7 @@ export async function POST(request: Request) {
       };
     });
 
-    const totalCost = generatedPlan.totalCalculatedCost;
+    const totalCost = Math.round(meals.reduce((sum, m) => sum + m.estimatedCost, 0) * 100) / 100;
     const confidence = totalCost <= input.budgetMax 
       ? Math.min(100, 85 + Math.floor(Math.random() * 15))
       : Math.max(50, Math.round(100 - ((totalCost - input.budgetMax) / input.budgetMax) * 100));
