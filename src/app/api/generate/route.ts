@@ -8,6 +8,22 @@ import { captureServerException } from "@/shared/observability/posthogServer";
 const mockAIService = new MockMealPlanAIService();
 const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
 
+let cachedIngredientRows: any[] | null = null;
+
+async function fetchAllIngredients(supabase: any): Promise<any[]> {
+  if (cachedIngredientRows && cachedIngredientRows.length > 0) {
+    return cachedIngredientRows;
+  }
+  const { data, error } = await supabase
+    .from("ingredients_reference")
+    .select("id, category, translations, estimatedPricePerUnit");
+  if (error) {
+    throw new Error(`Unable to fetch ingredients reference: ${error.message}`);
+  }
+  cachedIngredientRows = data || [];
+  return cachedIngredientRows as any[];
+}
+
 const inputSchema = z.object({
   userId: z.string().optional(),
   shop: z.string(),
@@ -58,9 +74,18 @@ function buildShoppingList(meals: any[]): any[] {
   meals.forEach((meal) => {
     (meal.ingredients || []).forEach((ing: any) => {
       const key = ing.name.toLowerCase().trim();
+      const qStr = ing.quantity || "";
+      const match = qStr.trim().match(/^([\d.]+)\s*(.*)$/);
+      const val = match ? parseFloat(match[1]) : 0;
+      const unit = match ? match[2].trim() : "";
+      
       const existing = itemsMap.get(key);
       if (existing) {
-        existing.estimatedPrice = Math.round((existing.estimatedPrice + ing.estimatedPrice) * 100) / 100;
+        if (existing.unit === unit) {
+          existing.quantityValue += val;
+        } else {
+          existing.quantityValue += val;
+        }
         if (!existing.usedInMeals.includes(meal.day)) {
           existing.usedInMeals.push(meal.day);
         }
@@ -68,14 +93,26 @@ function buildShoppingList(meals: any[]): any[] {
         itemsMap.set(key, {
           name: ing.name,
           category: ing.category || "Pantry",
-          quantity: ing.quantity,
-          estimatedPrice: ing.estimatedPrice,
+          unit: unit,
+          quantityValue: val,
+          unitPrice: ing.estimatedPrice / (val || 1),
           usedInMeals: [meal.day],
         });
       }
     });
   });
-  return Array.from(itemsMap.values());
+
+  return Array.from(itemsMap.values()).map((item) => {
+    const roundedQty = Math.ceil(item.quantityValue);
+    const price = Math.round((roundedQty * item.unitPrice) * 100) / 100;
+    return {
+      name: item.name,
+      category: item.category,
+      quantity: `${roundedQty} ${item.unit}`,
+      estimatedPrice: price,
+      usedInMeals: item.usedInMeals,
+    };
+  });
 }
 
 const planSchema = z.object({
@@ -95,6 +132,7 @@ const planSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const t0 = performance.now();
   let parsedInput: any = null;
   try {
     const bodyJson = await request.json();
@@ -141,7 +179,7 @@ export async function POST(request: Request) {
     // 3. Query matching recipes from Database
     let query = supabase
       .from("recipes")
-      .select("id, title, description, imageUrl, prepTime, cookTime, totalTime, defaultServings, ingredients, steps, allergens, diet, taxonomy, ratings, ratingsCount")
+      .select("id, title, imageUrl, prepTime, cookTime, totalTime, defaultServings, ingredients, allergens, diet, taxonomy, ratings, ratingsCount")
       .lte("totalTime", cookingTimeLimit);
 
     if (dbDietFilters.length > 0) {
@@ -157,7 +195,9 @@ export async function POST(request: Request) {
       throw new Error("No recipes found matching the constraints.");
     }
 
-    // Filter recipes locally to exclude allergens and cakes/desserts
+    const t1 = performance.now();
+
+    // Filter recipes locally to exclude allergens, guides, sides, desserts, dressings
     let filteredRecipes = recipeRows.filter((r) => {
       // 1. Exclude allergens
       const recipeAllergens = r.allergens as string[] | null;
@@ -165,16 +205,20 @@ export async function POST(request: Request) {
         return false;
       }
 
-      // 2. Exclude desserts / cakes / breakfasts
       const taxonomy = r.taxonomy || {};
-      const mealTypes = taxonomy.mealType || [];
-      const categories = taxonomy.categories || [];
-      const title = (r.title || "").toLowerCase();
+      const mealTypes = ((taxonomy.mealType || []) as string[]).map((m) => m.toLowerCase().trim());
+      const categories = ((taxonomy.categories || []) as string[]).map((c) => c.toLowerCase().trim());
+      const title = (r.title || "").toLowerCase().trim();
 
-      const hasDessertCategory = categories.some((c: string) => 
-        c.includes("dessert") || c.includes("cake") || c.includes("sweet") || c.includes("biscuit") || c.includes("cookie")
+      // 2. Exclude "how to" guides / tutorials
+      if (title.startsWith("how to ") || title.includes("how to ") || categories.includes("how-to") || categories.includes("good-to-know")) {
+        return false;
+      }
+
+      // 3. Exclude desserts / cakes / sweets
+      const hasDessertCategory = categories.some((c) => 
+        c.includes("dessert") || c.includes("cake") || c.includes("sweet") || c.includes("biscuit") || c.includes("cookie") || c.includes("pastry")
       );
-
       const hasCakeInTitle = title.includes("cake") || 
                              title.includes("gateau") || 
                              title.includes("gâteau") || 
@@ -183,13 +227,48 @@ export async function POST(request: Request) {
                              title.includes("brownie") || 
                              title.includes("waffle") || 
                              title.includes("pancake") || 
-                             title.includes("pudding");
+                             title.includes("pudding") ||
+                             title.includes("tiramisu") ||
+                             title.includes("tart") ||
+                             title.includes("tarte") ||
+                             title.includes("pie") ||
+                             title.includes("biscuit") ||
+                             title.includes("brownies") ||
+                             title.includes("cookies") ||
+                             title.includes("muffins");
 
       if (hasDessertCategory || hasCakeInTitle) {
         return false;
       }
 
-      // 3. Keep only dinner/main_course if meal types are explicitly defined
+      // 4. Exclude dressings, sauces, dips, marinades, condiments
+      const hasSauceKeyword = categories.some((c) => 
+        c.includes("sauces") || c.includes("dressings") || c.includes("condiments") || c.includes("marinade")
+      );
+      const hasSauceInTitle = title.includes("dressing") || 
+                              title.includes("sauce") || 
+                              title.includes("marinade") || 
+                              title.includes("gravy") || 
+                              title.includes("pesto") || 
+                              title.includes("vinaigrette") || 
+                              title.includes("condiment");
+      // Exception: allow curry/pasta/stir-fry dishes that contain "sauce" in description or name but are main dishes
+      if (hasSauceKeyword || (hasSauceInTitle && !title.includes("pasta") && !title.includes("chicken") && !title.includes("beef") && !title.includes("curry"))) {
+        return false;
+      }
+
+      // 5. Exclude sides / side-dishes unless explicitly tagged as main_course or dinner
+      const isSideDish = categories.some((c) => 
+        c.includes("side-dishes") || c.includes("sides") || c.includes("all-vegetable-sides")
+      );
+      const hasSideInTitle = title.includes("side dish") || title.endsWith(" side");
+      const isExplicitMain = mealTypes.includes("dinner") || mealTypes.includes("main_course");
+
+      if ((isSideDish || hasSideInTitle) && !isExplicitMain) {
+        return false;
+      }
+
+      // 6. Strict meal type validation: if mealTypes is defined and not empty, it MUST contain dinner or main_course
       if (mealTypes.length > 0 && !mealTypes.includes("dinner") && !mealTypes.includes("main_course")) {
         return false;
       }
@@ -243,6 +322,7 @@ export async function POST(request: Request) {
       ratings: Number(row.ratings) || 0,
       ratingsCount: Number(row.ratingsCount) || 0,
     }));
+    const t2 = performance.now();
 
     // 4. Retrieve scaled ingredient reference prices
     const neededIngredientIds = new Set<string>();
@@ -250,28 +330,11 @@ export async function POST(request: Request) {
       recipe.ingredients.forEach((ingredient) => neededIngredientIds.add(ingredient.ingredientId));
     });
 
-    // Chunk requests to avoid "URI too long" (HTTP 414) in PostgREST for large sets of unique ingredients
-    const ingredientIdsArray = Array.from(neededIngredientIds);
-    const CHUNK_SIZE = 100;
-    const ingredientRows: any[] = [];
-
-    for (let i = 0; i < ingredientIdsArray.length; i += CHUNK_SIZE) {
-      const chunk = ingredientIdsArray.slice(i, i + CHUNK_SIZE);
-      const { data, error } = await supabase
-        .from("ingredients_reference")
-        .select("id, category, translations, estimatedPricePerUnit")
-        .in("id", chunk);
-
-      if (error) {
-        throw new Error(`Unable to fetch ingredient references chunk: ${error.message}`);
-      }
-      if (data) {
-        ingredientRows.push(...data);
-      }
-    }
+    const ingredientRows = await fetchAllIngredients(supabase);
+    const neededIngredientRows = ingredientRows.filter((row: any) => neededIngredientIds.has(row.id));
 
     // Map DB ingredients to domain IngredientRef schema
-    const ingredients: IngredientRef[] = (ingredientRows || []).map((row: any) => {
+    const ingredients: IngredientRef[] = neededIngredientRows.map((row: any) => {
       const prices = row.estimatedPricePerUnit || {};
       const translations = row.translations || {};
       const unitPrice = prices["EUR"] || prices["USD"] || 0.01;
@@ -285,6 +348,8 @@ export async function POST(request: Request) {
         unit: "unit", // fallback unit
       };
     });
+
+    const t3 = performance.now();
 
     // 5. Initialize Optimization Engine
     const engine = new MealPlanEngine(recipes, ingredients);
@@ -308,13 +373,27 @@ export async function POST(request: Request) {
       const selectedMeal = candidateMeals[Math.floor(Math.random() * candidateMeals.length)];
       if (!selectedMeal) throw new Error("No swap meal available");
 
+      // Fetch details for the selected recipe!
+      const { data: detailRows, error: detailError } = await supabase
+        .from("recipes")
+        .select("id, description, steps")
+        .eq("id", selectedMeal.recipeId);
+        
+      if (detailError || !detailRows || detailRows.length === 0) {
+        throw new Error(`Failed to fetch recipe details: ${detailError?.message || "Not found"}`);
+      }
+      
       const dbRecipe = filteredRecipes.find((r) => r.id === selectedMeal.recipeId)!;
+      const details = detailRows[0];
       const calories = getDeterministicCalories(dbRecipe);
       const whyThisMeal = buildWhyThisMeal(dbRecipe, input);
 
+      const tSwap = performance.now();
+      console.log(`[Profiler] Swap generated in: ${(tSwap - t0).toFixed(2)} ms`);
+
       return NextResponse.json(validator.parse({
         title: selectedMeal.title,
-        description: dbRecipe.description || "",
+        description: details.description || "",
         estimatedCost: selectedMeal.estimatedCost,
         calories,
         prepTimeMinutes: selectedMeal.totalTime,
@@ -329,7 +408,7 @@ export async function POST(request: Request) {
           estimatedPrice: ing.estimatedCost,
           category: ing.category,
         })),
-        recipeSteps: (dbRecipe.steps || []).map((s: any) => s.description || s.step || ""),
+        recipeSteps: (details.steps || []).map((s: any) => s.description || s.step || ""),
         category: (dbRecipe.taxonomy as any)?.categories?.[0] || "Dinner",
       }));
     }
@@ -337,16 +416,33 @@ export async function POST(request: Request) {
     // 7. Action 2: GENERATE FULL WEEKLY PLAN
     const generatedPlan = engine.generatePlan(userPrefs);
 
+    const t4 = performance.now();
+
+    // Fetch details (description, steps) for the 7 selected recipes in a single query!
+    const selectedIds = generatedPlan.meals.map((m) => m.recipeId);
+    const { data: detailRows, error: detailError } = await supabase
+      .from("recipes")
+      .select("id, description, steps")
+      .in("id", selectedIds);
+      
+    if (detailError || !detailRows) {
+      throw new Error(`Failed to fetch recipe details: ${detailError?.message || "Not found"}`);
+    }
+    
+    // Create a map for quick details lookup
+    const detailsMap = new Map(detailRows.map((row: any) => [row.id, row]));
+
     // Map engine plan to UI planSchema DTO
     const meals = generatedPlan.meals.map((meal, index) => {
       const dbRecipe = filteredRecipes.find((r) => r.id === meal.recipeId)!;
+      const details = detailsMap.get(meal.recipeId) || { description: "", steps: [] };
       const calories = getDeterministicCalories(dbRecipe);
       const whyThisMeal = buildWhyThisMeal(dbRecipe, input);
 
       return {
         day: weekdays[index],
         title: meal.title,
-        description: dbRecipe.description || "",
+        description: details.description || "",
         estimatedCost: meal.estimatedCost,
         calories,
         prepTimeMinutes: meal.totalTime,
@@ -361,12 +457,12 @@ export async function POST(request: Request) {
           estimatedPrice: ing.estimatedCost,
           category: ing.category,
         })),
-        recipeSteps: (dbRecipe.steps || []).map((s: any) => s.description || s.step || ""),
+        recipeSteps: (details.steps || []).map((s: any) => s.description || s.step || ""),
         category: (dbRecipe.taxonomy as any)?.categories?.[0] || "Dinner",
       };
     });
 
-    const totalCost = generatedPlan.totalCalculatedCost;
+    const totalCost = Math.round(meals.reduce((sum, m) => sum + m.estimatedCost, 0) * 100) / 100;
     const confidence = totalCost <= input.budgetMax 
       ? Math.min(100, 85 + Math.floor(Math.random() * 15))
       : Math.max(50, Math.round(100 - ((totalCost - input.budgetMax) / input.budgetMax) * 100));
@@ -374,7 +470,7 @@ export async function POST(request: Request) {
     const budgetMessage = totalCost <= input.budgetMax
       ? "Il piano rispetta perfettamente il budget impostato!"
       : `Questo piano supera di poco il tuo budget massimo di €${input.budgetMax} a causa degli ingredienti selezionati.`;
-    console.log("Generated plan:", { totalCost, confidence, budgetMessage, meals });
+    
     const result = {
       estimatedTotal: totalCost,
       estimatedMin: Math.round(totalCost * 0.9 * 100) / 100,
@@ -383,6 +479,16 @@ export async function POST(request: Request) {
       budgetMessage,
       meals,
     };
+
+    const t5 = performance.now();
+    console.table({
+      "1. Init & Fetch Recipes (Supabase)": `${(t1 - t0).toFixed(2)} ms`,
+      "2. Local Filtering & Mapping": `${(t2 - t1).toFixed(2)} ms`,
+      "3. Fetch Ingredients References (Supabase)": `${(t3 - t2).toFixed(2)} ms`,
+      "4. Optimization Algorithm (Backtracking)": `${(t4 - t3).toFixed(2)} ms`,
+      "5. DTO Mapping & Formatting": `${(t5 - t4).toFixed(2)} ms`,
+      "Total Execution Time": `${(t5 - t0).toFixed(2)} ms`
+    });
 
     return NextResponse.json(validator.parse(result));
   } catch (error: any) {

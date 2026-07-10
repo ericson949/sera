@@ -59,4 +59,5 @@ export interface DinneroState {
   closePaywall: () => void;
   openPaywall: () => void;
   selectMeal: (meal: Meal | null) => void;
+  resetStore: () => void;
 }

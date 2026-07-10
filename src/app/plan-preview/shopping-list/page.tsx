@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, Check, ShoppingBag } from "lucide-react";
 import { useDinneroStore } from "@/modules/meal-planning/presentation/hooks/useDinneroStore";
 import { ShoppingCategory } from "@/modules/meal-planning/domain/value-objects/ShoppingCategory";
-import { formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
+import { createMoney, formatMoney } from "@/modules/meal-planning/domain/value-objects/Money";
 import { getProductCopy } from "@/shared/seraProductCopy";
 
 const categories: ShoppingCategory[] = ["Vegetables", "Meat & Fish", "Dairy", "Pantry", "Frozen", "Spices", "Other"];
@@ -27,6 +27,9 @@ export default function PreviewShoppingListPage() {
   }
 
   const checkedCount = activePlan.shoppingList.filter((item) => item.checked).length;
+  const listTotal = activePlan.shoppingList.reduce((sum, item) => sum + item.estimatedPrice.amount, 0);
+  const checkedTotal = activePlan.shoppingList.reduce((sum, item) => sum + (item.checked ? item.estimatedPrice.amount : 0), 0);
+  const remainingTotal = Math.max(0, listTotal - checkedTotal);
 
   return (
     <div className="flex h-svh flex-col bg-background p-5">
@@ -38,6 +41,12 @@ export default function PreviewShoppingListPage() {
         <p className="editorial-kicker">{copy.guide}</p>
         <h1 className="mt-2 font-serif text-[40px] leading-[41px] text-foreground">{copy.titleA}<br />{copy.titleB}</h1>
         <p className="mt-2 text-sm text-muted">{activePlan.shop} - {checkedCount}/{activePlan.shoppingList.length} {copy.gathered}</p>
+        <div className="mt-4 flex gap-2">
+          {remainingTotal > 0 && (
+            <TotalCell label={copy.remaining} value={formatMoney(createMoney(remainingTotal))} accent />
+          )}
+          <TotalCell label={copy.total} value={formatMoney(createMoney(listTotal))} dark />
+        </div>
       </header>
 
       <section className="min-h-0 flex-1 overflow-y-auto no-scrollbar">
@@ -77,6 +86,15 @@ export default function PreviewShoppingListPage() {
           })}
         </div>
       </section>
+    </div>
+  );
+}
+
+function TotalCell({ label, value, accent, dark }: { label: string; value: string; accent?: boolean; dark?: boolean }) {
+  return (
+    <div className={`rounded-[1.1rem] px-3 py-2.5 flex-1 ${dark ? "bg-primary text-white" : accent ? "bg-card shadow-sm" : "bg-surface-container-low"}`}>
+      <p className={`text-[10px] font-bold uppercase tracking-[0.14em] ${dark ? "text-white/70" : "text-muted"}`}>{label}</p>
+      <p className={`mt-1 font-serif text-xl leading-none ${dark ? "" : accent ? "text-primary" : "text-foreground"}`}>{value}</p>
     </div>
   );
 }

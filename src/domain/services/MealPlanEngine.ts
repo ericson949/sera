@@ -39,13 +39,14 @@ export interface PlannedMeal {
   scaledIngredients: ScaledIngredient[];
   ratings: number;
   ratingsCount: number;
+  vibes: string[];
 }
 
 export interface GeneratedPlan {
   meals: PlannedMeal[];
   targetBudget: number;
   totalCalculatedCost: number;
-  currency: string;
+  currency: "EUR" | "USD";
   isOverBudget: boolean;
 }
 
@@ -93,29 +94,49 @@ export class MealPlanEngine {
       throw new Error("Not enough candidate recipes to generate a weekly meal plan.");
     }
 
-    const candidateMeals = candidateRecipes.map((recipe) => this.calculateRecipeCost(recipe, preferences));
+    const candidateMeals = candidateRecipes
+      .map((recipe) => this.calculateRecipeCost(recipe, preferences))
+      .filter((meal): meal is PlannedMeal => meal !== null);
     
-    // Sort all candidate meals by ratings desc, ratingsCount desc
-    const sortedMeals = [...candidateMeals].sort((a, b) => b.ratings - a.ratings || b.ratingsCount - a.ratingsCount);
-
-    // 1. Try to find a plan within the top 15 highest-rated meals first
-    const top15Pool = sortedMeals.slice(0, Math.min(sortedMeals.length, 15));
-    let bestUnderBudget = this.findBestUnderBudgetPlan(top15Pool, preferences.weeklyBudget);
-
-    // 2. If that fails, expand pool to the top 25 highest-rated meals
-    if (!bestUnderBudget && sortedMeals.length > 15) {
-      const top25Pool = sortedMeals.slice(0, Math.min(sortedMeals.length, 25));
-      bestUnderBudget = this.findBestUnderBudgetPlan(top25Pool, preferences.weeklyBudget);
+    if (candidateMeals.length < 7) {
+      throw new Error("Not enough candidate recipes with valid ingredient references to generate a weekly meal plan.");
     }
 
-    // 3. If that also fails, fall back to searching all candidates
-    if (!bestUnderBudget && sortedMeals.length > 25) {
-      bestUnderBudget = this.findBestUnderBudgetPlan(sortedMeals, preferences.weeklyBudget);
+    // Map candidate meals with a small random jitter and a soft vibe priority bonus to vary the search order
+    const sortedMeals = [...candidateMeals]
+      .map((meal) => {
+        const hasMatchingVibe = preferences.vibes && preferences.vibes.length > 0
+          ? meal.vibes.some((vibe) => preferences.vibes.includes(vibe))
+          : false;
+        const vibeBonus = hasMatchingVibe ? 0.5 : 0.0;
+
+        return {
+          meal,
+          score: meal.ratings + vibeBonus + (Math.random() - 0.5) * 0.4, // Jitter of ±0.2 stars
+        };
+      })
+      .sort((a, b) => b.score - a.score || b.meal.ratingsCount - a.meal.ratingsCount)
+      .map((item) => item.meal);
+
+    // 1. Try to find a plan within the top 30 highest-rated meals first
+    const top30Pool = sortedMeals.slice(0, Math.min(sortedMeals.length, 30));
+    let bestUnderBudget = this.findBestUnderBudgetPlan(top30Pool, preferences.weeklyBudget);
+
+    // 2. If that fails, expand pool to the top 50 highest-rated meals
+    if (!bestUnderBudget && sortedMeals.length > 30) {
+      const top50Pool = sortedMeals.slice(0, Math.min(sortedMeals.length, 50));
+      bestUnderBudget = this.findBestUnderBudgetPlan(top50Pool, preferences.weeklyBudget);
     }
 
-    // 4. If budget solving still fails, pick the absolute top 7 best-rated meals directly (even if over budget)
-    const meals = bestUnderBudget ?? sortedMeals.slice(0, 7);
-    const totalCalculatedCost = roundMoney(meals.reduce((sum, meal) => sum + meal.estimatedCost, 0));
+    // 3. If that also fails, fall back to searching a larger pool capped at 80
+    if (!bestUnderBudget && sortedMeals.length > 50) {
+      const top80Pool = sortedMeals.slice(0, Math.min(sortedMeals.length, 80));
+      bestUnderBudget = this.findBestUnderBudgetPlan(top80Pool, preferences.weeklyBudget);
+    }
+
+    // 4. If budget solving still fails, pick the 7 cheapest meals to respect budget as much as possible
+    const meals = bestUnderBudget ?? [...candidateMeals].sort((a, b) => a.estimatedCost - b.estimatedCost).slice(0, 7);
+    const totalCalculatedCost = this.calculatePlanCheckoutCost(meals);
 
     return {
       meals,
@@ -132,20 +153,22 @@ export class MealPlanEngine {
     return !recipe.allergens.some((allergen) => preferences.allergens.includes(allergen));
   }
 
-  private calculateRecipeCost(recipe: Recipe, preferences: UserPreferences): PlannedMeal {
-    const scaleFactor = preferences.householdSize / recipe.defaultServings;
+  private calculateRecipeCost(recipe: Recipe, preferences: UserPreferences): PlannedMeal | null {
+    const scaleFactor = preferences.householdSize / (recipe.defaultServings || 4);
 
-    const scaledIngredients = recipe.ingredients.map((ingredient) => {
+    const scaledIngredients: ScaledIngredient[] = [];
+    for (const ingredient of recipe.ingredients) {
       const reference = this.ingredientRefById.get(ingredient.ingredientId);
       if (!reference) {
-        throw new Error(`Missing ingredient reference for ${ingredient.ingredientId}.`);
+        // Safe fallback: exclude the entire recipe from compilation if an ingredient reference is missing
+        return null;
       }
 
       const quantityValue = roundQuantity(ingredient.quantityValue * scaleFactor);
       const isInPantry = preferences.knownPantryItems.includes(ingredient.ingredientId);
       const estimatedCost = isInPantry ? 0 : roundMoney(quantityValue * reference.unitPrice);
 
-      return {
+      scaledIngredients.push({
         id: ingredient.ingredientId,
         name: reference.name,
         category: reference.category,
@@ -153,8 +176,8 @@ export class MealPlanEngine {
         unit: ingredient.unit || reference.unit,
         estimatedCost,
         isInPantry,
-      };
-    });
+      });
+    }
 
     return {
       recipeId: recipe.id,
@@ -165,33 +188,160 @@ export class MealPlanEngine {
       scaledIngredients,
       ratings: recipe.ratings || 0,
       ratingsCount: recipe.ratingsCount || 0,
+      vibes: recipe.vibes || [],
     };
   }
 
-  private findBestUnderBudgetPlan(meals: PlannedMeal[], weeklyBudget: number) {
-    let bestPlan: PlannedMeal[] | null = null;
-    let bestTotal = -1;
+  private findBestUnderBudgetPlan(meals: PlannedMeal[], weeklyBudget: number): PlannedMeal[] | null {
+    const targetLength = 7;
+    
+    // Shuffle the candidate pool using Fisher-Yates shuffle to ensure maximum variety
+    const shuffled = shuffle(meals);
 
-    for (let attempt = 0; attempt < 100; attempt++) {
-      const selected: PlannedMeal[] = [];
-      let total = 0;
+    const validPlans: PlannedMeal[][] = [];
+    
+    // Trackers for incremental cost calculations
+    const currentQuantities = new Map<string, number>();
+    let currentCost = 0;
 
-      for (const meal of shuffle(meals)) {
-        if (selected.length === 7) break;
-        const nextTotal = total + meal.estimatedCost;
-        if (nextTotal <= weeklyBudget) {
-          selected.push(meal);
-          total = nextTotal;
+    const addMealToCost = (meal: PlannedMeal) => {
+      let costDiff = 0;
+      for (const ing of meal.scaledIngredients) {
+        if (ing.isInPantry) continue;
+        const ref = this.ingredientRefById.get(ing.id);
+        if (!ref) continue;
+
+        const oldQty = currentQuantities.get(ing.id) || 0;
+        const newQty = oldQty + ing.quantityValue;
+
+        const oldPackages = Math.ceil(oldQty > 1e-9 ? oldQty : 0);
+        const newPackages = Math.ceil(newQty > 1e-9 ? newQty : 0);
+
+        costDiff += (newPackages - oldPackages) * ref.unitPrice;
+        currentQuantities.set(ing.id, newQty);
+      }
+      currentCost = roundMoney(currentCost + costDiff);
+    };
+
+    const removeMealFromCost = (meal: PlannedMeal) => {
+      let costDiff = 0;
+      for (const ing of meal.scaledIngredients) {
+        if (ing.isInPantry) continue;
+        const ref = this.ingredientRefById.get(ing.id);
+        if (!ref) continue;
+
+        const oldQty = currentQuantities.get(ing.id) || 0;
+        let newQty = oldQty - ing.quantityValue;
+        if (newQty < 1e-9) {
+          newQty = 0;
+        }
+
+        const oldPackages = Math.ceil(oldQty > 1e-9 ? oldQty : 0);
+        const newPackages = Math.ceil(newQty > 1e-9 ? newQty : 0);
+
+        costDiff += (newPackages - oldPackages) * ref.unitPrice;
+
+        if (newQty === 0) {
+          currentQuantities.delete(ing.id);
+        } else {
+          currentQuantities.set(ing.id, newQty);
         }
       }
+      currentCost = roundMoney(currentCost + costDiff);
+    };
 
-      if (selected.length === 7 && total > bestTotal) {
-        bestPlan = selected;
-        bestTotal = total;
+    let nodesVisited = 0;
+    const maxNodes = 5000;
+
+    const backtrack = (startIndex: number, currentSelection: PlannedMeal[]): boolean => {
+      nodesVisited++;
+      if (nodesVisited > maxNodes) {
+        return true; // Exceeded search budget, stop search early to prevent server hang
+      }
+
+      if (currentSelection.length === targetLength) {
+        validPlans.push([...currentSelection]);
+        return validPlans.length >= 30; // Collect up to 30 valid plans
+      }
+
+      for (let i = startIndex; i < shuffled.length; i++) {
+        const meal = shuffled[i];
+        
+        currentSelection.push(meal);
+        addMealToCost(meal);
+
+        if (currentCost <= weeklyBudget) {
+          const stop = backtrack(i + 1, currentSelection);
+          if (stop) return true;
+        }
+
+        removeMealFromCost(meal);
+        currentSelection.pop();
+      }
+      return false;
+    };
+
+    backtrack(0, []);
+
+    if (validPlans.length === 0) return null;
+
+    // Helper to count unique ingredients to buy for a plan
+    const getUniqueIngredientCount = (planMeals: PlannedMeal[]): number => {
+      const uniqueIds = new Set<string>();
+      for (const m of planMeals) {
+        for (const ing of m.scaledIngredients) {
+          if (!ing.isInPantry) {
+            uniqueIds.add(ing.id);
+          }
+        }
+      }
+      return uniqueIds.size;
+    };
+
+    // Find the plan with the minimum number of unique ingredients to buy
+    let bestPlan = validPlans[0];
+    let minIngredients = getUniqueIngredientCount(bestPlan);
+
+    for (let i = 1; i < validPlans.length; i++) {
+      const plan = validPlans[i];
+      const count = getUniqueIngredientCount(plan);
+      if (count < minIngredients) {
+        minIngredients = count;
+        bestPlan = plan;
       }
     }
 
     return bestPlan;
+  }
+
+  private calculatePlanCheckoutCost(meals: PlannedMeal[]): number {
+    const groupedQuantities = new Map<string, { quantity: number; unitPrice: number }>();
+    
+    for (const meal of meals) {
+      for (const ing of meal.scaledIngredients) {
+        if (ing.isInPantry) continue;
+        const ref = this.ingredientRefById.get(ing.id);
+        if (!ref) continue;
+        
+        const existing = groupedQuantities.get(ing.id);
+        if (existing) {
+          existing.quantity += ing.quantityValue;
+        } else {
+          groupedQuantities.set(ing.id, {
+            quantity: ing.quantityValue,
+            unitPrice: ref.unitPrice
+          });
+        }
+      }
+    }
+    
+    let totalCost = 0;
+    for (const [_, item] of groupedQuantities) {
+      const unitsToBuy = Math.ceil(item.quantity);
+      totalCost += unitsToBuy * item.unitPrice;
+    }
+    
+    return roundMoney(totalCost);
   }
 }
 
@@ -209,5 +359,5 @@ function roundMoney(value: number) {
 }
 
 function roundQuantity(value: number) {
-  return Math.ceil(value);
+  return Math.round(value * 1000) / 1000;
 }
