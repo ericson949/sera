@@ -2,6 +2,7 @@ import { Meal } from "../entities/Meal";
 import { ShoppingItem } from "../entities/ShoppingItem";
 import { createMoney } from "../value-objects/Money";
 import { ShoppingCategory, SHOPPING_CATEGORIES } from "../value-objects/ShoppingCategory";
+import { PantryTier, inferPantryTier } from "../value-objects/PantryTier";
 
 export function mapDbCategoryToShoppingCategory(dbCat: string | undefined): ShoppingCategory {
   if (!dbCat) return "Other";
@@ -44,6 +45,9 @@ export function buildShoppingList(days: Meal[], previous: ShoppingItem[]): Shopp
     
     if (existing) {
       if (!existing.usedInMeals.includes(meal.day)) existing.usedInMeals.push(meal.day);
+      if (!existing.pantryTier && ingredient.pantryTier) {
+        existing.pantryTier = ingredient.pantryTier;
+      }
       
       const p1 = parseQuantity(existing.quantity);
       if (p1.unit === p.unit && p1.value > 0 && p.value > 0) {
@@ -56,6 +60,7 @@ export function buildShoppingList(days: Meal[], previous: ShoppingItem[]): Shopp
 
     const oldItem = previous.find((item) => item.name.trim().toLowerCase() === key);
     const category = mapDbCategoryToShoppingCategory(ingredient.category);
+    const tier = ingredient.pantryTier || inferPantryTier(ingredient.category, ingredient.name);
     items.set(key, {
       id: oldItem?.id ?? `shop-item-${meal.id}-${items.size}`,
       name: ingredient.name,
@@ -64,6 +69,7 @@ export function buildShoppingList(days: Meal[], previous: ShoppingItem[]): Shopp
       estimatedPrice: ingredient.estimatedPrice,
       usedInMeals: [meal.day],
       checked: oldItem?.checked ?? false,
+      pantryTier: tier,
     });
   }));
 

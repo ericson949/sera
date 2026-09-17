@@ -6,6 +6,7 @@ import { Check, ChevronDown, ChevronUp, Loader2, RefreshCw, X } from "lucide-rea
 import { useDinneroStore } from "../hooks/useDinneroStore";
 import { useWeeklyMealState } from "../hooks/useWeeklyMealState";
 import { formatMoney } from "../../domain/value-objects/Money";
+import { inferPantryTier } from "../../domain/value-objects/PantryTier";
 import { getSeraMealImageUrl } from "@/shared/seraVisuals";
 import { getProductCopy } from "@/shared/seraProductCopy";
 
@@ -23,6 +24,13 @@ export default function MealDetailModal() {
 
   if (!selectedMeal) return null;
   const canSwap = weekState.canSwapMeal(selectedMeal);
+
+  const mainIngredients = (selectedMeal.ingredients || []).filter(
+    (ing) => (ing.pantryTier || inferPantryTier(ing.category, ing.name)) !== "seasoning"
+  );
+  const seasonings = (selectedMeal.ingredients || []).filter(
+    (ing) => (ing.pantryTier || inferPantryTier(ing.category, ing.name)) === "seasoning"
+  );
 
   const handleSwap = async () => {
     if (!canSwap) return;
@@ -90,13 +98,34 @@ export default function MealDetailModal() {
               {isIngredientsOpen ? <ChevronUp className="h-6 w-6 text-muted" /> : <ChevronDown className="h-6 w-6 text-muted" />}
             </button>
             {isIngredientsOpen && (
-              <div className="mt-3 divide-y divide-warm-stone/50">
-                {selectedMeal.ingredients.map((ingredient, index) => (
-                  <div key={`${selectedMeal.id}-ingredient-${index}`} className="flex justify-between gap-4 py-3 text-sm">
-                    <span className="font-medium text-foreground">{ingredient.name}</span>
-                    <span className="text-right text-muted">{ingredient.quantity}</span>
+              <div className="mt-3 space-y-4">
+                <div className="divide-y divide-warm-stone/50">
+                  {mainIngredients.map((ingredient, index) => (
+                    <div key={`${selectedMeal.id}-ingredient-${index}`} className="flex justify-between gap-4 py-3 text-sm">
+                      <span className="font-medium text-foreground">{ingredient.name}</span>
+                      <span className="text-right text-muted">{ingredient.quantity}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {seasonings.length > 0 && (
+                  <div className="rounded-2xl bg-surface-container-low/60 p-4 border border-warm-stone/30">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
+                      {copy.seasonings}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {seasonings.map((seasoning, index) => (
+                        <span
+                          key={`${selectedMeal.id}-seasoning-${index}`}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-background/80 px-3 py-1 text-xs text-foreground border border-warm-stone/40"
+                        >
+                          <span className="font-medium">{seasoning.name}</span>
+                          {seasoning.quantity && <span className="text-muted">({seasoning.quantity})</span>}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                ))}
+                )}
               </div>
             )}
           </section>

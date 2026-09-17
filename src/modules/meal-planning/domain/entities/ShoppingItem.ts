@@ -1,5 +1,6 @@
 import { Money } from "../value-objects/Money";
 import { ShoppingCategory } from "../value-objects/ShoppingCategory";
+import { PantryTier } from "../value-objects/PantryTier";
 
 export type ShoppingItem = {
   id: string;
@@ -9,4 +10,5 @@ export type ShoppingItem = {
   estimatedPrice: Money;
   usedInMeals: string[];
   checked: boolean;
+  pantryTier?: PantryTier;
 };

@@ -73,7 +73,12 @@ export default function PreviewShoppingListPage() {
                           {item.checked && <Check className="h-3.5 w-3.5" />}
                         </span>
                         <span>
-                          <span className={`block text-[15px] font-medium text-foreground ${item.checked ? "line-through opacity-50" : ""}`}>{item.name}</span>
+                          <span className="flex items-center gap-1.5">
+                            <span className={`block text-[15px] font-medium text-foreground ${item.checked ? "line-through opacity-50" : ""}`}>{item.name}</span>
+                            {item.pantryTier === "seasoning" && (
+                              <span className="rounded-full bg-surface-container-low px-1.5 py-0.5 text-[10px] font-medium text-muted">Placard</span>
+                            )}
+                          </span>
                           <span className="mt-0.5 block text-xs text-muted">{item.quantity}</span>
                         </span>
                       </span>

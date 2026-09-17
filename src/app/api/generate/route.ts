@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { MealPlanEngine, Recipe, IngredientRef, Category } from "@/domain/services/MealPlanEngine";
+import { inferPantryTier } from "@/modules/meal-planning/domain/value-objects/PantryTier";
 import { MockMealPlanAIService } from "@/modules/meal-planning/infrastructure/ai/MockMealPlanAIService";
 import { captureServerException } from "@/shared/observability/posthogServer";
 
@@ -16,9 +17,17 @@ async function fetchAllIngredients(supabase: any): Promise<any[]> {
   }
   const { data, error } = await supabase
     .from("ingredients_reference")
-    .select("id, category, translations, estimatedPricePerUnit");
+    .select("id, category, translations, estimatedPricePerUnit, pantryTier");
   if (error) {
-    throw new Error(`Unable to fetch ingredients reference: ${error.message}`);
+    // Fallback if migration not yet applied
+    const fallback = await supabase
+      .from("ingredients_reference")
+      .select("id, category, translations, estimatedPricePerUnit");
+    if (fallback.error) {
+      throw new Error(`Unable to fetch ingredients reference: ${fallback.error.message}`);
+    }
+    cachedIngredientRows = fallback.data || [];
+    return cachedIngredientRows as any[];
   }
   cachedIngredientRows = data || [];
   return cachedIngredientRows as any[];
@@ -49,6 +58,7 @@ const ingredientSchema = z.object({
   quantity: z.string(),
   estimatedPrice: z.number(),
   category: z.string().optional(),
+  pantryTier: z.enum(["specific", "staple", "seasoning"]).optional(),
 });
 
 const mealOverviewSchema = z.object({
@@ -93,6 +103,7 @@ function buildShoppingList(meals: any[]): any[] {
         itemsMap.set(key, {
           name: ing.name,
           category: ing.category || "Pantry",
+          pantryTier: ing.pantryTier || "staple",
           unit: unit,
           quantityValue: val,
           unitPrice: ing.estimatedPrice / (val || 1),
@@ -108,6 +119,7 @@ function buildShoppingList(meals: any[]): any[] {
     return {
       name: item.name,
       category: item.category,
+      pantryTier: item.pantryTier || "staple",
       quantity: `${roundedQty} ${item.unit}`,
       estimatedPrice: price,
       usedInMeals: item.usedInMeals,
@@ -339,6 +351,7 @@ export async function POST(request: Request) {
       const translations = row.translations || {};
       const unitPrice = prices["EUR"] || prices["USD"] || 0.01;
       const name = translations[input.appLanguage] || translations["en"] || row.id;
+      const pantryTier = row.pantryTier || inferPantryTier(row.category, row.id);
 
       return {
         id: row.id,
@@ -346,6 +359,7 @@ export async function POST(request: Request) {
         category: row.category as Category,
         unitPrice,
         unit: "unit", // fallback unit
+        pantryTier,
       };
     });
 
@@ -407,6 +421,7 @@ export async function POST(request: Request) {
           quantity: `${ing.quantityValue} ${ing.unit}`,
           estimatedPrice: ing.estimatedCost,
           category: ing.category,
+          pantryTier: ing.pantryTier,
         })),
         recipeSteps: (details.steps || []).map((s: any) => s.description || s.step || ""),
         category: (dbRecipe.taxonomy as any)?.categories?.[0] || "Dinner",
@@ -456,6 +471,7 @@ export async function POST(request: Request) {
           quantity: `${ing.quantityValue} ${ing.unit}`,
           estimatedPrice: ing.estimatedCost,
           category: ing.category,
+          pantryTier: ing.pantryTier,
         })),
         recipeSteps: (details.steps || []).map((s: any) => s.description || s.step || ""),
         category: (dbRecipe.taxonomy as any)?.categories?.[0] || "Dinner",

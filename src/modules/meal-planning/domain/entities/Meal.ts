@@ -1,11 +1,13 @@
 import { Money } from "../value-objects/Money";
 import { WeekDay } from "../value-objects/WeekDay";
+import { PantryTier } from "../value-objects/PantryTier";
 
 export type Ingredient = {
   name: string;
   quantity: string;
   estimatedPrice: Money;
   category?: string;
+  pantryTier?: PantryTier;
 };
 
 export type EnrichmentStatus = "pending" | "processing" | "ready" | "failed";

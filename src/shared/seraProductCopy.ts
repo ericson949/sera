@@ -62,7 +62,7 @@ export const PRODUCT_COPY = {
       unlock: "Demo: unlock membership", payments: "Payments are processed by Lemon Squeezy. By continuing, you agree to the terms and cancellation policy.",
       links: "Privacy, terms and cancellation", features: ["Unlimited weekly dinner journals", "Unlimited meal swaps", "Saved menus and favourite recipes", "Exportable market guide", "Budget history for calmer shopping", "Family portions and pantry-aware planning"],
     },
-    meal: { time: "Time", energy: "Energy", cost: "Cost", why: "Why it belongs here", ingredients: "Ingredients", method: "Method", preparing: "Sera is preparing the recipe details…", unavailable: "Recipe details will be retried when you reopen Sera.", cookedLocked: "Cooked meals cannot be replaced." },
+    meal: { time: "Time", energy: "Energy", cost: "Cost", why: "Why it belongs here", ingredients: "Ingredients", mainIngredients: "Main ingredients", seasonings: "Pantry & seasonings", method: "Method", preparing: "Sera is preparing the recipe details…", unavailable: "Recipe details will be retried when you reopen Sera.", cookedLocked: "Cooked meals cannot be replaced." },
     paywall: {
       kicker: "Sera membership", title: "Save this week for later.",
       body: "Keep your dinner journal, reopen past weeks, and build a calmer rhythm Sunday after Sunday.",
@@ -146,7 +146,7 @@ export const PRODUCT_COPY = {
       unlock: "Demo : debloquer", payments: "Paiements traites par Lemon Squeezy. En continuant, tu acceptes les conditions et la politique d'annulation.",
       links: "Confidentialite, conditions et annulation", features: ["Semaines de diners illimitees", "Remplacements illimites", "Menus sauvegardes", "Guide courses exportable", "Historique budget", "Portions famille et placard pris en compte"],
     },
-    meal: { time: "Temps", energy: "Energie", cost: "Cout", why: "Pourquoi ce plat", ingredients: "Ingredients", method: "Methode", preparing: "Sera prepare les details de la recette…", unavailable: "Les details seront relances a la prochaine ouverture de Sera.", cookedLocked: "Un plat deja cuisine ne peut pas etre remplace." },
+    meal: { time: "Temps", energy: "Energie", cost: "Cout", why: "Pourquoi ce plat", ingredients: "Ingredients", mainIngredients: "Ingredients du plat", seasonings: "Fond de placard & assaisonnements", method: "Methode", preparing: "Sera prepare les details de la recette…", unavailable: "Les details seront relances a la prochaine ouverture de Sera.", cookedLocked: "Un plat deja cuisine ne peut pas etre remplace." },
     paywall: {
       kicker: "Abonnement Sera", title: "Sauvegarde cette semaine.",
       body: "Garde ton journal de diners, retrouve les semaines passees et construis un rythme plus calme dimanche apres dimanche.",
@@ -231,7 +231,7 @@ export const PRODUCT_COPY = {
       unlock: "Demo: sblocca", payments: "Pagamenti gestiti da Lemon Squeezy. Continuando accetti termini e cancellazione.",
       links: "Privacy, termini e cancellazione", features: ["Diari settimanali illimitati", "Cambi pasto illimitati", "Menu salvati", "Guida spesa esportabile", "Storico budget", "Porzioni famiglia e dispensa"],
     },
-    meal: { time: "Tempo", energy: "Energia", cost: "Costo", why: "Perche questo piatto", ingredients: "Ingredienti", method: "Metodo", preparing: "Sera sta preparando i dettagli della ricetta…", unavailable: "I dettagli saranno riprovati alla prossima apertura di Sera.", cookedLocked: "Una cena gia cucinata non puo essere sostituita." },
+    meal: { time: "Tempo", energy: "Energia", cost: "Costo", why: "Perche questo piatto", ingredients: "Ingredienti", mainIngredients: "Ingredienti principali", seasonings: "Condimenti e dispensa", method: "Metodo", preparing: "Sera sta preparando i dettagli della ricetta…", unavailable: "I dettagli saranno riprovati alla prossima apertura di Sera.", cookedLocked: "Una cena gia cucinata non puo essere sostituita." },
     paywall: {
       kicker: "Abbonamento Sera", title: "Salva questa settimana.",
       body: "Conserva il tuo diario delle cene, riapri le settimane passate e costruisci un ritmo piu calmo domenica dopo domenica.",
